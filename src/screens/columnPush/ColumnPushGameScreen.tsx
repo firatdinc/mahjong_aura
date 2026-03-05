@@ -1,0 +1,382 @@
+import React, {useEffect, useCallback, useState, useRef} from 'react';
+import {StyleSheet, View, Text, Image, TouchableOpacity, Modal} from 'react-native';
+import {useColumnPushStore} from '../../store/useColumnPushStore';
+import {useLanguage} from '../../i18n/useLanguage';
+import {PlayerGrid} from '../../components/columnPush/PlayerGrid';
+import {BotGrid} from '../../components/columnPush/BotGrid';
+import {ActiveTile} from '../../components/columnPush/ActiveTile';
+import {DiceRollOverlay} from '../../components/columnPush/DiceRollOverlay';
+import {ChainBadge} from '../../components/columnPush/ChainBadge';
+import {FinalPickOverlay} from '../../components/columnPush/FinalPickOverlay';
+import {CP_PLAYER_IMAGES, CP_BOT_IMAGES} from '../../constants/gameAssets';
+
+interface ColumnPushGameScreenProps {
+  onExit: () => void;
+}
+
+export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExit}) => {
+  const {
+    playerGrid,
+    botGrid,
+    activeTile,
+    currentTurn,
+    status,
+    diceResult,
+    chainLength,
+    longestChain,
+    turnCount,
+    playerTheme,
+    centerTiles,
+    rollDice,
+    pushTile,
+    playBotTurn,
+    pickCenterTile,
+  } = useColumnPushStore();
+  const {t} = useLanguage();
+
+  const handleRollDice = useCallback(() => {
+    rollDice();
+  }, [rollDice]);
+
+  // Auto-trigger bot turn
+  const isBotPlaying = useRef(false);
+  useEffect(() => {
+    if (status === 'playing' && currentTurn === 'bot' && !isBotPlaying.current) {
+      isBotPlaying.current = true;
+      const timeout = setTimeout(() => {
+        playBotTurn().finally(() => { isBotPlaying.current = false; });
+      }, 300);
+      return () => { clearTimeout(timeout); isBotPlaying.current = false; };
+    }
+  }, [status, currentTurn, playBotTurn]);
+
+  const handleDiceContinue = useCallback(() => {
+    useColumnPushStore.setState({status: 'playing'});
+  }, []);
+
+  const handleColumnPress = useCallback(
+    (colIndex: number) => {
+      pushTile(colIndex);
+    },
+    [pushTile],
+  );
+
+  const handleFinalPick = useCallback(
+    (index: number) => {
+      pickCenterTile(index);
+    },
+    [pickCenterTile],
+  );
+
+  const [paused, setPaused] = useState(false);
+  const showResult = status === 'won' || status === 'lost';
+
+  // Theme indicator images
+  const playerThemeImg = playerTheme
+    ? (playerTheme === 'player' ? CP_PLAYER_IMAGES[0] : CP_BOT_IMAGES[0])
+    : null;
+  const botThemeImg = playerTheme
+    ? (playerTheme === 'player' ? CP_BOT_IMAGES[0] : CP_PLAYER_IMAGES[0])
+    : null;
+
+  return (
+    <View style={styles.container}>
+      {/* Header with pause button */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.pauseBtn}
+          onPress={() => setPaused(true)}
+          activeOpacity={0.7}>
+          <Text style={styles.pauseText}>⏸</Text>
+        </TouchableOpacity>
+        <View style={styles.turnInfo}>
+          <View
+            style={[
+              styles.turnDot,
+              currentTurn === 'player' ? styles.turnDotPlayer : styles.turnDotBot,
+            ]}
+          />
+          <Text style={styles.turnText}>
+            {currentTurn === 'player' ? t.cpYourTurn : t.cpBotTurn}
+          </Text>
+        </View>
+        <Text style={styles.headerStat}>{t.cpTurns}: {turnCount}</Text>
+      </View>
+
+      {/* Theme indicator */}
+      <View style={styles.themeRow}>
+        <View style={styles.themeBadge}>
+          {botThemeImg ? (
+            <Image source={botThemeImg} style={styles.themeIcon} resizeMode="contain" />
+          ) : (
+            <Text style={styles.themeQmark}>?</Text>
+          )}
+          <Text style={styles.themeLabel}>{t.bot}</Text>
+        </View>
+        <Text style={styles.themeVs}>{t.vs}</Text>
+        <View style={styles.themeBadge}>
+          {playerThemeImg ? (
+            <Image source={playerThemeImg} style={styles.themeIcon} resizeMode="contain" />
+          ) : (
+            <Text style={styles.themeQmark}>?</Text>
+          )}
+          <Text style={styles.themeLabel}>{t.cpYou}</Text>
+        </View>
+      </View>
+
+      {/* Bot Grid (top) */}
+      <View style={styles.botSection}>
+        <BotGrid grid={botGrid} />
+      </View>
+
+      {/* Center: Active tile + chain */}
+      <View style={styles.centerSection}>
+        <ActiveTile tile={activeTile} isPlayerTurn={currentTurn === 'player'} />
+        <ChainBadge chainLength={chainLength} isActive={chainLength > 0} />
+        {status === 'playing' && currentTurn === 'player' && activeTile && (
+          <Text style={styles.hintText}>{t.cpPushColumn}</Text>
+        )}
+      </View>
+
+      {/* Player Grid (bottom) */}
+      <View style={styles.playerSection}>
+        <PlayerGrid
+          grid={playerGrid}
+          isPlayerTurn={status === 'playing' && currentTurn === 'player' && activeTile !== null}
+          activeTile={activeTile}
+          chainLength={chainLength}
+          onColumnPress={handleColumnPress}
+        />
+      </View>
+
+      {/* Dice Roll Overlay */}
+      <DiceRollOverlay
+        visible={status === 'diceRoll'}
+        diceResult={diceResult}
+        onContinue={handleDiceContinue}
+        onRollDice={handleRollDice}
+      />
+
+      {/* Final Pick Overlay */}
+      <FinalPickOverlay
+        visible={status === 'finalPick' && centerTiles.length > 0}
+        centerTiles={centerTiles}
+        onPick={handleFinalPick}
+      />
+
+      {/* Pause Modal */}
+      <Modal visible={paused} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>⏸</Text>
+            <TouchableOpacity
+              style={styles.modalBtn}
+              onPress={() => setPaused(false)}
+              activeOpacity={0.8}>
+              <Text style={styles.modalBtnText}>{t.resume}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.quitBtn}
+              onPress={onExit}
+              activeOpacity={0.8}>
+              <Text style={styles.quitBtnText}>{t.quitGame}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Result Modal */}
+      <Modal visible={showResult} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {status === 'won' ? t.cpYouWin : t.cpBotWins}
+            </Text>
+            <View style={styles.modalStats}>
+              <Text style={styles.modalStat}>
+                {t.cpLongestChain}: {longestChain}
+              </Text>
+              <Text style={styles.modalStat}>
+                {t.cpTurns}: {turnCount}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.modalBtn}
+              onPress={onExit}
+              activeOpacity={0.8}>
+              <Text style={styles.modalBtnText}>{t.back}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#334443',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  pauseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(250,248,241,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(250,248,241,0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pauseText: {
+    fontSize: 16,
+    color: '#FAF8F1',
+  },
+  turnInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  turnDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  turnDotPlayer: {
+    backgroundColor: '#27AE60',
+  },
+  turnDotBot: {
+    backgroundColor: '#E74C3C',
+  },
+  turnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FAF8F1',
+  },
+  headerStat: {
+    fontSize: 12,
+    color: '#8AABA5',
+  },
+  themeRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 4,
+  },
+  themeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(250,248,241,0.08)',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  themeIcon: {
+    width: 20,
+    height: 20,
+  },
+  themeQmark: {
+    fontSize: 14,
+    color: '#8AABA5',
+    fontWeight: '700',
+  },
+  themeLabel: {
+    fontSize: 11,
+    color: '#8AABA5',
+    fontWeight: '600',
+  },
+  themeVs: {
+    fontSize: 11,
+    color: '#6B9C93',
+    fontWeight: '600',
+  },
+  botSection: {
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  centerSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 6,
+  },
+  hintText: {
+    fontSize: 12,
+    color: '#8AABA5',
+    fontWeight: '500',
+  },
+  playerSection: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#34656D',
+    borderRadius: 20,
+    padding: 28,
+    width: 280,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2A5450',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FAF8F1',
+    marginBottom: 16,
+  },
+  modalStats: {
+    gap: 6,
+    marginBottom: 20,
+  },
+  modalStat: {
+    fontSize: 14,
+    color: '#8AABA5',
+    textAlign: 'center',
+  },
+  modalBtn: {
+    backgroundColor: '#FAEAB1',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 36,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#334443',
+  },
+  quitBtn: {
+    backgroundColor: 'rgba(231, 76, 60, 0.15)',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 36,
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(231, 76, 60, 0.3)',
+  },
+  quitBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#E74C3C',
+  },
+});
