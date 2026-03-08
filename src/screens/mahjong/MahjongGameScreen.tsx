@@ -9,6 +9,7 @@ import {GameHeader} from '../../components/mahjong/GameHeader';
 import {PlayerHand} from '../../components/mahjong/PlayerHand';
 import {BotHand} from '../../components/mahjong/BotHand';
 import {DiscardPile} from '../../components/mahjong/DiscardPile';
+import {ms, modalWidth} from '../../utils/scaling';
 
 interface MahjongGameScreenProps {
   onExit: () => void;
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sideBot: {
-    width: 80,
+    width: ms(80),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -292,8 +293,8 @@ const styles = StyleSheet.create({
   modalCard: {
     backgroundColor: '#34656D',
     borderRadius: 20,
-    padding: 28,
-    width: 280,
+    padding: ms(28),
+    width: modalWidth(280),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#3D7A74',
@@ -304,11 +305,11 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   modalIcon: {
-    fontSize: 48,
+    fontSize: ms(48),
     marginBottom: 12,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: ms(22),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 8,

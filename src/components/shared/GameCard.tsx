@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Text, Image, ImageSourcePropType} from 'react-native';
 import {AnimatedPressable} from './AnimatedPressable';
+import {ms} from '../../utils/scaling';
 
 interface GameCardProps {
   icon: string;
@@ -72,20 +73,20 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   iconWrap: {
-    width: 50,
-    height: 50,
-    borderRadius: 14,
+    width: ms(50),
+    height: ms(50),
+    borderRadius: ms(14),
     backgroundColor: 'rgba(250,248,241,0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 14,
   },
   iconEmoji: {
-    fontSize: 26,
+    fontSize: ms(26),
   },
   iconImage: {
-    width: 32,
-    height: 32,
+    width: ms(32),
+    height: ms(32),
     resizeMode: 'contain',
   },
   textContainer: {
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   title: {
-    fontSize: 18,
+    fontSize: ms(18),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
   },
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
     color: '#8AABA5',
   },
   desc: {
-    fontSize: 13,
+    fontSize: ms(13),
     color: '#8AABA5',
     marginTop: 3,
   },

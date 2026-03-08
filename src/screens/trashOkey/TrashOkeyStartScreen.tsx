@@ -15,6 +15,7 @@ import {useLanguage} from '../../i18n/useLanguage';
 import {useSettings} from '../../store/useSettings';
 import {AnimatedPressable} from '../../components/shared/AnimatedPressable';
 import {StaggeredEntry} from '../../components/shared/StaggeredEntry';
+import {ms, modalWidth, contentMaxWidth} from '../../utils/scaling';
 
 const trophyImg = require('../../../assets/game/trophy.png');
 const starImg = require('../../../assets/game/star.png');
@@ -269,9 +270,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     left: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: ms(44),
+    height: ms(44),
+    borderRadius: ms(14),
     backgroundColor: 'rgba(250,248,241,0.08)',
     borderWidth: 1,
     borderColor: 'rgba(250,248,241,0.12)',
@@ -288,9 +289,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: ms(44),
+    height: ms(44),
+    borderRadius: ms(14),
     backgroundColor: 'rgba(250,248,241,0.08)',
     borderWidth: 1,
     borderColor: 'rgba(250,248,241,0.12)',
@@ -311,13 +312,13 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#34656D',
     borderRadius: 16,
-    padding: 24,
-    width: 260,
+    padding: ms(24),
+    width: modalWidth(260),
     borderWidth: 1,
     borderColor: '#2A5450',
   },
   modalTitle: {
-    fontSize: 16,
+    fontSize: ms(16),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     textAlign: 'center',
@@ -370,9 +371,9 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   gameIconWrap: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
+    width: ms(100),
+    height: ms(100),
+    borderRadius: ms(20),
     backgroundColor: '#34656D',
     borderWidth: 1,
     borderColor: '#3D7A74',
@@ -381,16 +382,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   gameIcon: {
-    fontSize: 48,
+    fontSize: ms(48),
   },
   title: {
-    fontSize: 42,
+    fontSize: ms(42),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: ms(20),
     fontFamily: 'Nunito_300Light',
     color: '#FAEAB1',
     letterSpacing: 8,
@@ -435,7 +436,7 @@ const styles = StyleSheet.create({
   },
   buttons: {
     width: '100%',
-    maxWidth: 320,
+    maxWidth: contentMaxWidth(320),
     gap: 10,
   },
   button: {
@@ -454,9 +455,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   buttonIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: ms(44),
+    height: ms(44),
+    borderRadius: ms(12),
     backgroundColor: 'rgba(250,248,241,0.08)',
     justifyContent: 'center',
     alignItems: 'center',

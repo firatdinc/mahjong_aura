@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useCallback} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Modal} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Modal, SafeAreaView} from 'react-native';
 import {useTileMatchStore} from '../../store/useTileMatchStore';
 import {useLanguage} from '../../i18n/useLanguage';
 import {TileBoard} from '../../components/tileMatch/TileBoard';
@@ -7,6 +7,7 @@ import {MatchBar} from '../../components/tileMatch/MatchBar';
 import {PowerUpBar} from '../../components/tileMatch/PowerUpBar';
 import {LevelHeader} from '../../components/tileMatch/LevelHeader';
 import {calculateStars} from '../../engine/tileMatch/matchLogic';
+import {ms, modalWidth} from '../../utils/scaling';
 
 interface TileMatchGameScreenProps {
   onExit: () => void;
@@ -59,7 +60,7 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
   const showModal = status === 'won' || status === 'lost' || status === 'paused';
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <LevelHeader
         levelNumber={level.levelNumber}
         timeRemaining={timeRemaining}
@@ -135,7 +136,7 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -166,14 +167,14 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#34656D',
     borderRadius: 20,
-    padding: 28,
-    width: 280,
+    padding: ms(28),
+    width: modalWidth(280),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#2A5450',
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: ms(22),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 16,
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalStar: {
-    fontSize: 36,
+    fontSize: ms(36),
     color: '#3D7A74',
   },
   modalStarActive: {

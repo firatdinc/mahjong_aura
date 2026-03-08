@@ -3,6 +3,7 @@ import {StyleSheet, View, Text, Animated} from 'react-native';
 import {Tile} from '../../types';
 import {TileComponent} from '../shared/TileComponent';
 import {useLanguage} from '../../i18n/useLanguage';
+import {contentMaxWidth} from '../../utils/scaling';
 
 interface DiscardPileProps {
   tiles: Tile[];
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    maxWidth: 240,
+    maxWidth: contentMaxWidth(240),
   },
   empty: {
     color: '#3D7A74',

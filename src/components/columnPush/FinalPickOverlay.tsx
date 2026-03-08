@@ -3,6 +3,7 @@ import {StyleSheet, View, Text, Image, TouchableOpacity, Modal} from 'react-nati
 import {CPTile} from '../../types/columnPush';
 import {getImageForTile} from '../../utils/columnPushEmoji';
 import {useLanguage} from '../../i18n/useLanguage';
+import {ms, modalWidth} from '../../utils/scaling';
 
 interface FinalPickOverlayProps {
   visible: boolean;
@@ -55,14 +56,14 @@ const styles = StyleSheet.create({
   content: {
     backgroundColor: '#34656D',
     borderRadius: 20,
-    padding: 28,
-    width: 300,
+    padding: ms(28),
+    width: modalWidth(300),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#2A5450',
   },
   title: {
-    fontSize: 22,
+    fontSize: ms(22),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 6,
@@ -78,9 +79,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tile: {
-    width: 64,
-    height: 80,
-    borderRadius: 10,
+    width: ms(64),
+    height: ms(80),
+    borderRadius: ms(10),
     backgroundColor: '#FAF8F1',
     borderWidth: 2,
     borderColor: '#D5C89A',
@@ -93,7 +94,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   tileImage: {
-    width: 40,
-    height: 40,
+    width: ms(40),
+    height: ms(40),
   },
 });

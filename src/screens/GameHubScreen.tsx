@@ -12,6 +12,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
+import {ms, modalWidth, contentMaxWidth} from '../utils/scaling';
 import {GameId} from '../constants/app';
 import {GAMES} from '../constants/app';
 import {GameCard} from '../components/shared/GameCard';
@@ -245,9 +246,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: ms(44),
+    height: ms(44),
+    borderRadius: ms(14),
     backgroundColor: 'rgba(250,248,241,0.08)',
     borderWidth: 1,
     borderColor: 'rgba(250,248,241,0.12)',
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   langIcon: {
-    fontSize: 22,
+    fontSize: ms(22),
   },
   modalOverlay: {
     flex: 1,
@@ -267,8 +268,8 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#34656D',
     borderRadius: 16,
-    padding: 24,
-    width: 260,
+    padding: ms(24),
+    width: modalWidth(260),
     borderWidth: 1,
     borderColor: '#2A5450',
   },
@@ -424,20 +425,20 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logoImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
+    width: ms(100),
+    height: ms(100),
+    borderRadius: ms(20),
     resizeMode: 'contain',
     marginBottom: 12,
   },
   title: {
-    fontSize: 42,
+    fontSize: ms(42),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: ms(20),
     fontFamily: 'Nunito_300Light',
     color: '#FAEAB1',
     letterSpacing: 8,
@@ -445,7 +446,7 @@ const styles = StyleSheet.create({
   },
   gameList: {
     width: '100%',
-    maxWidth: 340,
+    maxWidth: contentMaxWidth(340),
     gap: 12,
   },
   privacyLink: {

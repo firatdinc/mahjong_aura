@@ -9,6 +9,7 @@ import {DiceRollOverlay} from '../../components/columnPush/DiceRollOverlay';
 import {ChainBadge} from '../../components/columnPush/ChainBadge';
 import {FinalPickOverlay} from '../../components/columnPush/FinalPickOverlay';
 import {CP_PLAYER_IMAGES, CP_BOT_IMAGES} from '../../constants/gameAssets';
+import {ms, modalWidth} from '../../utils/scaling';
 
 interface ColumnPushGameScreenProps {
   onExit: () => void;
@@ -226,9 +227,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   pauseBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: ms(36),
+    height: ms(36),
+    borderRadius: ms(10),
     backgroundColor: 'rgba(250,248,241,0.08)',
     borderWidth: 1,
     borderColor: 'rgba(250,248,241,0.12)',
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   pauseText: {
-    fontSize: 16,
+    fontSize: ms(16),
     color: '#FAF8F1',
   },
   turnInfo: {
@@ -245,9 +246,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   turnDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: ms(10),
+    height: ms(10),
+    borderRadius: ms(5),
   },
   turnDotPlayer: {
     backgroundColor: '#27AE60',
@@ -329,14 +330,14 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#34656D',
     borderRadius: 20,
-    padding: 28,
-    width: 280,
+    padding: ms(28),
+    width: modalWidth(280),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#2A5450',
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: ms(24),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 16,
