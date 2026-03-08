@@ -112,22 +112,15 @@ async function handleBotClaiming(depth = 0) {
           useGameStore.getState().discardTile(tileId);
           // Recursively handle claiming for the new discard
           await handleBotClaiming(depth + 1);
-        } else if (afterClaim.turnPhase === 'drawing' && afterClaim.currentTurn === botSeat) {
-          // Kong — bot needs to draw a replacement
-          await useGameStore.getState().playBotTurn();
         }
+        // For kong (turnPhase === 'drawing'): component's useEffect will trigger playBotTurn
         return;
       }
     }
 
     // No bot claimed — skip and advance to next player
     useGameStore.getState().skipClaim();
-
-    // If the next turn is a bot, auto-play it
-    const nextState = store();
-    if (nextState.currentTurn !== 'player' && !nextState.winner && nextState.turnPhase !== 'gameOver') {
-      await useGameStore.getState().playBotTurn();
-    }
+    // Component's useEffect will trigger playBotTurn for the next bot turn
   } catch {
     // Recover from errors — skip claim to prevent stuck state
     try {

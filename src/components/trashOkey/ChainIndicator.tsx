@@ -1,7 +1,8 @@
 import React from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import {StyleSheet, View, Text, Image} from 'react-native';
 import {OkeyTile} from '../../types/trashOkey';
 import {useLanguage} from '../../i18n/useLanguage';
+import {OKEY_TILE_IMAGES} from '../../constants/gameAssets';
 
 interface ChainIndicatorProps {
   chainActive: boolean;
@@ -28,13 +29,18 @@ export const ChainIndicator: React.FC<ChainIndicatorProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.tilePreview}>
-        <Text
-          style={[
-            styles.tileNumber,
-            {color: OKEY_COLOR_MAP[currentChainTile.color] ?? '#334443'},
-          ]}>
-          {currentChainTile.isFalseJoker ? 'J' : currentChainTile.number}
-        </Text>
+        {currentChainTile.isFalseJoker ? (
+          <Text style={[styles.tileNumber, {color: OKEY_COLOR_MAP[currentChainTile.color] ?? '#334443'}]}>
+            J
+          </Text>
+        ) : (
+          <Image
+            source={OKEY_TILE_IMAGES[currentChainTile.number]}
+            style={styles.tileImage}
+            resizeMode="contain"
+          />
+        )}
+        <View style={[styles.colorDot, {backgroundColor: OKEY_COLOR_MAP[currentChainTile.color] ?? '#334443'}]} />
       </View>
       {chainLength > 0 && (
         <View style={styles.chainBadge}>
@@ -56,9 +62,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   tilePreview: {
-    width: 36,
-    height: 44,
-    borderRadius: 6,
+    width: 52,
+    height: 64,
+    borderRadius: 8,
     backgroundColor: '#FAF8F1',
     borderWidth: 2,
     borderColor: '#FAEAB1',
@@ -70,9 +76,21 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
+  tileImage: {
+    width: 34,
+    height: 34,
+  },
   tileNumber: {
     fontSize: 16,
     fontFamily: 'Nunito_700Bold',
+  },
+  colorDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
   },
   chainBadge: {
     backgroundColor: 'rgba(250, 234, 177, 0.15)',

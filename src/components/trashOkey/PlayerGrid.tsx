@@ -183,13 +183,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
                       )}
                       <View style={[styles.colorDot, {backgroundColor: OKEY_COLOR_MAP[slot.tile.color] ?? '#334443'}]} />
                     </View>
-                  ) : (
-                    <Image
-                      source={OKEY_TILE_IMAGES[slot.targetNumber]}
-                      style={{width: targetImgSize, height: targetImgSize, opacity: 0.3}}
-                      resizeMode="contain"
-                    />
-                  )}
+                  ) : null}
                 </TouchableOpacity>
               </Animated.View>
             );

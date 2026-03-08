@@ -55,7 +55,12 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
         const {playBotTurn} = useGameStore.getState();
         playBotTurn().finally(() => { isBotPlaying.current = false; });
       }, 300);
-      return () => { clearTimeout(timeout); isBotPlaying.current = false; };
+      return () => {
+        clearTimeout(timeout);
+        // Only reset the guard if a timeout was pending (not yet fired).
+        // This prevents stale isBotPlaying=true after mid-turn state changes.
+        isBotPlaying.current = false;
+      };
     }
   }, [currentTurn, turnPhase, winner]);
 
