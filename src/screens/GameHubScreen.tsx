@@ -18,7 +18,7 @@ import {GameCard} from '../components/shared/GameCard';
 import {AnimatedPressable} from '../components/shared/AnimatedPressable';
 import {StaggeredEntry} from '../components/shared/StaggeredEntry';
 import {useLanguage} from '../i18n/useLanguage';
-import {LANGUAGES, Language} from '../i18n/translations';
+import {LANGUAGES, Language, translations} from '../i18n/translations';
 
 const logoImg = require('../../assets/mahjong_aura_logo.png');
 
@@ -40,6 +40,7 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
   const {t, language, setLanguage} = useLanguage();
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [privacyVisible, setPrivacyVisible] = useState(false);
+  const [privacyLang, setPrivacyLang] = useState<Language>(language);
 
   // Title entrance animation
   const titleOpacity = useRef(new Animated.Value(0)).current;
@@ -99,7 +100,15 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
           activeOpacity={1}
           onPress={() => setSettingsVisible(false)}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t.language}</Text>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{t.language}</Text>
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setSettingsVisible(false)}
+                activeOpacity={0.7}>
+                <Text style={styles.modalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
 
             <FlatList
               data={LANGUAGES}
@@ -124,18 +133,6 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
               )}
             />
 
-            <View style={styles.divider} />
-
-            {/* Privacy Policy */}
-            <TouchableOpacity
-              style={styles.privacyButton}
-              onPress={() => {
-                setSettingsVisible(false);
-                setTimeout(() => setPrivacyVisible(true), 300);
-              }}
-              activeOpacity={0.7}>
-              <Text style={styles.privacyButtonText}>🔒  {t.privacyPolicy}</Text>
-            </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
@@ -144,7 +141,7 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
       <Modal visible={privacyVisible} animationType="slide" onRequestClose={() => setPrivacyVisible(false)}>
         <SafeAreaView style={styles.privacyContainer}>
           <View style={styles.privacyHeader}>
-            <Text style={styles.privacyTitle}>{t.privacyPolicy}</Text>
+            <Text style={styles.privacyTitle}>{translations[privacyLang].privacyPolicy}</Text>
             <TouchableOpacity
               style={styles.privacyCloseBtn}
               onPress={() => setPrivacyVisible(false)}
@@ -153,9 +150,19 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
             </TouchableOpacity>
           </View>
           <WebView
-            source={{uri: PRIVACY_URLS[language]}}
+            source={{uri: PRIVACY_URLS[privacyLang]}}
             style={styles.webview}
             startInLoadingState
+            onNavigationStateChange={(navState) => {
+              const url = navState.url;
+              const match = url.match(/\/([a-z]{2})\.html/);
+              if (match) {
+                const lang = match[1] as Language;
+                if (lang in PRIVACY_URLS && lang !== privacyLang) {
+                  setPrivacyLang(lang);
+                }
+              }
+            }}
             renderLoading={() => (
               <View style={styles.webviewLoading}>
                 <Text style={styles.webviewLoadingText}>{t.loading}</Text>
@@ -202,6 +209,7 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
                 icon={game.icon}
                 title={getTitle(game.titleKey)}
                 description={getTitle(game.descriptionKey)}
+                badge={game.id === 'columnPush' ? t.cpTrending : undefined}
                 disabled={!isAvailable}
                 disabledLabel={t.hubComingSoon}
                 onPress={() => onSelectGame(game.id)}
@@ -210,6 +218,17 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
           );
         })}
       </View>
+
+      {/* Privacy Policy link */}
+      <TouchableOpacity
+        style={styles.privacyLink}
+        onPress={() => {
+          setPrivacyLang(language);
+          setPrivacyVisible(true);
+        }}
+        activeOpacity={0.7}>
+        <Text style={styles.privacyLinkText}>{t.privacyPolicy}</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -253,13 +272,34 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#2A5450',
   },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  modalCloseBtn: {
+    position: 'absolute',
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(250,248,241,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(250,248,241,0.12)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    color: '#B0CBC5',
+    fontSize: 14,
+    fontFamily: 'Nunito_600SemiBold',
+  },
   modalTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     textAlign: 'center',
-    marginBottom: 16,
-    textTransform: 'uppercase',
     letterSpacing: 2,
   },
   langOption: {
@@ -280,25 +320,11 @@ const styles = StyleSheet.create({
   langLabel: {
     fontSize: 16,
     color: '#D5E0DC',
-    fontWeight: '500',
+    fontFamily: 'Nunito_500Medium',
   },
   langLabelActive: {
     color: '#FAEAB1',
-    fontWeight: '700',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#2A5450',
-    marginVertical: 12,
-  },
-  privacyButton: {
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  privacyButtonText: {
-    color: '#8AABA5',
-    fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Nunito_700Bold',
   },
   privacyContainer: {
     flex: 1,
@@ -317,7 +343,7 @@ const styles = StyleSheet.create({
   privacyTitle: {
     color: '#FAF8F1',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   privacyCloseBtn: {
     width: 36,
@@ -332,7 +358,7 @@ const styles = StyleSheet.create({
   privacyCloseText: {
     color: '#B0CBC5',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   webview: {
     flex: 1,
@@ -370,7 +396,7 @@ const styles = StyleSheet.create({
   webviewErrorTitle: {
     color: '#FAF8F1',
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     marginBottom: 8,
   },
   webviewErrorText: {
@@ -391,7 +417,7 @@ const styles = StyleSheet.create({
   webviewErrorBtnText: {
     color: '#FAEAB1',
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   titleContainer: {
     alignItems: 'center',
@@ -406,13 +432,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 42,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
   },
   subtitle: {
     fontSize: 20,
-    fontWeight: '300',
+    fontFamily: 'Nunito_300Light',
     color: '#FAEAB1',
     letterSpacing: 8,
     marginTop: 4,
@@ -421,5 +447,14 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 340,
     gap: 12,
+  },
+  privacyLink: {
+    marginTop: 20,
+    paddingVertical: 8,
+  },
+  privacyLinkText: {
+    fontSize: 12,
+    color: '#6B9C93',
+    fontFamily: 'Nunito_400Regular',
   },
 });

@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   },
   turnText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#FAF8F1',
   },
   headerStat: {
@@ -287,17 +287,17 @@ const styles = StyleSheet.create({
   themeQmark: {
     fontSize: 14,
     color: '#8AABA5',
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   themeLabel: {
     fontSize: 11,
     color: '#8AABA5',
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   themeVs: {
     fontSize: 11,
     color: '#6B9C93',
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   botSection: {
     alignItems: 'center',
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   hintText: {
     fontSize: 12,
     color: '#8AABA5',
-    fontWeight: '500',
+    fontFamily: 'Nunito_500Medium',
   },
   playerSection: {
     flex: 1,
@@ -337,7 +337,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 16,
   },
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   modalBtnText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#334443',
   },
   quitBtn: {
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
   },
   quitBtnText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#E74C3C',
   },
 });

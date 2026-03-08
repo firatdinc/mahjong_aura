@@ -57,69 +57,85 @@ function getNextSeat(current: SeatId): SeatId {
 // ─── Bot claiming logic (runs after any discard) ────────────
 // Checks if any bot wants to claim the last discarded tile.
 // Pong/Kong take priority over Chow. If no bot claims, skip.
-async function handleBotClaiming() {
-  const store = useGameStore.getState;
-
-  const state = store();
-  if (state.turnPhase !== 'claiming' || !state.lastDiscardedTile) {return;}
-
-  const discard = state.lastDiscardedTile!;
-  const discardedBy = state.lastDiscardedBy!;
-
-  // Check each bot (excluding the one who discarded) for claims
-  // Priority: Kong > Pong > Chow (and Pong/Kong can be claimed by anyone)
-  const botSeats: SeatId[] = ['bot1', 'bot2', 'bot3'].filter(
-    s => s !== discardedBy,
-  ) as SeatId[];
-
-  // Also exclude human player — they decide via UI
-  const eligibleBots = botSeats.filter(s => s !== 'player');
-
-  for (const botSeat of eligibleBots) {
-    const currentState = store();
-    if (currentState.turnPhase !== 'claiming') {return;}
-
-    const hand = currentState.players[botSeat].hand;
-    const currentDiscard = currentState.lastDiscardedTile;
-    if (!currentDiscard) {return;}
-    const decision = evaluateBotClaim(
-      hand,
-      currentDiscard,
-      currentState.difficulty,
-      botSeat,
-      discardedBy,
-    );
-
-    if (decision.shouldClaim) {
-      await waitForThinking();
-      useGameStore.getState().claimTile(botSeat, decision.meldType, decision.tileIds);
-
-      // After claiming, the bot needs to discard (unless it's a kong or win)
-      const afterClaim = store();
-      if (afterClaim.winner || afterClaim.turnPhase === 'gameOver') {return;}
-
-      if (afterClaim.turnPhase === 'discarding' && afterClaim.currentTurn === botSeat) {
-        await waitForThinking();
-        const botHand = store().players[botSeat].hand;
-        const tileId = chooseBotDiscard(botHand, afterClaim.difficulty, store());
-        useGameStore.getState().discardTile(tileId);
-        // Recursively handle claiming for the new discard
-        await handleBotClaiming();
-      } else if (afterClaim.turnPhase === 'drawing' && afterClaim.currentTurn === botSeat) {
-        // Kong — bot needs to draw a replacement
-        useGameStore.getState().playBotTurn();
-      }
-      return;
-    }
+async function handleBotClaiming(depth = 0) {
+  // Safety: prevent infinite recursive claiming
+  if (depth > 12) {
+    try { useGameStore.getState().skipClaim(); } catch {}
+    return;
   }
 
-  // No bot claimed — skip and advance to next player
-  useGameStore.getState().skipClaim();
+  try {
+    const store = useGameStore.getState;
 
-  // If the next turn is a bot, auto-play it
-  const nextState = store();
-  if (nextState.currentTurn !== 'player' && !nextState.winner && nextState.turnPhase !== 'gameOver') {
-    useGameStore.getState().playBotTurn();
+    const state = store();
+    if (state.turnPhase !== 'claiming' || !state.lastDiscardedTile) {return;}
+
+    const discardedBy = state.lastDiscardedBy!;
+
+    // Check each bot (excluding the one who discarded) for claims
+    const botSeats: SeatId[] = ['bot1', 'bot2', 'bot3'].filter(
+      s => s !== discardedBy,
+    ) as SeatId[];
+
+    // Also exclude human player — they decide via UI
+    const eligibleBots = botSeats.filter(s => s !== 'player');
+
+    for (const botSeat of eligibleBots) {
+      const currentState = store();
+      if (currentState.turnPhase !== 'claiming') {return;}
+
+      const hand = currentState.players[botSeat].hand;
+      const currentDiscard = currentState.lastDiscardedTile;
+      if (!currentDiscard) {return;}
+      const decision = evaluateBotClaim(
+        hand,
+        currentDiscard,
+        currentState.difficulty,
+        botSeat,
+        discardedBy,
+      );
+
+      if (decision.shouldClaim) {
+        await waitForThinking();
+        useGameStore.getState().claimTile(botSeat, decision.meldType, decision.tileIds);
+
+        // After claiming, the bot needs to discard (unless it's a kong or win)
+        const afterClaim = store();
+        if (afterClaim.winner || afterClaim.turnPhase === 'gameOver') {return;}
+
+        if (afterClaim.turnPhase === 'discarding' && afterClaim.currentTurn === botSeat) {
+          await waitForThinking();
+          // Re-fetch state to avoid stale data after async wait
+          const freshState = store();
+          const botHand = freshState.players[botSeat].hand;
+          const tileId = chooseBotDiscard(botHand, freshState.difficulty, freshState);
+          useGameStore.getState().discardTile(tileId);
+          // Recursively handle claiming for the new discard
+          await handleBotClaiming(depth + 1);
+        } else if (afterClaim.turnPhase === 'drawing' && afterClaim.currentTurn === botSeat) {
+          // Kong — bot needs to draw a replacement
+          await useGameStore.getState().playBotTurn();
+        }
+        return;
+      }
+    }
+
+    // No bot claimed — skip and advance to next player
+    useGameStore.getState().skipClaim();
+
+    // If the next turn is a bot, auto-play it
+    const nextState = store();
+    if (nextState.currentTurn !== 'player' && !nextState.winner && nextState.turnPhase !== 'gameOver') {
+      await useGameStore.getState().playBotTurn();
+    }
+  } catch {
+    // Recover from errors — skip claim to prevent stuck state
+    try {
+      const fallbackState = useGameStore.getState();
+      if (fallbackState.turnPhase === 'claiming') {
+        useGameStore.getState().skipClaim();
+      }
+    } catch {}
   }
 }
 

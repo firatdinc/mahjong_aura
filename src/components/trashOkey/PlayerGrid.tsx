@@ -1,8 +1,11 @@
 import React, {useRef, useEffect} from 'react';
-import {StyleSheet, View, Text, Image, TouchableOpacity, Animated} from 'react-native';
+import {StyleSheet, View, Text, Image, TouchableOpacity, Animated, Dimensions} from 'react-native';
 import {GridSlot, OkeyTile} from '../../types/trashOkey';
 import {GRID_ROWS, GRID_COLS} from '../../constants/trashOkey/grid';
 import {OKEY_TILE_IMAGES} from '../../constants/gameAssets';
+import {useSettings} from '../../store/useSettings';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 interface PlayerGridProps {
   grid: GridSlot[][];
@@ -30,6 +33,13 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   chainActive,
   onSlotPress,
 }) => {
+  const {tileScale} = useSettings();
+  const gap = 3;
+  const maxSlotW = Math.floor((SCREEN_WIDTH - 32 - (GRID_COLS - 1) * gap) / GRID_COLS);
+  const slotW = Math.min(Math.round(44 * tileScale), maxSlotW);
+  const slotH = Math.round(slotW * (40 / 44));
+  const imgSize = Math.round(slotW * (28 / 44));
+  const targetImgSize = Math.round(slotW * (22 / 44));
   // Track which slots just got revealed for animation
   const prevRevealedRef = useRef<boolean[][]>([]);
   const scaleAnims = useRef<Animated.Value[][]>(
@@ -153,6 +163,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
                 <TouchableOpacity
                   style={[
                     styles.slot,
+                    {width: slotW, height: slotH},
                     slot.isRevealed && styles.slotRevealed,
                     isValid && styles.slotValid,
                   ]}
@@ -166,7 +177,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
                       ) : (
                         <Image
                           source={OKEY_TILE_IMAGES[slot.tile.number]}
-                          style={styles.tileImage}
+                          style={{width: imgSize, height: imgSize}}
                           resizeMode="contain"
                         />
                       )}
@@ -175,7 +186,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
                   ) : (
                     <Image
                       source={OKEY_TILE_IMAGES[slot.targetNumber]}
-                      style={styles.targetImage}
+                      style={{width: targetImgSize, height: targetImgSize, opacity: 0.3}}
                       resizeMode="contain"
                     />
                   )}
@@ -199,8 +210,6 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   slot: {
-    width: 44,
-    height: 40,
     borderRadius: 6,
     backgroundColor: '#34656D',
     borderWidth: 1,
@@ -225,13 +234,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  tileImage: {
-    width: 28,
-    height: 28,
-  },
   tileNumber: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   colorDot: {
     width: 6,
@@ -240,10 +245,5 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 1,
     right: 1,
-  },
-  targetImage: {
-    width: 22,
-    height: 22,
-    opacity: 0.3,
   },
 });

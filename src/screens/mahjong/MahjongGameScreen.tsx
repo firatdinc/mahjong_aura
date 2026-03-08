@@ -51,8 +51,11 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
   useEffect(() => {
     if (currentTurn !== 'player' && turnPhase === 'drawing' && !winner && !isBotPlaying.current) {
       isBotPlaying.current = true;
-      const {playBotTurn} = useGameStore.getState();
-      playBotTurn().finally(() => { isBotPlaying.current = false; });
+      const timeout = setTimeout(() => {
+        const {playBotTurn} = useGameStore.getState();
+        playBotTurn().finally(() => { isBotPlaying.current = false; });
+      }, 300);
+      return () => { clearTimeout(timeout); isBotPlaying.current = false; };
     }
   }, [currentTurn, turnPhase, winner]);
 
@@ -301,7 +304,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 8,
     letterSpacing: 1,
@@ -340,7 +343,7 @@ const styles = StyleSheet.create({
   },
   modalBtnPrimaryText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#334443',
   },
   modalBtnSecondary: {
@@ -353,7 +356,7 @@ const styles = StyleSheet.create({
   },
   modalBtnSecondaryText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#B0CBC5',
   },
   modalBtnDanger: {
@@ -366,7 +369,7 @@ const styles = StyleSheet.create({
   },
   modalBtnDangerText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#EF5350',
   },
 });

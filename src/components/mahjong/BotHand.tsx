@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   label: {
     color: '#8AABA5',
     fontSize: 11,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     marginBottom: 2,
   },
   activeLabel: {

@@ -169,6 +169,7 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
 
   endChain: () => {
     const state = get();
+    if (state.status !== 'playing') return;
     if (!state.chainActive || !state.currentChainTile) return;
     if (state.currentTurn !== 'player') return; // Only player can manually end chain
 

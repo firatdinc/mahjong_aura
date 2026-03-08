@@ -16,12 +16,15 @@ interface SettingsStore {
   // Column Push
   cpShowPreview: boolean;
   setCpShowPreview: (val: boolean) => void;
+  // Global
+  tileScale: number;
+  setTileScale: (val: number) => void;
 }
 
 function persist(state: Partial<SettingsStore>) {
-  const {autoDraw, tmRelaxedMode, toHighlightSlots, cpShowPreview} =
+  const {autoDraw, tmRelaxedMode, toHighlightSlots, cpShowPreview, tileScale} =
     useSettings.getState();
-  const merged = {autoDraw, tmRelaxedMode, toHighlightSlots, cpShowPreview, ...state};
+  const merged = {autoDraw, tmRelaxedMode, toHighlightSlots, cpShowPreview, tileScale, ...state};
   AsyncStorage.setItem(
     SETTINGS_KEY,
     JSON.stringify({
@@ -29,6 +32,7 @@ function persist(state: Partial<SettingsStore>) {
       tmRelaxedMode: merged.tmRelaxedMode,
       toHighlightSlots: merged.toHighlightSlots,
       cpShowPreview: merged.cpShowPreview,
+      tileScale: merged.tileScale,
     }),
   ).catch(() => {});
 }
@@ -54,6 +58,11 @@ export const useSettings = create<SettingsStore>(set => ({
     set({cpShowPreview: val});
     persist({cpShowPreview: val});
   },
+  tileScale: 1.0,
+  setTileScale: (val: number) => {
+    set({tileScale: val});
+    persist({tileScale: val});
+  },
 }));
 
 export async function initSettings(): Promise<void> {
@@ -61,11 +70,12 @@ export async function initSettings(): Promise<void> {
     const raw = await AsyncStorage.getItem(SETTINGS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      const update: Record<string, boolean> = {};
+      const update: Record<string, boolean | number> = {};
       if (typeof parsed.autoDraw === 'boolean') update.autoDraw = parsed.autoDraw;
       if (typeof parsed.tmRelaxedMode === 'boolean') update.tmRelaxedMode = parsed.tmRelaxedMode;
       if (typeof parsed.toHighlightSlots === 'boolean') update.toHighlightSlots = parsed.toHighlightSlots;
       if (typeof parsed.cpShowPreview === 'boolean') update.cpShowPreview = parsed.cpShowPreview;
+      if (typeof parsed.tileScale === 'number') update.tileScale = parsed.tileScale;
       useSettings.setState(update);
     }
   } catch {

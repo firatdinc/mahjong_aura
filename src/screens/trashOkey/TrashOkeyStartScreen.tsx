@@ -34,7 +34,7 @@ export const TrashOkeyStartScreen: React.FC<TrashOkeyStartScreenProps> = ({
 }) => {
   const {stats, loadStats} = useTrashOkeyStore();
   const {t} = useLanguage();
-  const {toHighlightSlots, setToHighlightSlots} = useSettings();
+  const {toHighlightSlots, setToHighlightSlots, tileScale, setTileScale} = useSettings();
   const [settingsVisible, setSettingsVisible] = useState(false);
 
   // Title entrance animation
@@ -47,9 +47,9 @@ export const TrashOkeyStartScreen: React.FC<TrashOkeyStartScreenProps> = ({
     desc: string;
     icon: string;
   }[] = [
-    {key: 'easy', label: t.easy, desc: t.easyDesc, icon: '🍃'},
-    {key: 'medium', label: t.medium, desc: t.mediumDesc, icon: '⚡'},
-    {key: 'hard', label: t.hard, desc: t.hardDesc, icon: '🔥'},
+    {key: 'easy', label: t.easy, desc: t.toEasyDesc, icon: '🍃'},
+    {key: 'medium', label: t.medium, desc: t.toMediumDesc, icon: '⚡'},
+    {key: 'hard', label: t.hard, desc: t.toHardDesc, icon: '🔥'},
   ];
 
   useEffect(() => {
@@ -118,6 +118,28 @@ export const TrashOkeyStartScreen: React.FC<TrashOkeyStartScreenProps> = ({
                   style={[
                     styles.toggleThumb,
                     toHighlightSlots && styles.toggleThumbActive,
+                  ]}
+                />
+              </View>
+            </TouchableOpacity>
+
+            {/* Large Tiles toggle */}
+            <TouchableOpacity
+              style={styles.settingRow}
+              onPress={() => setTileScale(tileScale === 1.0 ? 1.25 : 1.0)}>
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingLabel}>{t.largeTiles}</Text>
+                <Text style={styles.settingDesc}>{t.largeTilesDesc}</Text>
+              </View>
+              <View
+                style={[
+                  styles.toggle,
+                  tileScale > 1 && styles.toggleActive,
+                ]}>
+                <View
+                  style={[
+                    styles.toggleThumb,
+                    tileScale > 1 && styles.toggleThumbActive,
                   ]}
                 />
               </View>
@@ -296,11 +318,10 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     textAlign: 'center',
     marginBottom: 16,
-    textTransform: 'uppercase',
     letterSpacing: 2,
   },
   settingRow: {
@@ -316,7 +337,7 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 15,
     color: '#FAF8F1',
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   settingDesc: {
     fontSize: 11,
@@ -364,13 +385,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 42,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
   },
   subtitle: {
     fontSize: 20,
-    fontWeight: '300',
+    fontFamily: 'Nunito_300Light',
     color: '#FAEAB1',
     letterSpacing: 8,
     marginTop: 4,
@@ -399,19 +420,17 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   statLabel: {
     fontSize: 9,
     color: '#8AABA5',
-    textTransform: 'uppercase',
     marginTop: 2,
   },
   prompt: {
     fontSize: 14,
     color: '#8AABA5',
     marginBottom: 20,
-    textTransform: 'uppercase',
     letterSpacing: 2,
   },
   buttons: {
@@ -451,7 +470,7 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: 17,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
   },
   buttonDesc: {
@@ -462,7 +481,7 @@ const styles = StyleSheet.create({
   buttonChevron: {
     fontSize: 24,
     color: '#6B9C93',
-    fontWeight: '300',
+    fontFamily: 'Nunito_300Light',
     marginLeft: 8,
   },
   tutorialButton: {
@@ -478,5 +497,5 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tutorialIcon: {fontSize: 16},
-  tutorialLabel: {fontSize: 14, fontWeight: '600', color: '#FAEAB1', letterSpacing: 1},
+  tutorialLabel: {fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#FAEAB1', letterSpacing: 1},
 });

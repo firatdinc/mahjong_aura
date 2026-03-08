@@ -33,7 +33,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   canDraw,
 }) => {
   const {t} = useLanguage();
-  const {autoDraw} = useSettings();
+  const {autoDraw, tileScale} = useSettings();
 
   // Two-row layout: split hand into two rows
   const screenWidth = Dimensions.get('window').width;
@@ -43,7 +43,7 @@ export const PlayerHand: React.FC<PlayerHandProps> = ({
   const tileMargin = 2;
   const maxTileWidth =
     Math.floor(availableWidth / Math.max(tilesPerRow, 1)) - tileMargin;
-  const tileWidth = Math.min(maxTileWidth, 44);
+  const tileWidth = Math.min(maxTileWidth, Math.round(44 * tileScale));
   const tileHeight = Math.round(tileWidth * 1.4);
   const fontSize = Math.max(Math.round(tileWidth * 0.4), 10);
   const labelSize = Math.max(Math.round(tileWidth * 0.22), 7);
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: 'center',
     marginTop: 2,
-    fontWeight: '500',
+    fontFamily: 'Nunito_500Medium',
   },
   drawButton: {
     backgroundColor: '#FAEAB1',
@@ -245,6 +245,6 @@ const styles = StyleSheet.create({
   drawButtonText: {
     color: '#334443',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
 });

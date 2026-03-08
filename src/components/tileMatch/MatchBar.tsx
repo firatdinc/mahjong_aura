@@ -4,6 +4,7 @@ import {TileMatchTile} from '../../types/tileMatch';
 import {TileComponent} from '../shared/TileComponent';
 import {Tile, Suit} from '../../types';
 import {BAR_SIZE} from '../../constants/tileMatch/levels';
+import {useSettings} from '../../store/useSettings';
 
 interface MatchBarProps {
   bar: TileMatchTile[];
@@ -20,6 +21,11 @@ function toDisplayTile(t: TileMatchTile): Tile {
 }
 
 export const MatchBar: React.FC<MatchBarProps> = ({bar}) => {
+  const {tileScale} = useSettings();
+  const slotW = Math.round(46 * tileScale);
+  const slotH = Math.round(64 * tileScale);
+  const emptyW = Math.round(44 * tileScale);
+  const emptyH = Math.round(62 * tileScale);
   const slots = Array.from({length: BAR_SIZE}, (_, i) => bar[i] ?? null);
 
   // Track previous tile IDs to detect new arrivals
@@ -76,7 +82,7 @@ export const MatchBar: React.FC<MatchBarProps> = ({bar}) => {
   return (
     <View style={styles.container}>
       {slots.map((tile, i) => (
-        <View key={tile?.id ?? `empty-${i}`} style={styles.slot}>
+        <View key={tile?.id ?? `empty-${i}`} style={[styles.slot, {width: slotW, height: slotH}]}>
           {tile ? (
             <Animated.View
               style={{
@@ -88,7 +94,7 @@ export const MatchBar: React.FC<MatchBarProps> = ({bar}) => {
               <TileComponent tile={toDisplayTile(tile)} size="large" />
             </Animated.View>
           ) : (
-            <View style={styles.emptySlot} />
+            <View style={[styles.emptySlot, {width: emptyW, height: emptyH}]} />
           )}
         </View>
       ))}
@@ -109,14 +115,10 @@ const styles = StyleSheet.create({
     borderColor: '#3D7A74',
   },
   slot: {
-    width: 46,
-    height: 64,
     justifyContent: 'center',
     alignItems: 'center',
   },
   emptySlot: {
-    width: 44,
-    height: 62,
     borderRadius: 4,
     borderWidth: 1,
     borderColor: '#3D7A74',

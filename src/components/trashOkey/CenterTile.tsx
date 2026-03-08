@@ -3,6 +3,7 @@ import {StyleSheet, View, Text, Image, TouchableOpacity, Animated} from 'react-n
 import {OkeyTile} from '../../types/trashOkey';
 import {OKEY_TILE_IMAGES} from '../../constants/gameAssets';
 import {useLanguage} from '../../i18n/useLanguage';
+import {useSettings} from '../../store/useSettings';
 
 interface CenterTileProps {
   tile: OkeyTile | null;
@@ -19,6 +20,10 @@ const OKEY_COLOR_MAP: Record<string, string> = {
 
 export const CenterTile: React.FC<CenterTileProps> = ({tile, onPress, disabled}) => {
   const {t} = useLanguage();
+  const {tileScale} = useSettings();
+  const tileW = Math.round(64 * tileScale);
+  const tileH = Math.round(80 * tileScale);
+  const imgSize = Math.round(44 * tileScale);
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
   const prevTileId = useRef<string | null>(null);
@@ -54,7 +59,7 @@ export const CenterTile: React.FC<CenterTileProps> = ({tile, onPress, disabled})
   if (!tile) {
     return (
       <View style={styles.container}>
-        <View style={styles.emptySlot}>
+        <View style={[styles.emptySlot, {width: tileW, height: tileH}]}>
           <Text style={styles.emptyText}>—</Text>
         </View>
       </View>
@@ -65,7 +70,7 @@ export const CenterTile: React.FC<CenterTileProps> = ({tile, onPress, disabled})
     <View style={styles.container}>
       <Animated.View style={{transform: [{scale}], opacity}}>
         <TouchableOpacity
-          style={[styles.tile, !disabled && styles.tileActive]}
+          style={[styles.tile, {width: tileW, height: tileH}, !disabled && styles.tileActive]}
           onPress={onPress}
           disabled={disabled}
           activeOpacity={0.7}>
@@ -76,7 +81,7 @@ export const CenterTile: React.FC<CenterTileProps> = ({tile, onPress, disabled})
           ) : (
             <Image
               source={OKEY_TILE_IMAGES[tile.number]}
-              style={styles.tileImage}
+              style={{width: imgSize, height: imgSize}}
               resizeMode="contain"
             />
           )}
@@ -94,8 +99,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   tile: {
-    width: 64,
-    height: 80,
     borderRadius: 10,
     backgroundColor: '#FAF8F1',
     borderWidth: 2,
@@ -115,13 +118,9 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  tileImage: {
-    width: 44,
-    height: 44,
-  },
   tileNumber: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
   },
   colorDot: {
     width: 10,
@@ -130,8 +129,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   emptySlot: {
-    width: 64,
-    height: 80,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#3D7A74',

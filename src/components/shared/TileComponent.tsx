@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {Tile} from '../../types';
 import {getTileImage} from '../../constants/gameAssets';
+import {useSettings} from '../../store/useSettings';
 
 interface TileComponentProps {
   tile: Tile;
@@ -33,7 +34,16 @@ export const TileComponent: React.FC<TileComponentProps> = ({
   highlighted = false,
 }) => {
   const scale = useRef(new Animated.Value(1)).current;
-  const dims = customSize ?? SIZE_MAP[size];
+  const {tileScale} = useSettings();
+  const baseSize = customSize ?? SIZE_MAP[size];
+  const dims = customSize
+    ? baseSize
+    : {
+        width: Math.round(baseSize.width * tileScale),
+        height: Math.round(baseSize.height * tileScale),
+        fontSize: Math.round(baseSize.fontSize * tileScale),
+        labelSize: Math.round(baseSize.labelSize * tileScale),
+      };
 
   const handlePressIn = () => {
     Animated.spring(scale, {

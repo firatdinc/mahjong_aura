@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 6,
   },

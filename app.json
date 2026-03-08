@@ -25,7 +25,14 @@
       "backgroundColor": "#334443",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "CFBundleLocalizations": ["en", "tr", "zh-Hans", "es", "fr", "de"]
+        "CFBundleLocalizations": [
+          "en",
+          "tr",
+          "zh-Hans",
+          "es",
+          "fr",
+          "de"
+        ]
       }
     },
     "android": {
@@ -40,6 +47,9 @@
     },
     "web": {
       "favicon": "./assets/mahjong_aura_logo.png"
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

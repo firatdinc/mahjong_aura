@@ -88,13 +88,12 @@ const styles = StyleSheet.create({
   statLabel: {
     color: '#8AABA5',
     fontSize: 9,
-    textTransform: 'uppercase',
     letterSpacing: 1,
   },
   statValue: {
     color: '#FAF8F1',
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   statusContainer: {
     alignItems: 'center',
@@ -112,7 +111,7 @@ const styles = StyleSheet.create({
   status: {
     color: '#FAF8F1',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   winnerText: {
     color: '#FAEAB1',
@@ -123,7 +122,6 @@ const styles = StyleSheet.create({
   phase: {
     color: '#6B9C93',
     fontSize: 9,
-    textTransform: 'uppercase',
     marginTop: 2,
   },
   pauseBtn: {

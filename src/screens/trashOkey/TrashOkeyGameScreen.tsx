@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   },
   turnText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#FAF8F1',
   },
   headerStats: {
@@ -254,9 +254,8 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#6B9C93',
-    textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: 4,
   },
@@ -276,7 +275,7 @@ const styles = StyleSheet.create({
   hintText: {
     fontSize: 12,
     color: '#8AABA5',
-    fontWeight: '500',
+    fontFamily: 'Nunito_500Medium',
   },
   endChainBtn: {
     backgroundColor: 'rgba(231, 76, 60, 0.15)',
@@ -288,7 +287,7 @@ const styles = StyleSheet.create({
   },
   endChainText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#E74C3C',
   },
   playerSection: {
@@ -314,7 +313,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 16,
   },
@@ -337,7 +336,7 @@ const styles = StyleSheet.create({
   },
   modalBtnText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#334443',
   },
   quitBtn: {
@@ -353,7 +352,7 @@ const styles = StyleSheet.create({
   },
   quitBtnText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#E74C3C',
   },
 });

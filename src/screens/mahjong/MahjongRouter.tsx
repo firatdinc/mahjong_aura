@@ -2,7 +2,6 @@ import React, {useState, useCallback, useRef} from 'react';
 import {Animated, Easing} from 'react-native';
 import {Difficulty} from '../../types';
 import {useGameStore} from '../../store/useGameStore';
-import {isTutorialCompleted, markTutorialCompleted} from '../../utils/storage';
 import {MahjongStartScreen} from './MahjongStartScreen';
 import {MahjongGameScreen} from './MahjongGameScreen';
 import {MahjongTutorialScreen} from './MahjongTutorialScreen';
@@ -14,8 +13,7 @@ interface MahjongRouterProps {
 }
 
 export const MahjongRouter: React.FC<MahjongRouterProps> = ({onBack}) => {
-  const initialSub: MahjongSub = isTutorialCompleted() ? 'start' : 'tutorial';
-  const [sub, setSub] = useState<MahjongSub>(initialSub);
+  const [sub, setSub] = useState<MahjongSub>('start');
   const {startGame, resumeGame, resetGame} = useGameStore();
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -78,7 +76,6 @@ export const MahjongRouter: React.FC<MahjongRouterProps> = ({onBack}) => {
   }, [resetGame, animateTo]);
 
   const handleTutorialComplete = useCallback(() => {
-    markTutorialCompleted();
     animateTo('start');
   }, [animateTo]);
 

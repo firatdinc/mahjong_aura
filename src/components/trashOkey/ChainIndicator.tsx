@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   tileNumber: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   chainBadge: {
     backgroundColor: 'rgba(250, 234, 177, 0.15)',
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   },
   chainText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#FAEAB1',
   },
 });

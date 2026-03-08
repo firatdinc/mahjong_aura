@@ -2,6 +2,15 @@ import React, {useState, useCallback, useEffect, useRef} from 'react';
 import {StatusBar, StyleSheet, ActivityIndicator, View, Animated, Easing} from 'react-native';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import * as Font from 'expo-font';
+import {
+  Nunito_300Light,
+  Nunito_400Regular,
+  Nunito_500Medium,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+} from '@expo-google-fonts/nunito';
 import {GameId} from './src/constants/app';
 import {GameHubScreen} from './src/screens/GameHubScreen';
 import {MahjongRouter} from './src/screens/mahjong/MahjongRouter';
@@ -23,7 +32,19 @@ export default function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    Promise.all([initStorage(), initLanguage(), initSettings()]).then(() => setReady(true));
+    Promise.all([
+      initStorage(),
+      initLanguage(),
+      initSettings(),
+      Font.loadAsync({
+        Nunito_300Light,
+        Nunito_400Regular,
+        Nunito_500Medium,
+        Nunito_600SemiBold,
+        Nunito_700Bold,
+        Nunito_800ExtraBold,
+      }),
+    ]).then(() => setReady(true));
   }, []);
 
   if (!ready) {

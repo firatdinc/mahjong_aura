@@ -79,12 +79,12 @@ const styles = StyleSheet.create({
   },
   levelText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
   },
   timer: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAEAB1',
     marginRight: 12,
   },

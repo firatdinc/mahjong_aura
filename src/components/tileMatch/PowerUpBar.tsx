@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#FAF8F1',
   },
   labelDisabled: {
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: 10,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#334443',
   },
 });

@@ -97,9 +97,8 @@ const styles = StyleSheet.create({
   title: {
     color: '#6B9C93',
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     marginBottom: 4,
-    textTransform: 'uppercase',
     letterSpacing: 1,
   },
   grid: {

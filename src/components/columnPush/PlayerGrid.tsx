@@ -1,9 +1,12 @@
 import React, {useRef, useEffect, useCallback, useMemo} from 'react';
-import {StyleSheet, View, Text, Image, TouchableOpacity, Animated, Easing} from 'react-native';
+import {StyleSheet, View, Text, Image, TouchableOpacity, Animated, Easing, Dimensions} from 'react-native';
 import {CPGrid, CPTile} from '../../types/columnPush';
 import {CP_COLS, CP_ROWS} from '../../constants/columnPush/grid';
 import {getValidColumnsForPlacement} from '../../engine/columnPush/gridLogic';
 import {getImageForTile} from '../../utils/columnPushEmoji';
+import {useSettings} from '../../store/useSettings';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 interface PlayerGridProps {
   grid: CPGrid;
@@ -19,10 +22,6 @@ const OWNER_BG = {
   neutral: '#FAF8F1',
 };
 
-const SLOT_HEIGHT = 38;
-const SLOT_GAP = 3;
-const SHIFT_DISTANCE = SLOT_HEIGHT + SLOT_GAP;
-
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
   grid,
   isPlayerTurn,
@@ -30,6 +29,15 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   chainLength,
   onColumnPress,
 }) => {
+  const {tileScale} = useSettings();
+  const SLOT_GAP = 3;
+  const colPadding = 4; // padding per column
+  const maxSlotW = Math.floor((SCREEN_WIDTH - 32 - (CP_COLS - 1) * SLOT_GAP - CP_COLS * colPadding) / CP_COLS);
+  const slotW = Math.min(Math.round(36 * tileScale), maxSlotW);
+  const slotH = Math.round(slotW * (38 / 36));
+  const imgSize = Math.round(slotW * (28 / 36));
+  const arrowW = slotW;
+  const SHIFT_DISTANCE = slotH + SLOT_GAP;
   const prevGridRef = useRef<string[][]>([]);
   const animValues = useRef<Animated.Value[][]>(
     Array.from({length: CP_COLS}, () =>
@@ -97,6 +105,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
               key={col}
               style={[
                 styles.arrowBtn,
+                {width: arrowW},
                 !isColumnEnabled(col) && styles.arrowBtnDisabled,
               ]}
               onPress={() => handlePress(col)}
@@ -137,6 +146,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
                     key={`${col}-${row}`}
                     style={[
                       styles.slot,
+                      {width: slotW, height: slotH},
                       tile.isHidden
                         ? styles.slotHidden
                         : {
@@ -155,7 +165,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
                     ) : (
                       <Image
                         source={getImageForTile(tile)}
-                        style={styles.tileImage}
+                        style={{width: imgSize, height: imgSize}}
                         resizeMode="contain"
                       />
                     )}
@@ -180,7 +190,6 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   arrowBtn: {
-    width: 36,
     height: 22,
     justifyContent: 'center',
     alignItems: 'center',
@@ -191,7 +200,7 @@ const styles = StyleSheet.create({
   arrowText: {
     fontSize: 14,
     color: '#FAEAB1',
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   arrowTextDisabled: {
     color: '#6B9C93',
@@ -220,8 +229,6 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(39, 174, 96, 0.4)',
   },
   slot: {
-    width: 36,
-    height: 38,
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
@@ -238,10 +245,6 @@ const styles = StyleSheet.create({
   hiddenText: {
     fontSize: 12,
     color: '#6B9C93',
-    fontWeight: '600',
-  },
-  tileImage: {
-    width: 28,
-    height: 28,
+    fontFamily: 'Nunito_600SemiBold',
   },
 });

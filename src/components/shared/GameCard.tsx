@@ -7,6 +7,7 @@ interface GameCardProps {
   image?: ImageSourcePropType;
   title: string;
   description: string;
+  badge?: string;
   disabled?: boolean;
   disabledLabel?: string;
   onPress: () => void;
@@ -17,6 +18,7 @@ export const GameCard: React.FC<GameCardProps> = ({
   image,
   title,
   description,
+  badge,
   disabled,
   disabledLabel,
   onPress,
@@ -34,7 +36,14 @@ export const GameCard: React.FC<GameCardProps> = ({
       )}
     </View>
     <View style={styles.textContainer}>
-      <Text style={[styles.title, disabled && styles.titleDisabled]}>{title}</Text>
+      <View style={styles.titleRow}>
+        <Text style={[styles.title, disabled && styles.titleDisabled]}>{title}</Text>
+        {badge && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{badge}</Text>
+          </View>
+        )}
+      </View>
       <Text style={[styles.desc, disabled && styles.descDisabled]}>
         {disabled && disabledLabel ? disabledLabel : description}
       </Text>
@@ -82,10 +91,27 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
+  },
+  badge: {
+    backgroundColor: '#FF6B6B',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  badgeText: {
+    fontSize: 9,
+    fontFamily: 'Nunito_700Bold',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
   titleDisabled: {
     color: '#8AABA5',
@@ -101,7 +127,7 @@ const styles = StyleSheet.create({
   chevron: {
     fontSize: 24,
     color: '#6B9C93',
-    fontWeight: '300',
+    fontFamily: 'Nunito_300Light',
     marginLeft: 8,
   },
 });

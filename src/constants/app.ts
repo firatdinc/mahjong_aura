@@ -18,6 +18,12 @@ export const GAMES: GameDefinition[] = [
     descriptionKey: 'hubMahjongDesc',
   },
   {
+    id: 'columnPush',
+    icon: '🏖️',
+    titleKey: 'hubColumnPushTitle',
+    descriptionKey: 'hubColumnPushDesc',
+  },
+  {
     id: 'tileMatch',
     icon: '🧩',
     titleKey: 'hubTileMatchTitle',
@@ -28,11 +34,5 @@ export const GAMES: GameDefinition[] = [
     icon: '🎴',
     titleKey: 'hubTrashOkeyTitle',
     descriptionKey: 'hubTrashOkeyDesc',
-  },
-  {
-    id: 'columnPush',
-    icon: '🏛️',
-    titleKey: 'hubColumnPushTitle',
-    descriptionKey: 'hubColumnPushDesc',
   },
 ];

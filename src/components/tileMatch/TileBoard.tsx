@@ -3,6 +3,7 @@ import {StyleSheet, View, TouchableOpacity, Dimensions, Animated, Easing} from '
 import {TileMatchTile} from '../../types/tileMatch';
 import {TileComponent} from '../shared/TileComponent';
 import {Tile, Suit} from '../../types';
+import {useSettings} from '../../store/useSettings';
 
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
@@ -22,6 +23,7 @@ function toDisplayTile(t: TileMatchTile): Tile {
 }
 
 export const TileBoard: React.FC<TileBoardProps> = React.memo(({board, onTapTile}) => {
+  const {tileScale} = useSettings();
   const activeTiles = board.filter(t => !t.isInBar && !t.isMatched);
 
   const {tileWidth, tileHeight, offsetX, offsetY} = useMemo(() => {
@@ -30,12 +32,13 @@ export const TileBoard: React.FC<TileBoardProps> = React.memo(({board, onTapTile
     }
     const maxCol = Math.max(...activeTiles.map(t => t.col)) + 1;
     const boardWidth = SCREEN_WIDTH - 32;
-    const tw = Math.min(52, Math.floor(boardWidth / (maxCol + 1)));
+    const maxTileW = Math.round(52 * tileScale);
+    const tw = Math.min(maxTileW, Math.floor(boardWidth / (maxCol + 1)));
     const th = Math.floor(tw * 1.4);
     const totalW = maxCol * tw * 0.9;
     const oX = (boardWidth - totalW) / 2;
     return {tileWidth: tw, tileHeight: th, offsetX: oX, offsetY: 8};
-  }, [activeTiles.length]);
+  }, [activeTiles.length, tileScale]);
 
   const containerHeight = useMemo(() => {
     if (activeTiles.length === 0) return 200;

@@ -2,6 +2,7 @@ import React, {useRef, useEffect} from 'react';
 import {StyleSheet, View, Text, Image, Animated} from 'react-native';
 import {CPTile} from '../../types/columnPush';
 import {getImageForTile} from '../../utils/columnPushEmoji';
+import {useSettings} from '../../store/useSettings';
 
 interface ActiveTileProps {
   tile: CPTile | null;
@@ -15,6 +16,10 @@ const OWNER_COLORS = {
 };
 
 export const ActiveTile: React.FC<ActiveTileProps> = ({tile, isPlayerTurn}) => {
+  const {tileScale} = useSettings();
+  const tileW = Math.round(64 * tileScale);
+  const tileH = Math.round(80 * tileScale);
+  const imgSize = Math.round(44 * tileScale);
   const scale = useRef(new Animated.Value(1)).current;
   const opacity = useRef(new Animated.Value(1)).current;
   const prevTileId = useRef<string | null>(null);
@@ -44,7 +49,7 @@ export const ActiveTile: React.FC<ActiveTileProps> = ({tile, isPlayerTurn}) => {
   if (!tile) {
     return (
       <View style={styles.container}>
-        <View style={styles.emptySlot}>
+        <View style={[styles.emptySlot, {width: tileW, height: tileH}]}>
           <Text style={styles.emptyText}>—</Text>
         </View>
       </View>
@@ -58,12 +63,13 @@ export const ActiveTile: React.FC<ActiveTileProps> = ({tile, isPlayerTurn}) => {
       <Animated.View
         style={[
           styles.tile,
+          {width: tileW, height: tileH},
           isPlayerTurn && styles.tileActive,
           {borderColor: ownerColor, transform: [{scale}], opacity},
         ]}>
         <Image
           source={getImageForTile(tile)}
-          style={styles.tileImage}
+          style={{width: imgSize, height: imgSize}}
           resizeMode="contain"
         />
         <View style={[styles.ownerDot, {backgroundColor: ownerColor}]} />
@@ -78,8 +84,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tile: {
-    width: 64,
-    height: 80,
     borderRadius: 10,
     backgroundColor: '#FAF8F1',
     borderWidth: 2,
@@ -98,10 +102,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  tileImage: {
-    width: 44,
-    height: 44,
-  },
   ownerDot: {
     width: 8,
     height: 8,
@@ -109,8 +109,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   emptySlot: {
-    width: 64,
-    height: 80,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#3D7A74',

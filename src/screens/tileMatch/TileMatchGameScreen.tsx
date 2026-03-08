@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 22,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 16,
     textAlign: 'center',
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   modalBtnText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#334443',
   },
   modalBtnSecondary: {
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   },
   modalBtnSecondaryText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#8AABA5',
   },
 });

@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   skipText: {
     color: '#8AABA5',
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   dotsRow: {
     flexDirection: 'row',
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
   backText: {
     color: '#B0CBC5',
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   nextButton: {
     backgroundColor: '#FAEAB1',
@@ -469,12 +469,12 @@ const styles = StyleSheet.create({
   nextText: {
     color: '#334443',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   nextArrow: {
     color: '#334443',
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   // Step styles
   stepContainer: {
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     color: '#FAEAB1',
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     textAlign: 'center',
     marginBottom: 12,
   },
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     color: '#FAEAB1',
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     marginTop: 8,
     marginBottom: 8,
   },
@@ -521,13 +521,13 @@ const styles = StyleSheet.create({
   suitName: {
     color: '#B0CBC5',
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     width: 50,
   },
   suitNameFull: {
     color: '#B0CBC5',
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     marginBottom: 4,
   },
   tilesRow: {
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   meldName: {
     color: '#FAEAB1',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     marginBottom: 4,
   },
   meldDesc: {
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   formula: {
     color: '#FAEAB1',
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     textAlign: 'center',
     marginVertical: 16,
   },
@@ -577,7 +577,7 @@ const styles = StyleSheet.create({
   winGroupLabel: {
     color: '#8AABA5',
     fontSize: 10,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     marginBottom: 4,
   },
   // Flow steps
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   flowNumberText: {
     color: '#334443',
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   flowContent: {
     flex: 1,
@@ -607,13 +607,13 @@ const styles = StyleSheet.create({
   flowLabel: {
     color: '#FAF8F1',
     fontSize: 15,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     marginBottom: 8,
   },
   flowArrow: {
     color: '#FAEAB1',
     fontSize: 22,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     marginHorizontal: 8,
   },
 });

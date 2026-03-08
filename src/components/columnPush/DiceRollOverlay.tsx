@@ -233,10 +233,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     marginBottom: 20,
-    textTransform: 'uppercase',
     letterSpacing: 2,
   },
   diceRow: {
@@ -254,8 +253,7 @@ const styles = StyleSheet.create({
   diceLabel: {
     fontSize: 12,
     color: '#8AABA5',
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontFamily: 'Nunito_600SemiBold',
   },
   dice: {
     fontSize: 56,
@@ -266,13 +264,13 @@ const styles = StyleSheet.create({
   },
   diceValue: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAEAB1',
   },
   vs: {
     fontSize: 16,
     color: '#6B9C93',
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   rollBtn: {
     backgroundColor: '#FAEAB1',
@@ -287,7 +285,7 @@ const styles = StyleSheet.create({
   },
   rollBtnText: {
     fontSize: 18,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#334443',
     letterSpacing: 1,
   },
@@ -296,7 +294,7 @@ const styles = StyleSheet.create({
   },
   result: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAEAB1',
     marginBottom: 20,
     textAlign: 'center',
@@ -309,7 +307,7 @@ const styles = StyleSheet.create({
   },
   continueText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#334443',
   },
 });

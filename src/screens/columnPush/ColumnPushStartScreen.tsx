@@ -28,10 +28,10 @@ interface ColumnPushStartScreenProps {
 
 import {Translations} from '../../i18n/translations';
 
-const DIFFICULTIES: {key: CPDifficulty; labelKey: keyof Translations; icon: string}[] = [
-  {key: 'easy', labelKey: 'easy', icon: '🍃'},
-  {key: 'medium', labelKey: 'medium', icon: '⚡'},
-  {key: 'hard', labelKey: 'hard', icon: '🔥'},
+const DIFFICULTIES: {key: CPDifficulty; labelKey: keyof Translations; descKey: keyof Translations; icon: string}[] = [
+  {key: 'easy', labelKey: 'easy', descKey: 'cpEasyDesc', icon: '🍃'},
+  {key: 'medium', labelKey: 'medium', descKey: 'cpMediumDesc', icon: '⚡'},
+  {key: 'hard', labelKey: 'hard', descKey: 'cpHardDesc', icon: '🔥'},
 ];
 
 export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
@@ -41,7 +41,7 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
 }) => {
   const {stats, loadStats} = useColumnPushStore();
   const {t} = useLanguage();
-  const {cpShowPreview, setCpShowPreview} = useSettings();
+  const {cpShowPreview, setCpShowPreview, tileScale, setTileScale} = useSettings();
   const [settingsVisible, setSettingsVisible] = useState(false);
 
   // Title entrance animation
@@ -118,6 +118,28 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
                 />
               </View>
             </TouchableOpacity>
+
+            {/* Large Tiles toggle */}
+            <TouchableOpacity
+              style={styles.settingRow}
+              onPress={() => setTileScale(tileScale === 1.0 ? 1.25 : 1.0)}>
+              <View style={styles.settingTextContainer}>
+                <Text style={styles.settingLabel}>{t.largeTiles}</Text>
+                <Text style={styles.settingDesc}>{t.largeTilesDesc}</Text>
+              </View>
+              <View
+                style={[
+                  styles.toggle,
+                  tileScale > 1 && styles.toggleActive,
+                ]}>
+                <View
+                  style={[
+                    styles.toggleThumb,
+                    tileScale > 1 && styles.toggleThumbActive,
+                  ]}
+                />
+              </View>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
@@ -128,9 +150,14 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
           styles.titleContainer,
           {opacity: titleOpacity, transform: [{scale: titleScale}]},
         ]}>
-        <Text style={styles.titleEmoji}>&#x1F9F1;</Text>
+        <Text style={styles.titleEmoji}>&#x1F3D6;</Text>
         <Text style={styles.title}>{t.hubColumnPushTitle}</Text>
-        <Text style={styles.subtitle}>{t.cpTagline}</Text>
+        <View style={styles.taglineRow}>
+          <View style={styles.trendingBadge}>
+            <Text style={styles.trendingText}>{t.cpTrending}</Text>
+          </View>
+          <Text style={styles.subtitle}>{t.cpTagline}</Text>
+        </View>
       </Animated.View>
 
       {/* Stats */}
@@ -182,11 +209,12 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
                   <Text style={styles.buttonLabel}>
                     {t[d.labelKey]}
                   </Text>
-                  {diffStats.played > 0 && (
-                    <Text style={styles.buttonDesc}>
-                      {diffStats.wins}/{diffStats.played}
-                    </Text>
-                  )}
+                  <Text style={styles.buttonDesc}>
+                    {t[d.descKey]}
+                    {diffStats.played > 0
+                      ? `  •  ${diffStats.wins}/${diffStats.played}`
+                      : ''}
+                  </Text>
                 </View>
                 <Text style={styles.buttonChevron}>&#x203A;</Text>
               </AnimatedPressable>
@@ -269,11 +297,10 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     textAlign: 'center',
     marginBottom: 16,
-    textTransform: 'uppercase',
     letterSpacing: 2,
   },
   settingRow: {
@@ -289,7 +316,7 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 15,
     color: '#FAF8F1',
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   settingDesc: {
     fontSize: 11,
@@ -327,18 +354,34 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 42,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
     textAlign: 'center',
   },
+  taglineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  trendingBadge: {
+    backgroundColor: '#FF6B6B',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  trendingText: {
+    fontSize: 10,
+    fontFamily: 'Nunito_700Bold',
+    color: '#FFFFFF',
+    letterSpacing: 1,
+  },
   subtitle: {
     fontSize: 16,
-    fontWeight: '300',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#FAEAB1',
-    letterSpacing: 4,
-    marginTop: 4,
-    textAlign: 'center',
+    letterSpacing: 2,
   },
   statsContainer: {
     marginBottom: 24,
@@ -365,20 +408,18 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 20,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
   },
   statLabel: {
     fontSize: 9,
     color: '#8AABA5',
-    textTransform: 'uppercase',
     marginTop: 2,
   },
   prompt: {
     fontSize: 14,
     color: '#8AABA5',
     marginBottom: 20,
-    textTransform: 'uppercase',
     letterSpacing: 2,
   },
   buttons: {
@@ -418,7 +459,7 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: 17,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     textTransform: 'capitalize',
   },
@@ -430,7 +471,7 @@ const styles = StyleSheet.create({
   buttonChevron: {
     fontSize: 24,
     color: '#6B9C93',
-    fontWeight: '300',
+    fontFamily: 'Nunito_300Light',
     marginLeft: 8,
   },
   tutorialButton: {
@@ -446,5 +487,5 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tutorialIcon: {fontSize: 16},
-  tutorialLabel: {fontSize: 14, fontWeight: '600', color: '#FAEAB1', letterSpacing: 1},
+  tutorialLabel: {fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#FAEAB1', letterSpacing: 1},
 });

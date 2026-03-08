@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
     color: '#FAEAB1',
   },
   badge: {
@@ -50,12 +50,12 @@ const styles = StyleSheet.create({
   },
   count: {
     fontSize: 14,
-    fontWeight: '800',
+    fontFamily: 'Nunito_700Bold',
     color: '#FAEAB1',
   },
   combo: {
     fontSize: 12,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
     color: '#F39C12',
   },
 });

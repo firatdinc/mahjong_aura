@@ -1,8 +1,11 @@
 import React, {useRef, useEffect} from 'react';
-import {StyleSheet, View, Text, Image, Animated} from 'react-native';
+import {StyleSheet, View, Text, Image, Animated, Dimensions} from 'react-native';
 import {GridSlot} from '../../types/trashOkey';
 import {GRID_ROWS, GRID_COLS} from '../../constants/trashOkey/grid';
 import {OKEY_TILE_IMAGES} from '../../constants/gameAssets';
+import {useSettings} from '../../store/useSettings';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
 interface BotGridProps {
   grid: GridSlot[][];
@@ -16,6 +19,14 @@ const OKEY_COLOR_MAP: Record<string, string> = {
 };
 
 export const BotGrid: React.FC<BotGridProps> = ({grid}) => {
+  const {tileScale} = useSettings();
+  const gap = 2;
+  const maxSlotW = Math.floor((SCREEN_WIDTH - 32 - (GRID_COLS - 1) * gap) / GRID_COLS);
+  const slotW = Math.min(Math.round(28 * tileScale), maxSlotW);
+  const slotH = Math.round(slotW * (24 / 28));
+  const imgSize = Math.round(slotW * (18 / 28));
+  const faceDownW = Math.round(slotW * (14 / 28));
+  const faceDownH = Math.round(slotW * (10 / 28));
   const prevRevealedRef = useRef<boolean[][]>([]);
   const scaleAnims = useRef<Animated.Value[][]>(
     Array.from({length: GRID_ROWS}, () =>
@@ -54,6 +65,7 @@ export const BotGrid: React.FC<BotGridProps> = ({grid}) => {
                 key={col}
                 style={[
                   styles.slot,
+                  {width: slotW, height: slotH},
                   slot.isRevealed && styles.slotRevealed,
                   {transform: [{scale: scaleAnims[row][col]}]},
                 ]}>
@@ -64,13 +76,13 @@ export const BotGrid: React.FC<BotGridProps> = ({grid}) => {
                     ) : (
                       <Image
                         source={OKEY_TILE_IMAGES[slot.tile.number]}
-                        style={styles.tileImage}
+                        style={{width: imgSize, height: imgSize}}
                         resizeMode="contain"
                       />
                     )}
                   </>
                 ) : (
-                  <View style={styles.faceDown} />
+                  <View style={{width: faceDownW, height: faceDownH, borderRadius: 2, backgroundColor: '#3D7A74'}} />
                 )}
               </Animated.View>
             );
@@ -91,8 +103,6 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   slot: {
-    width: 28,
-    height: 24,
     borderRadius: 3,
     backgroundColor: '#34656D',
     borderWidth: 1,
@@ -104,18 +114,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAF8F1',
     borderColor: '#D5C89A',
   },
-  faceDown: {
-    width: 14,
-    height: 10,
-    borderRadius: 2,
-    backgroundColor: '#3D7A74',
-  },
-  tileImage: {
-    width: 18,
-    height: 18,
-  },
   tileNumber: {
     fontSize: 9,
-    fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
 });

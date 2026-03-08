@@ -25,7 +25,7 @@ export const ColumnPushTutorialScreen: React.FC<ColumnPushTutorialScreenProps> =
   };
 
   const steps = [
-    {icon: '🧱', title: t.cpTutWelcomeTitle, body: t.cpTutWelcomeBody},
+    {icon: '🏖️', title: t.cpTutWelcomeTitle, body: t.cpTutWelcomeBody},
     {icon: '⬇️', title: t.cpTutPushTitle, body: t.cpTutPushBody},
     {icon: '🔗', title: t.cpTutChainTitle, body: t.cpTutChainBody},
     {icon: '🎮', title: t.cpTutReadyTitle, body: t.cpTutReadyBody},
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8, paddingHorizontal: 16, borderRadius: 10,
     backgroundColor: 'rgba(250,248,241,0.06)', borderWidth: 1, borderColor: 'rgba(250,248,241,0.1)',
   },
-  skipText: {color: '#8AABA5', fontSize: 13, fontWeight: '600'},
+  skipText: {color: '#8AABA5', fontSize: 13, fontFamily: 'Nunito_600SemiBold'},
   dotsRow: {flexDirection: 'row', justifyContent: 'center', gap: 8, paddingTop: 8, paddingBottom: 12},
   dot: {width: 8, height: 8, borderRadius: 4, backgroundColor: '#2A5450'},
   dotActive: {backgroundColor: '#FAEAB1', width: 24},
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   contentInner: {paddingHorizontal: 24, paddingBottom: 24},
   stepCenter: {paddingTop: 40, alignItems: 'center'},
   bigIcon: {fontSize: 64, marginBottom: 20},
-  stepTitle: {color: '#FAEAB1', fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 12},
+  stepTitle: {color: '#FAEAB1', fontSize: 24, fontFamily: 'Nunito_700Bold', textAlign: 'center', marginBottom: 12},
   stepBody: {color: '#D5E0DC', fontSize: 15, lineHeight: 22, textAlign: 'center', marginBottom: 16},
   navRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12, paddingHorizontal: 20, borderRadius: 12,
     backgroundColor: 'rgba(250,248,241,0.06)', borderWidth: 1, borderColor: 'rgba(250,248,241,0.1)',
   },
-  backText: {color: '#B0CBC5', fontSize: 15, fontWeight: '600'},
+  backText: {color: '#B0CBC5', fontSize: 15, fontFamily: 'Nunito_600SemiBold'},
   nextButton: {
     backgroundColor: '#FAEAB1', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 28,
     flexDirection: 'row', alignItems: 'center', gap: 8,
     shadowColor: '#FAEAB1', shadowOffset: {width: 0, height: 3}, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
   },
   startButton: {paddingHorizontal: 32},
-  nextText: {color: '#334443', fontSize: 16, fontWeight: '700'},
-  nextArrow: {color: '#334443', fontSize: 14, fontWeight: '700'},
+  nextText: {color: '#334443', fontSize: 16, fontFamily: 'Nunito_700Bold'},
+  nextArrow: {color: '#334443', fontSize: 14, fontFamily: 'Nunito_700Bold'},
 });
