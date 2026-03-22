@@ -1,7 +1,7 @@
 import React, {useEffect, useCallback, useState, useRef} from 'react';
 import {StyleSheet, View, Text, TouchableOpacity, Modal, Animated} from 'react-native';
 import {useGameStore} from '../../store/useGameStore';
-import {Tile} from '../../types';
+import {Tile, ClaimOption} from '../../types';
 import {useLanguage} from '../../i18n/useLanguage';
 import {useSettings} from '../../store/useSettings';
 import {getSeatLabel} from '../../constants/mahjong/game';
@@ -9,7 +9,10 @@ import {GameHeader} from '../../components/mahjong/GameHeader';
 import {PlayerHand} from '../../components/mahjong/PlayerHand';
 import {BotHand} from '../../components/mahjong/BotHand';
 import {DiscardPile} from '../../components/mahjong/DiscardPile';
+import {ClaimPanel} from '../../components/mahjong/ClaimPanel';
 import {ms, modalWidth} from '../../utils/scaling';
+import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
+import {scoreTileUsefulness} from '../../engine/mahjong/botAI';
 
 interface MahjongGameScreenProps {
   onExit: () => void;
@@ -24,9 +27,13 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
     turnPhase,
     winner,
     lastDiscardedTile,
+    playerClaimOptions,
+    waitingForPlayerClaim,
     drawTile,
     discardTile,
     processBotActions,
+    playerClaim,
+    playerSkipClaim,
   } = useGameStore();
 
   const {t} = useLanguage();
@@ -58,18 +65,61 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
       }, 300);
       return () => {
         clearTimeout(timeout);
-        // Only reset the guard if a timeout was pending (not yet fired).
-        // This prevents stale isBotPlaying=true after mid-turn state changes.
         isBotPlaying.current = false;
       };
     }
   }, [currentTurn, turnPhase, winner]);
 
+  // Safety: unstick bots if they freeze for more than 5 seconds
+  useEffect(() => {
+    if (currentTurn !== 'player' && !winner && turnPhase !== 'gameOver') {
+      const safety = setTimeout(() => {
+        isBotPlaying.current = false;
+        const s = useGameStore.getState();
+        if (s.currentTurn !== 'player' && !s.winner && s.turnPhase !== 'gameOver') {
+          if (s.turnPhase === 'claiming') {
+            s.skipClaim();
+          } else if (s.turnPhase === 'drawing') {
+            s.drawTile();
+          }
+        }
+      }, 5000);
+      return () => clearTimeout(safety);
+    }
+  }, [currentTurn, turnPhase, winner]);
+
+  // Preload interstitial + rewarded
+  useEffect(() => { loadRewarded(); }, []);
+
+  // Hint state
+  const [hintTileId, setHintTileId] = useState<string | null>(null);
+  const handleHint = useCallback(() => {
+    if (!isRewardedReady()) return;
+    showRewarded(() => {
+      const state = useGameStore.getState();
+      const hand = state.players.player.hand;
+      if (hand.length === 0) return;
+      let worst = hand[0];
+      let worstScore = Infinity;
+      for (const tile of hand) {
+        const score = scoreTileUsefulness(tile, hand);
+        if (score < worstScore) {
+          worstScore = score;
+          worst = tile;
+        }
+      }
+      setHintTileId(worst.id);
+      setTimeout(() => setHintTileId(null), 5000);
+    });
+  }, []);
+
   // Show game over modal
   const [gameOverVisible, setGameOverVisible] = useState(false);
   useEffect(() => {
     if (turnPhase === 'gameOver') {
-      const timer = setTimeout(() => setGameOverVisible(true), 500);
+      const timer = setTimeout(() => {
+        setGameOverVisible(true);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [turnPhase]);
@@ -190,7 +240,18 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
         isCurrentTurn={isPlayerTurn}
         canDiscard={canDiscard}
         canDraw={canDraw}
+        hintTileId={hintTileId}
       />
+
+      {/* Hint button */}
+      {canDiscard && !winner && (
+        <TouchableOpacity
+          style={[styles.hintBtn, !isRewardedReady() && styles.hintBtnDisabled]}
+          onPress={handleHint}
+          activeOpacity={0.7}>
+          <Text style={styles.hintBtnText}>{t.watchAdHint}</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Pause Modal */}
       <Modal visible={pauseVisible} transparent animationType="fade">
@@ -217,6 +278,17 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
           </View>
         </View>
       </Modal>
+
+      {/* Claim Panel */}
+      {waitingForPlayerClaim && playerClaimOptions.length > 0 && lastDiscardedTile && (
+        <ClaimPanel
+          options={playerClaimOptions}
+          discardedTile={lastDiscardedTile}
+          playerHand={playerState.hand}
+          onClaim={(option: ClaimOption) => playerClaim(option)}
+          onSkip={playerSkipClaim}
+        />
+      )}
 
       {/* Game Over Modal */}
       <Modal visible={gameOverVisible} transparent animationType="fade">
@@ -276,7 +348,8 @@ const styles = StyleSheet.create({
   middleRow: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
+    overflow: 'hidden',
   },
   sideBot: {
     width: ms(80),
@@ -377,5 +450,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Nunito_600SemiBold',
     color: '#EF5350',
+  },
+  hintBtn: {
+    position: 'absolute',
+    bottom: ms(90),
+    right: 12,
+    backgroundColor: 'rgba(250,234,177,0.15)',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(250,234,177,0.4)',
+  },
+  hintBtnDisabled: {
+    opacity: 0.4,
+  },
+  hintBtnText: {
+    fontSize: 11,
+    fontFamily: 'Nunito_600SemiBold',
+    color: '#FAEAB1',
   },
 });

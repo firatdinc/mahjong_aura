@@ -1,94 +1,81 @@
-import {GridSlot, OkeyTile} from '../../types/trashOkey';
-import {GRID_ROWS, GRID_COLS} from '../../constants/trashOkey/grid';
+import {GridSlot, TrashTile} from '../../types/trashOkey';
 
 /**
- * Find available (face-down) slots for a given number.
+ * Find the slot for a given number (1-10). Returns null if already revealed.
  */
-export function getAvailableSlots(grid: GridSlot[][], number: number): GridSlot[] {
-  const slots: GridSlot[] = [];
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-      const slot = grid[row][col];
-      if (slot.targetNumber === number && slot.isFaceDown) {
-        slots.push(slot);
-      }
-    }
-  }
-  return slots;
+export function getSlotForNumber(slots: GridSlot[], number: number): GridSlot | null {
+  const slot = slots.find(s => s.position === number);
+  if (!slot || slot.isRevealed) return null;
+  return slot;
 }
 
 /**
- * Check if a tile can be placed anywhere in the grid.
+ * Check if a tile can be placed anywhere.
  */
-export function canPlaceTile(grid: GridSlot[][], tile: OkeyTile): boolean {
-  if (tile.isFalseJoker) {
-    // Joker can go in any face-down slot
-    return grid.some(row => row.some(slot => slot.isFaceDown));
+export function canPlaceTile(slots: GridSlot[], tile: TrashTile): boolean {
+  if (tile.isJoker) {
+    return slots.some(s => !s.isRevealed);
   }
-  return getAvailableSlots(grid, tile.number).length > 0;
+  return getSlotForNumber(slots, tile.number) !== null;
 }
 
 /**
- * Place a tile in a specific slot. Returns the picked-up tile (or null if slot was empty).
+ * Place a tile in its matching slot. Returns the displaced tile.
  */
-export function placeInSlot(
-  grid: GridSlot[][],
-  row: number,
-  col: number,
-  tile: OkeyTile,
-): {newGrid: GridSlot[][]; pickedUpTile: OkeyTile | null} {
-  const newGrid = grid.map(r => r.map(s => ({...s})));
-  const slot = newGrid[row][col];
-  const pickedUpTile = slot.tile;
+export function placeTileInSlot(
+  slots: GridSlot[],
+  position: number,
+  tile: TrashTile,
+): {newSlots: GridSlot[]; displacedTile: TrashTile | null} {
+  const newSlots = slots.map(s => ({...s, tile: s.tile ? {...s.tile} : null}));
+  const slot = newSlots.find(s => s.position === position);
+  if (!slot) return {newSlots, displacedTile: null};
 
-  // Place the new tile face-up
-  const placedTile: OkeyTile = {...tile, isFaceUp: true};
-  slot.tile = placedTile;
-  slot.isFaceDown = false;
+  const displacedTile = slot.tile;
+  slot.tile = tile;
   slot.isRevealed = true;
 
-  return {
-    newGrid,
-    pickedUpTile: pickedUpTile ? {...pickedUpTile, isFaceUp: true} : null,
-  };
+  return {newSlots, displacedTile};
 }
 
 /**
- * Check if all 48 tiles are revealed (win condition).
+ * Check if all slots are revealed (win condition).
  */
-export function isGridComplete(grid: GridSlot[][]): boolean {
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-      if (!grid[row][col].isRevealed) return false;
-    }
-  }
-  return true;
+export function isGridComplete(slots: GridSlot[]): boolean {
+  return slots.every(s => s.isRevealed);
 }
 
 /**
- * Get all face-down slots (for joker placement).
+ * Count revealed slots.
  */
-export function getAllFaceDownSlots(grid: GridSlot[][]): GridSlot[] {
-  const slots: GridSlot[] = [];
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-      if (grid[row][col].isFaceDown) {
-        slots.push(grid[row][col]);
-      }
-    }
-  }
-  return slots;
+export function countRevealed(slots: GridSlot[]): number {
+  return slots.filter(s => s.isRevealed).length;
 }
 
 /**
- * Count revealed tiles in a grid.
+ * Get all unrevealed slots (for joker placement).
  */
-export function countRevealed(grid: GridSlot[][]): number {
-  let count = 0;
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-      if (grid[row][col].isRevealed) count++;
-    }
-  }
-  return count;
+export function getUnrevealedSlots(slots: GridSlot[]): GridSlot[] {
+  return slots.filter(s => !s.isRevealed);
+}
+
+// Keep old exports for compatibility
+export function getAvailableSlots(slots: GridSlot[], number: number): GridSlot[] {
+  const slot = getSlotForNumber(slots, number);
+  return slot ? [slot] : [];
+}
+
+export function getAllFaceDownSlots(slots: GridSlot[]): GridSlot[] {
+  return getUnrevealedSlots(slots);
+}
+
+export function placeInSlot(
+  slots: GridSlot[],
+  _row: number,
+  col: number,
+  tile: TrashTile,
+): {newGrid: GridSlot[]; pickedUpTile: TrashTile | null} {
+  const position = col + 1;
+  const {newSlots, displacedTile} = placeTileInSlot(slots, position, tile);
+  return {newGrid: newSlots, pickedUpTile: displacedTile};
 }

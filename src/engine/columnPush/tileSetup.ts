@@ -65,6 +65,7 @@ export function dealColumnPush(difficulty: CPDifficulty): CPGameState {
     diceResult: null,
     chainLength: 0,
     longestChain: 0,
+    playerLongestChain: 0,
     turnCount: 0,
     playerTheme: null,
     centerTiles: [],

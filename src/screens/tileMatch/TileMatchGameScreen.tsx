@@ -1,5 +1,5 @@
-import React, {useEffect, useRef, useCallback} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Modal, SafeAreaView} from 'react-native';
+import React, {useEffect, useRef, useCallback, useState} from 'react';
+import {StyleSheet, View, Text, TouchableOpacity, Modal, SafeAreaView, ScrollView} from 'react-native';
 import {useTileMatchStore} from '../../store/useTileMatchStore';
 import {useLanguage} from '../../i18n/useLanguage';
 import {TileBoard} from '../../components/tileMatch/TileBoard';
@@ -8,6 +8,8 @@ import {PowerUpBar} from '../../components/tileMatch/PowerUpBar';
 import {LevelHeader} from '../../components/tileMatch/LevelHeader';
 import {calculateStars} from '../../engine/tileMatch/matchLogic';
 import {ms, modalWidth} from '../../utils/scaling';
+import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
+import {computeFreeTiles} from '../../engine/tileMatch/matchLogic';
 
 interface TileMatchGameScreenProps {
   onExit: () => void;
@@ -35,6 +37,28 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
   const {t} = useLanguage();
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Preload interstitial + rewarded + show on game end
+  useEffect(() => { loadRewarded(); }, []);
+
+  // Hint state
+  const [hintTileId, setHintTileId] = useState<string | null>(null);
+  const handleHint = useCallback(() => {
+    if (!isRewardedReady()) return;
+    showRewarded(() => {
+      const state = useTileMatchStore.getState();
+      const freeTiles = computeFreeTiles(state.board);
+      const freeList = state.board.filter(t => freeTiles.has(t.id) && !t.isInBar && !t.isMatched);
+      // Find a free tile that has at least one other free tile of same type
+      for (const tile of freeList) {
+        const match = freeList.find(other => other.id !== tile.id && other.type === tile.type);
+        if (match) {
+          setHintTileId(tile.id);
+          setTimeout(() => setHintTileId(null), 5000);
+          return;
+        }
+      }
+    });
+  }, []);
   // Timer
   useEffect(() => {
     if (status === 'playing') {
@@ -68,14 +92,25 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
         onPause={handlePause}
       />
 
-      <View style={styles.boardContainer}>
-        <TileBoard board={board} onTapTile={tapTile} />
-      </View>
+      <ScrollView
+        style={styles.boardScroll}
+        contentContainerStyle={styles.boardContainer}
+        showsVerticalScrollIndicator={false}>
+        <TileBoard board={board} onTapTile={tapTile} hintTileId={hintTileId} />
+      </ScrollView>
 
       <View style={styles.bottomSection}>
         <MatchBar bar={bar} />
         <View style={styles.powerUpSection}>
           <PowerUpBar powerUps={powerUps} onUsePowerUp={usePowerUp} />
+          {status === 'playing' && (
+            <TouchableOpacity
+              style={[styles.hintBtn, !isRewardedReady() && styles.hintBtnDisabled]}
+              onPress={handleHint}
+              activeOpacity={0.7}>
+              <Text style={styles.hintBtnText}>{t.watchAdHint}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -145,8 +180,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#334443',
   },
-  boardContainer: {
+  boardScroll: {
     flex: 1,
+  },
+  boardContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
@@ -220,4 +258,15 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
     color: '#8AABA5',
   },
+  hintBtn: {
+    marginTop: 8,
+    backgroundColor: 'rgba(250,234,177,0.15)',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(250,234,177,0.4)',
+  },
+  hintBtnDisabled: {opacity: 0.4},
+  hintBtnText: {fontSize: 11, fontFamily: 'Nunito_600SemiBold', color: '#FAEAB1'},
 });

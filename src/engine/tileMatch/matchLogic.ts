@@ -107,9 +107,11 @@ export function shuffleBoard(board: TileMatchTile[]): TileMatchTile[] {
 export function calculateStars(
   timeRemaining: number,
   totalTime: number,
-  powerUpsUsed: boolean,
+  powerUpsUsed: number,
 ): 1 | 2 | 3 {
-  if (!powerUpsUsed) return 3;
-  if (timeRemaining > totalTime * 0.5) return 2;
+  const timeRatio = timeRemaining / totalTime;
+
+  if (powerUpsUsed === 0 && timeRatio > 0.5) return 3;
+  if (powerUpsUsed <= 1 && timeRatio > 0.25) return 2;
   return 1;
 }

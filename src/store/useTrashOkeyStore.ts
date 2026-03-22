@@ -1,33 +1,36 @@
 import {create} from 'zustand';
 import {
-  TrashOkeyGameState,
+  TrashGameState,
   TrashOkeyStats,
-  TrashOkeyDifficulty,
-  PlayerSide,
-  OkeyTile,
+  TrashDifficulty,
+  TrashTile,
 } from '../types/trashOkey';
 import {dealTrashOkey} from '../engine/trashOkey/tileSetup';
 import {
   canPlaceTile,
-  placeInSlot,
+  placeTileInSlot,
   isGridComplete,
   countRevealed,
-  getAvailableSlots,
-  getAllFaceDownSlots,
 } from '../engine/trashOkey/gridLogic';
-import {chooseBotSlot, getBotDelay} from '../engine/trashOkey/botAI';
+import {chooseBotSlot, botShouldSkip, getBotDelay} from '../engine/trashOkey/botAI';
 import {saveTrashOkeyStats, loadTrashOkeyStats} from '../utils/storage';
 
-interface TrashOkeyStore extends TrashOkeyGameState {
+interface TrashOkeyStore extends TrashGameState {
   stats: TrashOkeyStats;
 
-  startGame: (difficulty: TrashOkeyDifficulty) => void;
-  pickUpCenterTile: () => void;
-  placeTileInSlot: (row: number, col: number) => void;
-  endChain: () => void;
+  startGame: (difficulty: TrashDifficulty) => void;
+  drawFromPile: () => void;
+  drawFromDiscard: () => void;
+  placeDrawnTile: (position: number) => void;
+  discardDrawnTile: () => void;
   playBotTurn: () => Promise<void>;
   resetGame: () => void;
   loadStats: () => void;
+
+  // Keep old API names for router compatibility
+  pickUpCenterTile: () => void;
+  placeTileInSlot: (row: number, col: number) => void;
+  endChain: () => void;
 }
 
 const DEFAULT_STATS: TrashOkeyStats = {
@@ -54,7 +57,7 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
     if (stats) set({stats});
   },
 
-  startGame: (difficulty: TrashOkeyDifficulty) => {
+  startGame: (difficulty: TrashDifficulty) => {
     const gameState = dealTrashOkey(difficulty);
     const {stats} = get();
     const newStats = {...stats};
@@ -64,45 +67,69 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
     saveTrashOkeyStats(newStats);
   },
 
-  pickUpCenterTile: () => {
+  drawFromPile: () => {
     const state = get();
     if (state.status !== 'playing' || state.currentTurn !== 'player') return;
-    if (!state.centerTile || state.chainActive) return;
+    if (state.drawnTile || state.chainActive) return;
+    if (state.drawPile.length === 0) return;
+
+    const newPile = [...state.drawPile];
+    const drawn = newPile.pop()!;
 
     set({
+      drawPile: newPile,
+      drawnTile: drawn,
       chainActive: true,
       chainLength: 0,
-      currentChainTile: state.centerTile,
-      centerTile: null,
     });
   },
 
-  placeTileInSlot: (row: number, col: number) => {
+  drawFromDiscard: () => {
     const state = get();
-    if (state.status !== 'playing' || !state.chainActive || !state.currentChainTile) return;
+    if (state.status !== 'playing' || state.currentTurn !== 'player') return;
+    if (state.drawnTile || state.chainActive) return;
+    if (state.discardPile.length === 0) return;
+
+    const topDiscard = state.discardPile[state.discardPile.length - 1];
+    // Only pick from discard if it can be placed
+    if (!canPlaceTile(state.players.player.slots, topDiscard)) return;
+
+    const newDiscard = state.discardPile.slice(0, -1);
+
+    set({
+      discardPile: newDiscard,
+      drawnTile: topDiscard,
+      chainActive: true,
+      chainLength: 0,
+    });
+  },
+
+  placeDrawnTile: (position: number) => {
+    const state = get();
+    if (state.status !== 'playing' || !state.chainActive || !state.drawnTile) return;
     if (state.currentTurn !== 'player') return;
 
-    const playerState = state.players.player;
-    const slot = playerState.grid[row][col];
+    const playerSlots = state.players.player.slots;
+    const tile = state.drawnTile;
 
-    // Validate: tile can go in this slot
-    if (!slot.isFaceDown) return;
-    const tile = state.currentChainTile;
-    if (!tile.isFalseJoker && slot.targetNumber !== tile.number) return;
+    // Validate
+    const slot = playerSlots.find(s => s.position === position);
+    if (!slot || slot.isRevealed) return;
+    if (!tile.isJoker && slot.position !== tile.number) return;
 
-    const {newGrid, pickedUpTile} = placeInSlot(playerState.grid, row, col, tile);
+    const {newSlots, displacedTile} = placeTileInSlot(playerSlots, position, tile);
     const newChainLength = state.chainLength + 1;
     const newLongestChain = Math.max(state.longestChain, newChainLength);
-    const revealed = countRevealed(newGrid);
+    const revealed = countRevealed(newSlots);
 
     const newPlayerState = {
-      ...playerState,
-      grid: newGrid,
+      ...state.players.player,
+      slots: newSlots,
       revealedCount: revealed,
     };
 
     // Check win
-    if (isGridComplete(newGrid)) {
+    if (isGridComplete(newSlots)) {
       const {stats} = get();
       const newStats = {
         ...stats,
@@ -122,7 +149,7 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
         chainActive: false,
         chainLength: newChainLength,
         longestChain: newLongestChain,
-        currentChainTile: null,
+        drawnTile: null,
         status: 'won',
         stats: newStats,
       });
@@ -130,53 +157,42 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
       return;
     }
 
-    // If picked up tile exists, continue chain or end
-    if (pickedUpTile) {
-      // Check if the picked up tile can be placed
-      if (canPlaceTile(newGrid, pickedUpTile)) {
-        set({
-          players: {...state.players, player: newPlayerState},
-          chainLength: newChainLength,
-          longestChain: newLongestChain,
-          currentChainTile: pickedUpTile,
-        });
-      } else {
-        // Can't place — tile goes to center, turn ends
-        set({
-          players: {...state.players, player: newPlayerState},
-          centerTile: pickedUpTile,
-          chainActive: false,
-          chainLength: newChainLength,
-          longestChain: newLongestChain,
-          currentChainTile: null,
-          currentTurn: 'bot',
-          turnCount: state.turnCount + 1,
-        });
-      }
-    } else {
-      // No tile to pick up (shouldn't happen in normal play)
+    // Continue chain with displaced tile or end turn
+    if (displacedTile && canPlaceTile(newSlots, displacedTile)) {
       set({
         players: {...state.players, player: newPlayerState},
+        chainLength: newChainLength,
+        longestChain: newLongestChain,
+        drawnTile: displacedTile,
+      });
+    } else {
+      // Can't continue — discard displaced tile, end turn
+      const newDiscard = [...state.discardPile];
+      if (displacedTile) newDiscard.push(displacedTile);
+
+      set({
+        players: {...state.players, player: newPlayerState},
+        discardPile: newDiscard,
         chainActive: false,
         chainLength: newChainLength,
         longestChain: newLongestChain,
-        currentChainTile: null,
+        drawnTile: null,
         currentTurn: 'bot',
         turnCount: state.turnCount + 1,
       });
     }
   },
 
-  endChain: () => {
+  discardDrawnTile: () => {
     const state = get();
-    if (state.status !== 'playing') return;
-    if (!state.chainActive || !state.currentChainTile) return;
-    if (state.currentTurn !== 'player') return; // Only player can manually end chain
+    if (state.status !== 'playing' || !state.drawnTile) return;
+    if (state.currentTurn !== 'player') return;
 
+    const newDiscard = [...state.discardPile, state.drawnTile];
     set({
-      centerTile: state.currentChainTile,
+      discardPile: newDiscard,
+      drawnTile: null,
       chainActive: false,
-      currentChainTile: null,
       currentTurn: 'bot',
       turnCount: state.turnCount + 1,
     });
@@ -185,61 +201,92 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
   playBotTurn: async () => {
     const state = get();
     if (state.status !== 'playing' || state.currentTurn !== 'bot') return;
-    if (!state.centerTile) return;
+    if (state.drawPile.length === 0 && state.discardPile.length === 0) {
+      // No tiles left — turn passes
+      set({currentTurn: 'player', turnCount: state.turnCount + 1});
+      return;
+    }
 
     const delay = getBotDelay(state.difficulty);
-
-    // Bot picks up center tile
-    let currentTile: OkeyTile = state.centerTile;
-    let botState = state.players.bot;
-    let chainLength = 0;
-    let longestChain = state.longestChain;
-
-    set({
-      centerTile: null,
-      chainActive: true,
-      currentChainTile: currentTile,
-    });
-
     await new Promise(r => setTimeout(r, delay));
 
-    // Bot chain loop
-    while (true) {
-      const freshState = get();
+    let freshState = get();
+    if (freshState.status !== 'playing') return;
+
+    // Bot tries discard first (medium/hard), then draw pile
+    let currentTile: TrashTile | null = null;
+    let newDrawPile = [...freshState.drawPile];
+    let newDiscardPile = [...freshState.discardPile];
+
+    if (freshState.difficulty !== 'easy' && newDiscardPile.length > 0) {
+      const topDiscard = newDiscardPile[newDiscardPile.length - 1];
+      if (canPlaceTile(freshState.players.bot.slots, topDiscard)) {
+        currentTile = newDiscardPile.pop()!;
+      }
+    }
+
+    if (!currentTile) {
+      if (newDrawPile.length === 0) {
+        set({currentTurn: 'player', turnCount: freshState.turnCount + 1});
+        return;
+      }
+      currentTile = newDrawPile.pop()!;
+    }
+
+    set({drawPile: newDrawPile, discardPile: newDiscardPile, chainActive: true, drawnTile: currentTile});
+
+    let botSlots = freshState.players.bot.slots;
+    let chainLength = 0;
+    let longestChain = freshState.longestChain;
+
+    // Chain loop
+    while (currentTile) {
+      await new Promise(r => setTimeout(r, delay));
+
+      freshState = get();
       if (freshState.status !== 'playing') return;
+      botSlots = freshState.players.bot.slots;
 
-      botState = freshState.players.bot;
-
-      const slotChoice = chooseBotSlot(botState.grid, currentTile, freshState.difficulty);
-
-      if (!slotChoice) {
-        // Can't place — put in center, end turn
+      // Easy mode: sometimes skip
+      if (botShouldSkip(freshState.difficulty)) {
+        newDiscardPile = [...freshState.discardPile, currentTile];
         set({
-          centerTile: currentTile,
+          discardPile: newDiscardPile,
           chainActive: false,
           chainLength,
           longestChain: Math.max(longestChain, chainLength),
-          currentChainTile: null,
+          drawnTile: null,
           currentTurn: 'player',
           turnCount: freshState.turnCount + 1,
         });
         return;
       }
 
-      const {newGrid, pickedUpTile} = placeInSlot(
-        botState.grid,
-        slotChoice.row,
-        slotChoice.col,
-        currentTile,
-      );
+      const position = chooseBotSlot(botSlots, currentTile, freshState.difficulty);
 
+      if (!position) {
+        // Can't place — discard and end turn
+        newDiscardPile = [...freshState.discardPile, currentTile];
+        set({
+          discardPile: newDiscardPile,
+          chainActive: false,
+          chainLength,
+          longestChain: Math.max(longestChain, chainLength),
+          drawnTile: null,
+          currentTurn: 'player',
+          turnCount: freshState.turnCount + 1,
+        });
+        return;
+      }
+
+      const {newSlots, displacedTile} = placeTileInSlot(botSlots, position, currentTile);
       chainLength++;
       longestChain = Math.max(longestChain, chainLength);
-      const revealed = countRevealed(newGrid);
-      const newBotState = {...botState, grid: newGrid, revealedCount: revealed};
+      const revealed = countRevealed(newSlots);
+      const newBotState = {...freshState.players.bot, slots: newSlots, revealedCount: revealed};
 
       // Check bot win
-      if (isGridComplete(newGrid)) {
+      if (isGridComplete(newSlots)) {
         const {stats} = get();
         const newStats = {
           ...stats,
@@ -252,7 +299,7 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
           chainActive: false,
           chainLength,
           longestChain,
-          currentChainTile: null,
+          drawnTile: null,
           status: 'lost',
           stats: newStats,
         });
@@ -260,15 +307,16 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
         return;
       }
 
-      if (!pickedUpTile || !canPlaceTile(newGrid, pickedUpTile)) {
-        // Chain ends — put picked-up tile in center (or null if none)
+      if (!displacedTile || !canPlaceTile(newSlots, displacedTile)) {
+        newDiscardPile = [...freshState.discardPile];
+        if (displacedTile) newDiscardPile.push(displacedTile);
         set({
           players: {...freshState.players, bot: newBotState},
-          centerTile: pickedUpTile ?? null,
+          discardPile: newDiscardPile,
           chainActive: false,
           chainLength,
           longestChain,
-          currentChainTile: null,
+          drawnTile: null,
           currentTurn: 'player',
           turnCount: freshState.turnCount + 1,
         });
@@ -276,15 +324,13 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
       }
 
       // Continue chain
-      currentTile = pickedUpTile;
+      currentTile = displacedTile;
       set({
         players: {...freshState.players, bot: newBotState},
         chainLength,
         longestChain,
-        currentChainTile: currentTile,
+        drawnTile: currentTile,
       });
-
-      await new Promise(r => setTimeout(r, delay));
     }
   },
 
@@ -292,4 +338,9 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
     const {difficulty} = get();
     set(dealTrashOkey(difficulty));
   },
+
+  // Legacy API compatibility
+  pickUpCenterTile: () => get().drawFromPile(),
+  placeTileInSlot: (_row: number, col: number) => get().placeDrawnTile(col + 1),
+  endChain: () => get().discardDrawnTile(),
 }));

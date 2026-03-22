@@ -1,10 +1,11 @@
-import React, {useState, useCallback, useRef} from 'react';
+import React, {useState, useCallback, useRef, useEffect} from 'react';
 import {Animated, Easing} from 'react-native';
 import {useTrashOkeyStore} from '../../store/useTrashOkeyStore';
 import {TrashOkeyDifficulty} from '../../types/trashOkey';
 import {TrashOkeyStartScreen} from './TrashOkeyStartScreen';
 import {TrashOkeyGameScreen} from './TrashOkeyGameScreen';
 import {TrashOkeyTutorialScreen} from './TrashOkeyTutorialScreen';
+import {loadInterstitial, showInterstitialIfReady} from '../../utils/adHelpers';
 
 type TrashOkeySub = 'start' | 'game' | 'tutorial';
 
@@ -15,6 +16,8 @@ interface TrashOkeyRouterProps {
 export const TrashOkeyRouter: React.FC<TrashOkeyRouterProps> = ({onBack}) => {
   const [sub, setSub] = useState<TrashOkeySub>('start');
   const {startGame} = useTrashOkeyStore();
+
+  useEffect(() => { loadInterstitial(); }, []);
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -65,6 +68,7 @@ export const TrashOkeyRouter: React.FC<TrashOkeyRouterProps> = ({onBack}) => {
   );
 
   const handleExit = useCallback(() => {
+    showInterstitialIfReady();
     animateTo('start');
   }, [animateTo]);
 

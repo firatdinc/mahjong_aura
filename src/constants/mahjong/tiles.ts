@@ -15,8 +15,8 @@ export const DRAGON_VALUES: DragonColor[] = ['red', 'green', 'white'];
 /** How many copies of each tile exist */
 export const COPIES_PER_TILE = 4;
 
-/** Total tiles in a standard Mahjong set */
-export const TOTAL_TILES = 136;
+/** Total tiles in our simplified set (no honor tiles) */
+export const TOTAL_TILES = 108;
 
 /** Tiles dealt to each player at the start */
 export const TILES_PER_HAND = 13;

@@ -1,10 +1,11 @@
-import React, {useState, useCallback, useRef} from 'react';
+import React, {useState, useCallback, useRef, useEffect} from 'react';
 import {Animated, Easing} from 'react-native';
 import {useColumnPushStore} from '../../store/useColumnPushStore';
 import {CPDifficulty} from '../../types/columnPush';
 import {ColumnPushStartScreen} from './ColumnPushStartScreen';
 import {ColumnPushGameScreen} from './ColumnPushGameScreen';
 import {ColumnPushTutorialScreen} from './ColumnPushTutorialScreen';
+import {loadInterstitial, showInterstitialIfReady} from '../../utils/adHelpers';
 
 type ColumnPushSub = 'start' | 'game' | 'tutorial';
 
@@ -15,6 +16,8 @@ interface ColumnPushRouterProps {
 export const ColumnPushRouter: React.FC<ColumnPushRouterProps> = ({onBack}) => {
   const [sub, setSub] = useState<ColumnPushSub>('start');
   const {startGame} = useColumnPushStore();
+
+  useEffect(() => { loadInterstitial(); }, []);
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -65,6 +68,7 @@ export const ColumnPushRouter: React.FC<ColumnPushRouterProps> = ({onBack}) => {
   );
 
   const handleExit = useCallback(() => {
+    showInterstitialIfReady();
     animateTo('start');
   }, [animateTo]);
 

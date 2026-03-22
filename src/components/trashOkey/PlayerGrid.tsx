@@ -1,126 +1,81 @@
 import React, {useRef, useEffect} from 'react';
 import {StyleSheet, View, Text, Image, TouchableOpacity, Animated, Dimensions} from 'react-native';
-import {GridSlot, OkeyTile} from '../../types/trashOkey';
+import {GridSlot, TrashTile} from '../../types/trashOkey';
 import {GRID_ROWS, GRID_COLS} from '../../constants/trashOkey/grid';
-import {OKEY_TILE_IMAGES} from '../../constants/gameAssets';
-import {useSettings} from '../../store/useSettings';
+import {TRASH_TILE_IMAGES} from '../../constants/gameAssets';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 interface PlayerGridProps {
-  grid: GridSlot[][];
-  currentChainTile: OkeyTile | null;
+  slots: GridSlot[];
+  drawnTile: TrashTile | null;
   chainActive: boolean;
-  onSlotPress: (row: number, col: number) => void;
+  onSlotPress: (position: number) => void;
+  hintSlot?: number | null;
 }
 
-const OKEY_COLOR_MAP: Record<string, string> = {
-  red: '#E74C3C',
-  blue: '#3498DB',
-  yellow: '#F1C40F',
-  black: '#2C3E50',
-};
-
-function canPlaceHere(slot: GridSlot, tile: OkeyTile | null): boolean {
-  if (!tile || !slot.isFaceDown) return false;
-  if (tile.isFalseJoker) return true;
-  return slot.targetNumber === tile.number;
+function canPlaceHere(slot: GridSlot, tile: TrashTile | null): boolean {
+  if (!tile || slot.isRevealed) return false;
+  if (tile.isJoker) return true;
+  return slot.position === tile.number;
 }
 
 export const PlayerGrid: React.FC<PlayerGridProps> = ({
-  grid,
-  currentChainTile,
+  slots,
+  drawnTile,
   chainActive,
   onSlotPress,
+  hintSlot,
 }) => {
-  const {tileScale} = useSettings();
-  const gap = 3;
-  const maxSlotW = Math.floor((SCREEN_WIDTH - 32 - (GRID_COLS - 1) * gap) / GRID_COLS);
-  const slotW = Math.min(Math.round(44 * tileScale), maxSlotW);
-  const slotH = Math.round(slotW * (40 / 44));
-  const imgSize = Math.round(slotW * (28 / 44));
-  const targetImgSize = Math.round(slotW * (22 / 44));
-  // Track which slots just got revealed for animation
-  const prevRevealedRef = useRef<boolean[][]>([]);
-  const scaleAnims = useRef<Animated.Value[][]>(
-    Array.from({length: GRID_ROWS}, () =>
-      Array.from({length: GRID_COLS}, () => new Animated.Value(1)),
-    ),
-  ).current;
-  const opacityAnims = useRef<Animated.Value[][]>(
-    Array.from({length: GRID_ROWS}, () =>
-      Array.from({length: GRID_COLS}, () => new Animated.Value(1)),
-    ),
+  const gap = 8;
+  const padH = 20;
+  const slotW = Math.floor((SCREEN_WIDTH - padH * 2 - (GRID_COLS - 1) * gap) / GRID_COLS);
+  const slotH = Math.round(slotW * 1.35);
+  const iconSize = Math.round(slotW * 0.52);
+
+  const prevRevealedRef = useRef<boolean[]>(Array(10).fill(false));
+  const scaleAnims = useRef<Animated.Value[]>(
+    Array.from({length: 10}, () => new Animated.Value(1)),
   ).current;
 
-  // Pulse animation for valid slots
-  const pulseAnims = useRef<Animated.Value[][]>(
-    Array.from({length: GRID_ROWS}, () =>
-      Array.from({length: GRID_COLS}, () => new Animated.Value(1)),
-    ),
+  const pulseAnims = useRef<Animated.Value[]>(
+    Array.from({length: 10}, () => new Animated.Value(1)),
   ).current;
   const pulseAnimRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
     const prev = prevRevealedRef.current;
-    for (let r = 0; r < GRID_ROWS; r++) {
-      for (let c = 0; c < GRID_COLS; c++) {
-        const wasRevealed = prev[r]?.[c] ?? false;
-        const isRevealed = grid[r][c].isRevealed;
-        if (isRevealed && !wasRevealed) {
-          // Newly revealed — pop-in animation
-          scaleAnims[r][c].setValue(0.3);
-          opacityAnims[r][c].setValue(0);
-          Animated.parallel([
-            Animated.spring(scaleAnims[r][c], {
-              toValue: 1,
-              friction: 5,
-              tension: 100,
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacityAnims[r][c], {
-              toValue: 1,
-              duration: 200,
-              useNativeDriver: true,
-            }),
-          ]).start();
-        }
+    for (let i = 0; i < 10; i++) {
+      if (slots[i].isRevealed && !prev[i]) {
+        scaleAnims[i].setValue(0.5);
+        Animated.spring(scaleAnims[i], {
+          toValue: 1, friction: 5, tension: 100, useNativeDriver: true,
+        }).start();
       }
     }
-    prevRevealedRef.current = grid.map(row => row.map(s => s.isRevealed));
-  }, [grid, scaleAnims, opacityAnims]);
+    prevRevealedRef.current = slots.map(s => s.isRevealed);
+  }, [slots, scaleAnims]);
 
-  // Pulse valid slots
   useEffect(() => {
     if (pulseAnimRef.current) {
       pulseAnimRef.current.stop();
       pulseAnimRef.current = null;
     }
 
-    if (chainActive && currentChainTile) {
+    if (chainActive && drawnTile) {
       const validAnims: Animated.CompositeAnimation[] = [];
-      for (let r = 0; r < GRID_ROWS; r++) {
-        for (let c = 0; c < GRID_COLS; c++) {
-          if (canPlaceHere(grid[r][c], currentChainTile)) {
-            validAnims.push(
-              Animated.loop(
-                Animated.sequence([
-                  Animated.timing(pulseAnims[r][c], {
-                    toValue: 1.08,
-                    duration: 600,
-                    useNativeDriver: true,
-                  }),
-                  Animated.timing(pulseAnims[r][c], {
-                    toValue: 1,
-                    duration: 600,
-                    useNativeDriver: true,
-                  }),
-                ]),
-              ),
-            );
-          } else {
-            pulseAnims[r][c].setValue(1);
-          }
+      for (let i = 0; i < 10; i++) {
+        if (canPlaceHere(slots[i], drawnTile)) {
+          validAnims.push(
+            Animated.loop(
+              Animated.sequence([
+                Animated.timing(pulseAnims[i], {toValue: 1.06, duration: 500, useNativeDriver: true}),
+                Animated.timing(pulseAnims[i], {toValue: 1, duration: 500, useNativeDriver: true}),
+              ]),
+            ),
+          );
+        } else {
+          pulseAnims[i].setValue(1);
         }
       }
       if (validAnims.length > 0) {
@@ -129,84 +84,97 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
         anim.start();
       }
     } else {
-      for (let r = 0; r < GRID_ROWS; r++) {
-        for (let c = 0; c < GRID_COLS; c++) {
-          pulseAnims[r][c].setValue(1);
-        }
-      }
+      for (let i = 0; i < 10; i++) pulseAnims[i].setValue(1);
     }
+    return () => { pulseAnimRef.current?.stop(); };
+  }, [chainActive, drawnTile, slots, pulseAnims]);
 
-    return () => {
-      if (pulseAnimRef.current) {
-        pulseAnimRef.current.stop();
-      }
-    };
-  }, [chainActive, currentChainTile, grid, pulseAnims]);
+  const renderSlot = (slot: GridSlot, index: number) => {
+    const isValid = chainActive && canPlaceHere(slot, drawnTile);
+    const tileImg = slot.tile ? TRASH_TILE_IMAGES[slot.tile.number] : undefined;
+
+    return (
+      <Animated.View
+        key={slot.position}
+        style={{
+          transform: [{scale: Animated.multiply(scaleAnims[index], pulseAnims[index])}],
+        }}>
+        <TouchableOpacity
+          style={[
+            styles.slot,
+            {width: slotW, height: slotH},
+            slot.isRevealed && styles.slotRevealed,
+            isValid && styles.slotValid,
+            hintSlot === slot.position && styles.slotHint,
+          ]}
+          onPress={() => onSlotPress(slot.position)}
+          disabled={!isValid}
+          activeOpacity={0.7}>
+          {slot.isRevealed && slot.tile ? (
+            <View style={styles.tileContent}>
+              {tileImg && (
+                <Image source={tileImg} style={{width: iconSize, height: iconSize}} resizeMode="contain" />
+              )}
+              <Text style={styles.revealedNumber}>
+                {slot.tile.isJoker ? 'J' : slot.tile.number}
+              </Text>
+            </View>
+          ) : (
+            <Text style={[styles.ghostNumber, isValid && styles.ghostNumberValid]}>
+              {slot.position}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      {Array.from({length: GRID_ROWS}, (_, row) => (
-        <View key={row} style={styles.row}>
-          {Array.from({length: GRID_COLS}, (_, col) => {
-            const slot = grid[row][col];
-            const isValid = chainActive && canPlaceHere(slot, currentChainTile);
-
-            return (
-              <Animated.View
-                key={col}
-                style={{
-                  transform: [
-                    {scale: Animated.multiply(scaleAnims[row][col], pulseAnims[row][col])},
-                  ],
-                  opacity: opacityAnims[row][col],
-                }}>
-                <TouchableOpacity
-                  style={[
-                    styles.slot,
-                    {width: slotW, height: slotH},
-                    slot.isRevealed && styles.slotRevealed,
-                    isValid && styles.slotValid,
-                  ]}
-                  onPress={() => onSlotPress(row, col)}
-                  disabled={!isValid}
-                  activeOpacity={0.7}>
-                  {slot.isRevealed && slot.tile ? (
-                    <View style={styles.tileContent}>
-                      {slot.tile.isFalseJoker ? (
-                        <Text style={[styles.tileNumber, {color: OKEY_COLOR_MAP[slot.tile.color] ?? '#334443'}]}>J</Text>
-                      ) : (
-                        <Image
-                          source={OKEY_TILE_IMAGES[slot.tile.number]}
-                          style={{width: imgSize, height: imgSize}}
-                          resizeMode="contain"
-                        />
-                      )}
-                      <View style={[styles.colorDot, {backgroundColor: OKEY_COLOR_MAP[slot.tile.color] ?? '#334443'}]} />
-                    </View>
-                  ) : null}
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          })}
-        </View>
-      ))}
+    <View style={[styles.container, {paddingHorizontal: padH}]}>
+      <View style={styles.rowLabels}>
+        <Text style={styles.rowLabel}>1 - 5</Text>
+      </View>
+      <View style={[styles.row, {gap}]}>
+        {slots.slice(0, GRID_COLS).map((slot, i) => renderSlot(slot, i))}
+      </View>
+      <View style={[styles.rowSeparator]} />
+      <View style={styles.rowLabels}>
+        <Text style={styles.rowLabel}>6 - 10</Text>
+      </View>
+      <View style={[styles.row, {gap}]}>
+        {slots.slice(GRID_COLS, GRID_COLS * GRID_ROWS).map((slot, i) => renderSlot(slot, i + GRID_COLS))}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    gap: 3,
+    gap: 4,
+  },
+  rowLabels: {
+    alignItems: 'center',
+  },
+  rowLabel: {
+    fontSize: 10,
+    fontFamily: 'Nunito_600SemiBold',
+    color: '#6B9C93',
+    letterSpacing: 2,
+  },
+  rowSeparator: {
+    height: 1,
+    backgroundColor: 'rgba(107, 156, 147, 0.15)',
+    marginHorizontal: 12,
+    marginVertical: 2,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 3,
   },
   slot: {
-    borderRadius: 6,
+    borderRadius: 10,
     backgroundColor: '#34656D',
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#3D7A74',
     justifyContent: 'center',
     alignItems: 'center',
@@ -217,27 +185,34 @@ const styles = StyleSheet.create({
   },
   slotValid: {
     borderColor: '#FAEAB1',
-    borderWidth: 2,
+    borderWidth: 2.5,
     shadowColor: '#FAEAB1',
     shadowOffset: {width: 0, height: 0},
     shadowOpacity: 0.6,
-    shadowRadius: 4,
+    shadowRadius: 6,
     elevation: 4,
   },
   tileContent: {
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 2,
   },
-  tileNumber: {
-    fontSize: 16,
+  revealedNumber: {
+    fontSize: 14,
     fontFamily: 'Nunito_700Bold',
+    color: '#334443',
   },
-  colorDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    position: 'absolute',
-    bottom: 1,
-    right: 1,
+  ghostNumber: {
+    fontSize: 22,
+    fontFamily: 'Nunito_700Bold',
+    color: 'rgba(138, 171, 165, 0.3)',
+  },
+  ghostNumberValid: {
+    color: 'rgba(250, 234, 177, 0.7)',
+  },
+  slotHint: {
+    borderColor: '#FAEAB1',
+    borderWidth: 3,
+    backgroundColor: 'rgba(250, 234, 177, 0.15)',
   },
 });

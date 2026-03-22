@@ -142,25 +142,9 @@ function StepTiles({t}: {t: any}) {
         </View>
       </View>
 
-      <Text style={[styles.sectionLabel, {marginTop: 16}]}>{t.tutorialTilesHonors}</Text>
-
-      <View style={styles.tileGroupBlock}>
-        <Text style={styles.suitNameFull}>{t.suitWind} ({t.suitWindLong})</Text>
-        <View style={styles.tilesRow}>
-          {['east', 'south', 'west', 'north'].map(v => (
-            <TileComponent key={`wind-${v}`} tile={makeDemoTile('wind', v)} size="medium" />
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.tileGroupBlock}>
-        <Text style={styles.suitNameFull}>{t.suitDragon} ({t.suitDragonLong})</Text>
-        <View style={styles.tilesRow}>
-          {['red', 'green', 'white'].map(v => (
-            <TileComponent key={`drag-${v}`} tile={makeDemoTile('dragon', v)} size="medium" />
-          ))}
-        </View>
-      </View>
+      <Text style={[styles.stepBody, {marginTop: 12, textAlign: 'left'}]}>
+        {t.tutorialTilesNote}
+      </Text>
     </View>
   );
 }
@@ -278,7 +262,7 @@ function StepWinning({t}: {t: any}) {
             {[1, 2, 3].map(i => (
               <TileComponent
                 key={`w-pong2-${i}`}
-                tile={makeDemoTile('wind', 'east', `w-pong2-${i}`)}
+                tile={makeDemoTile('character', '9', `w-pong2-${i}`)}
                 size="small"
               />
             ))}
@@ -292,7 +276,7 @@ function StepWinning({t}: {t: any}) {
             {[1, 2].map(i => (
               <TileComponent
                 key={`w-pair-${i}`}
-                tile={makeDemoTile('dragon', 'red', `w-pair-${i}`)}
+                tile={makeDemoTile('bamboo', '5', `w-pair-${i}`)}
                 size="small"
               />
             ))}
@@ -337,7 +321,7 @@ function StepFlow({t}: {t: any}) {
           <Text style={styles.flowLabel}>{t.tutorialFlowDiscard}</Text>
           <View style={styles.tilesRow}>
             <TileComponent
-              tile={makeDemoTile('wind', 'north')}
+              tile={makeDemoTile('dot', '1')}
               size="medium"
               highlighted
             />

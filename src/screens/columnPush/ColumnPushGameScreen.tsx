@@ -10,6 +10,8 @@ import {ChainBadge} from '../../components/columnPush/ChainBadge';
 import {FinalPickOverlay} from '../../components/columnPush/FinalPickOverlay';
 import {CP_PLAYER_IMAGES, CP_BOT_IMAGES} from '../../constants/gameAssets';
 import {ms, modalWidth} from '../../utils/scaling';
+import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
+import {getValidColumnsForPlacement} from '../../engine/columnPush/gridLogic';
 
 interface ColumnPushGameScreenProps {
   onExit: () => void;
@@ -25,6 +27,7 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
     diceResult,
     chainLength,
     longestChain,
+    playerLongestChain,
     turnCount,
     playerTheme,
     centerTiles,
@@ -70,7 +73,25 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
   );
 
   const [paused, setPaused] = useState(false);
-  const showResult = status === 'won' || status === 'lost';
+  const showResult = status === 'won' || status === 'lost' || status === 'draw';
+
+  // Preload interstitial + rewarded + show on game end
+  useEffect(() => { loadRewarded(); }, []);
+
+  // Hint state
+  const [hintCol, setHintCol] = useState<number | null>(null);
+  const handleHint = useCallback(() => {
+    if (!isRewardedReady()) return;
+    showRewarded(() => {
+      const state = useColumnPushStore.getState();
+      if (!state.activeTile) return;
+      const validCols = getValidColumnsForPlacement(state.playerGrid, state.activeTile);
+      if (validCols.length > 0) {
+        setHintCol(validCols[0]);
+      }
+      setTimeout(() => setHintCol(null), 5000);
+    });
+  }, []);
 
   // Theme indicator images
   const playerThemeImg = playerTheme
@@ -147,8 +168,19 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
           activeTile={activeTile}
           chainLength={chainLength}
           onColumnPress={handleColumnPress}
+          hintCol={hintCol}
         />
       </View>
+
+      {/* Hint button */}
+      {status === 'playing' && currentTurn === 'player' && activeTile && (
+        <TouchableOpacity
+          style={[styles.hintBtn, !isRewardedReady() && styles.hintBtnDisabled]}
+          onPress={handleHint}
+          activeOpacity={0.7}>
+          <Text style={styles.hintBtnText}>{t.watchAdHint}</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Dice Roll Overlay */}
       <DiceRollOverlay
@@ -191,11 +223,11 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {status === 'won' ? t.cpYouWin : t.cpBotWins}
+              {status === 'won' ? t.cpYouWin : status === 'lost' ? t.cpBotWins : t.cpDraw}
             </Text>
             <View style={styles.modalStats}>
               <Text style={styles.modalStat}>
-                {t.cpLongestChain}: {longestChain}
+                {t.cpLongestChain}: {playerLongestChain}
               </Text>
               <Text style={styles.modalStat}>
                 {t.cpTurns}: {turnCount}
@@ -379,5 +411,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Nunito_700Bold',
     color: '#E74C3C',
+  },
+  hintBtn: {
+    position: 'absolute',
+    bottom: ms(16),
+    right: 12,
+    backgroundColor: 'rgba(250,234,177,0.15)',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(250,234,177,0.4)',
+  },
+  hintBtnDisabled: {
+    opacity: 0.4,
+  },
+  hintBtnText: {
+    fontSize: 11,
+    fontFamily: 'Nunito_600SemiBold',
+    color: '#FAEAB1',
   },
 });

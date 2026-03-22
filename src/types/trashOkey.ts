@@ -1,45 +1,38 @@
-// ─── Trash Okey Types ────────────────────────────────────────
+// ─── Trash Game Types ────────────────────────────────────────
 
-export type TrashOkeyColor = 'red' | 'blue' | 'yellow' | 'black';
-
-export interface OkeyTile {
+export interface TrashTile {
   id: string;
-  number: number;
-  color: TrashOkeyColor;
-  isFalseJoker: boolean;
-  isFaceUp: boolean;
+  number: number; // 1-10, 0 = joker
+  isJoker: boolean;
 }
 
 export interface GridSlot {
-  row: number;
-  col: number;
-  targetNumber: number;
-  tile: OkeyTile | null;
-  isFaceDown: boolean;
+  position: number; // 1-10
+  tile: TrashTile | null;
   isRevealed: boolean;
 }
 
 export type PlayerSide = 'player' | 'bot';
 
-export interface TrashOkeyPlayerState {
+export interface TrashPlayerState {
   side: PlayerSide;
-  grid: GridSlot[][];
+  slots: GridSlot[];
   revealedCount: number;
 }
 
-export type TrashOkeyDifficulty = 'easy' | 'medium' | 'hard';
+export type TrashDifficulty = 'easy' | 'medium' | 'hard';
+export type TrashStatus = 'playing' | 'won' | 'lost';
 
-export type TrashOkeyStatus = 'playing' | 'won' | 'lost' | 'gameOver';
-
-export interface TrashOkeyGameState {
-  players: Record<PlayerSide, TrashOkeyPlayerState>;
-  centerTile: OkeyTile | null;
+export interface TrashGameState {
+  players: Record<PlayerSide, TrashPlayerState>;
+  drawPile: TrashTile[];
+  discardPile: TrashTile[];
+  drawnTile: TrashTile | null;
   currentTurn: PlayerSide;
   chainActive: boolean;
   chainLength: number;
-  currentChainTile: OkeyTile | null;
-  status: TrashOkeyStatus;
-  difficulty: TrashOkeyDifficulty;
+  status: TrashStatus;
+  difficulty: TrashDifficulty;
   turnCount: number;
   longestChain: number;
 }
@@ -50,5 +43,13 @@ export interface TrashOkeyStats {
   losses: number;
   longestChain: number;
   totalTurns: number;
-  byDifficulty: Record<TrashOkeyDifficulty, {played: number; wins: number}>;
+  byDifficulty: Record<TrashDifficulty, {played: number; wins: number}>;
 }
+
+// Keep old aliases for compatibility
+export type TrashOkeyDifficulty = TrashDifficulty;
+export type TrashOkeyStatus = TrashStatus;
+export type TrashOkeyGameState = TrashGameState;
+export type TrashOkeyPlayerState = TrashPlayerState;
+export type OkeyTile = TrashTile;
+export type TrashOkeyColor = string;

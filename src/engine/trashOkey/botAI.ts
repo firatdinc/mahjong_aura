@@ -1,130 +1,61 @@
-import {GridSlot, OkeyTile, TrashOkeyDifficulty} from '../../types/trashOkey';
-import {getAvailableSlots, getAllFaceDownSlots} from './gridLogic';
+import {GridSlot, TrashTile, TrashDifficulty} from '../../types/trashOkey';
+import {getSlotForNumber, getUnrevealedSlots} from './gridLogic';
 
 /**
  * Choose which slot the bot should place a tile in.
+ * Returns the position (1-10) or null if can't place.
  */
 export function chooseBotSlot(
-  grid: GridSlot[][],
-  tile: OkeyTile,
-  difficulty: TrashOkeyDifficulty,
-): {row: number; col: number} | null {
-  if (tile.isFalseJoker) {
-    return chooseBotJokerSlot(grid, difficulty);
+  slots: GridSlot[],
+  tile: TrashTile,
+  difficulty: TrashDifficulty,
+): number | null {
+  if (tile.isJoker) {
+    return chooseBotJokerSlot(slots, difficulty);
   }
 
-  const slots = getAvailableSlots(grid, tile.number);
-  if (slots.length === 0) return null;
-
-  switch (difficulty) {
-    case 'easy':
-      // Random slot
-      return pickRandom(slots);
-    case 'medium':
-      // Prefer numbers with more empty slots (more chain potential)
-      return pickBySlotCount(grid, slots);
-    case 'hard':
-      // Strategic: pick slot that maximizes potential chain depth
-      return pickStrategic(grid, slots);
-    default:
-      return pickRandom(slots);
-  }
+  const slot = getSlotForNumber(slots, tile.number);
+  if (!slot) return null;
+  return slot.position;
 }
 
 function chooseBotJokerSlot(
-  grid: GridSlot[][],
-  difficulty: TrashOkeyDifficulty,
-): {row: number; col: number} | null {
-  const faceDown = getAllFaceDownSlots(grid);
-  if (faceDown.length === 0) return null;
+  slots: GridSlot[],
+  difficulty: TrashDifficulty,
+): number | null {
+  const unrevealed = getUnrevealedSlots(slots);
+  if (unrevealed.length === 0) return null;
 
   if (difficulty === 'easy') {
-    return pickRandom(faceDown);
+    // Random unrevealed slot
+    return unrevealed[Math.floor(Math.random() * unrevealed.length)].position;
   }
 
-  // Medium/Hard: put joker where most same-number slots are still face-down
-  // This creates the most chain opportunities
-  const numberCounts = new Map<number, number>();
-  for (const slot of faceDown) {
-    const count = numberCounts.get(slot.targetNumber) ?? 0;
-    numberCounts.set(slot.targetNumber, count + 1);
+  // Medium/Hard: place joker on the highest position (hardest to get naturally)
+  const sorted = [...unrevealed].sort((a, b) => b.position - a.position);
+  if (difficulty === 'hard') {
+    return sorted[0].position;
   }
-
-  let bestNumber = faceDown[0].targetNumber;
-  let bestCount = 0;
-  for (const [num, count] of numberCounts) {
-    if (count > bestCount) {
-      bestCount = count;
-      bestNumber = num;
-    }
-  }
-
-  const bestSlots = faceDown.filter(s => s.targetNumber === bestNumber);
-  return pickRandom(bestSlots);
+  // Medium: pick from top 3
+  const topN = sorted.slice(0, Math.min(3, sorted.length));
+  return topN[Math.floor(Math.random() * topN.length)].position;
 }
 
-function pickRandom(slots: GridSlot[]): {row: number; col: number} {
-  const slot = slots[Math.floor(Math.random() * slots.length)];
-  return {row: slot.row, col: slot.col};
-}
-
-function pickBySlotCount(grid: GridSlot[][], slots: GridSlot[]): {row: number; col: number} {
-  // Prefer slots whose targetNumber has more face-down slots (higher chain potential)
-  let best = slots[0];
-  let bestCount = 0;
-  for (const slot of slots) {
-    let count = 0;
-    for (const row of grid) {
-      for (const s of row) {
-        if (s.isFaceDown && s.targetNumber === slot.targetNumber) count++;
-      }
-    }
-    if (count > bestCount) {
-      bestCount = count;
-      best = slot;
-    }
-  }
-  return {row: best.row, col: best.col};
-}
-
-function pickStrategic(grid: GridSlot[][], slots: GridSlot[]): {row: number; col: number} {
-  // Hard mode: pick the slot that will reveal a tile most likely to continue the chain
-  // Simulate one step ahead — prefer placing where the picked-up tile can also be placed
-  let best = slots[0];
-  let bestScore = -1;
-  for (const slot of slots) {
-    let score = 0;
-    // The tile under this slot has targetNumber — if we place here, we pick up whatever's there
-    // A face-down slot means we get its current hidden tile. If that tile's number has available slots, chain continues.
-    const targetNum = slot.targetNumber;
-    // Count how many other face-down slots exist for this target number (chain depth estimate)
-    for (const row of grid) {
-      for (const s of row) {
-        if (s.isFaceDown && s.targetNumber === targetNum && s !== slot) score += 2;
-      }
-    }
-    // Bonus for slots whose row/col have more face-down tiles nearby
-    for (const s of grid[slot.row]) {
-      if (s.isFaceDown && s !== slot) score += 1;
-    }
-    if (score > bestScore) {
-      bestScore = score;
-      best = slot;
-    }
-  }
-  return {row: best.row, col: best.col};
+/**
+ * On easy mode, bot sometimes "misses" — skips a valid placement.
+ */
+export function botShouldSkip(difficulty: TrashDifficulty): boolean {
+  if (difficulty === 'easy') return Math.random() < 0.15;
+  return false;
 }
 
 /**
  * Bot thinking delay (ms).
  */
-export function getBotDelay(difficulty: TrashOkeyDifficulty): number {
+export function getBotDelay(difficulty: TrashDifficulty): number {
   switch (difficulty) {
-    case 'easy':
-      return 600;
-    case 'medium':
-      return 450;
-    case 'hard':
-      return 350;
+    case 'easy': return 800;
+    case 'medium': return 550;
+    case 'hard': return 400;
   }
 }

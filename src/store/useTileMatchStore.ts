@@ -236,7 +236,7 @@ export const useTileMatchStore = create<TileMatchStore>((set, get) => ({
           board: boardWithFree,
           bar: newBar,
           powerUps: newPowerUps,
-          powerUpsUsed: true,
+          powerUpsUsed: state.powerUpsUsed + 1,
           moveHistory: state.moveHistory.slice(0, -1),
         });
         break;
@@ -251,7 +251,7 @@ export const useTileMatchStore = create<TileMatchStore>((set, get) => ({
         set({
           board: boardWithFree,
           powerUps: newPowerUps,
-          powerUpsUsed: true,
+          powerUpsUsed: state.powerUpsUsed + 1,
         });
         break;
       }
@@ -272,7 +272,7 @@ export const useTileMatchStore = create<TileMatchStore>((set, get) => ({
           board: boardWithFreeR,
           bar: newBarR,
           powerUps: newPowerUps,
-          powerUpsUsed: true,
+          powerUpsUsed: state.powerUpsUsed + 1,
         });
         break;
       }

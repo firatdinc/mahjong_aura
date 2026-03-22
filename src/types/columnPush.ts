@@ -18,7 +18,7 @@ export type CPPlayer = 'player' | 'bot';
 
 export type CPDifficulty = 'easy' | 'medium' | 'hard';
 
-export type CPStatus = 'diceRoll' | 'playing' | 'finalPick' | 'won' | 'lost';
+export type CPStatus = 'diceRoll' | 'playing' | 'finalPick' | 'won' | 'lost' | 'draw';
 
 export interface CPDiceResult {
   playerRoll: number;
@@ -35,6 +35,7 @@ export interface CPGameState {
   diceResult: CPDiceResult | null;
   chainLength: number;
   longestChain: number;
+  playerLongestChain: number;
   turnCount: number;
   /** Which tile theme the human player collects. null = not yet determined. */
   playerTheme: CPOwner | null;
@@ -46,6 +47,7 @@ export interface CPStats {
   gamesPlayed: number;
   wins: number;
   losses: number;
+  draws: number;
   longestChain: number;
   totalTurns: number;
   byDifficulty: Record<CPDifficulty, {played: number; wins: number}>;

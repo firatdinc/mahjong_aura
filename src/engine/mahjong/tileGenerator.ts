@@ -1,8 +1,6 @@
 import {Tile, SeatId, PlayerState, GameState, Difficulty} from '../../types';
 import {
   NUMBERED_SUITS,
-  WIND_VALUES,
-  DRAGON_VALUES,
   COPIES_PER_TILE,
   TILES_PER_HAND,
 } from '../../constants/mahjong/tiles';
@@ -27,31 +25,7 @@ export function generateTiles(): Tile[] {
     }
   }
 
-  // Wind tiles: east, south, west, north — 4 copies each
-  for (const wind of WIND_VALUES) {
-    for (let copy = 1; copy <= COPIES_PER_TILE; copy++) {
-      tiles.push({
-        id: `wind_${wind}_${copy}`,
-        suit: 'wind',
-        value: wind,
-        location: 'wall',
-        isHidden: true,
-      });
-    }
-  }
-
-  // Dragon tiles: red, green, white — 4 copies each
-  for (const dragon of DRAGON_VALUES) {
-    for (let copy = 1; copy <= COPIES_PER_TILE; copy++) {
-      tiles.push({
-        id: `dragon_${dragon}_${copy}`,
-        suit: 'dragon',
-        value: dragon,
-        location: 'wall',
-        isHidden: true,
-      });
-    }
-  }
+  // Honor tiles (wind, dragon) removed for simpler, faster games
 
   return tiles;
 }
@@ -118,6 +92,8 @@ export function dealGame(difficulty: Difficulty): GameState {
     lastDiscardedTile: null,
     lastDiscardedBy: null,
     winner: null,
+    playerClaimOptions: [],
+    waitingForPlayerClaim: false,
   };
 }
 

@@ -37,3 +37,30 @@ export const SUIT_COLORS: Record<string, string> = {
   wind: '#6A1B9A',
   dragon: '#E65100',
 };
+
+// Light background tint per suit (used as tile background)
+export const SUIT_BG_COLORS: Record<string, string> = {
+  bamboo: '#E8F5E9',
+  dot: '#FFEBEE',
+  character: '#E3F2FD',
+  wind: '#F3E5F5',
+  dragon: '#FFF3E0',
+};
+
+// Border color per suit
+export const SUIT_BORDER_COLORS: Record<string, string> = {
+  bamboo: '#81C784',
+  dot: '#EF9A9A',
+  character: '#90CAF9',
+  wind: '#CE93D8',
+  dragon: '#FFCC80',
+};
+
+// Suit icon symbols (small, shown on tile)
+export const SUIT_ICONS: Record<string, string> = {
+  bamboo: '⚔',
+  dot: '◆',
+  character: '⛊',
+  wind: '☁',
+  dragon: '★',
+};

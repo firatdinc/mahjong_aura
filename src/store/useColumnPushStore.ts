@@ -36,6 +36,7 @@ const DEFAULT_STATS: CPStats = {
   gamesPlayed: 0,
   wins: 0,
   losses: 0,
+  draws: 0,
   longestChain: 0,
   totalTurns: 0,
   byDifficulty: {
@@ -84,7 +85,7 @@ function determineWinner(
   playerGrid: CPTile[][],
   botGrid: CPTile[][],
   playerTheme: CPOwner,
-): 'won' | 'lost' {
+): 'won' | 'lost' | 'draw' {
   const botTheme = playerTheme === 'player' ? 'bot' : 'player';
   let playerCount = 0;
   let botCount = 0;
@@ -98,18 +99,22 @@ function determineWinner(
       if (tile.owner === botTheme) botCount++;
     }
   }
-  return playerCount >= botCount ? 'won' : 'lost';
+  if (playerCount > botCount) return 'won';
+  if (botCount > playerCount) return 'lost';
+  return 'draw';
 }
 
-function saveWinStats(stats: CPStats, state: CPGameState, isWin: boolean): CPStats {
+function saveWinStats(stats: CPStats, state: CPGameState, result: 'won' | 'lost' | 'draw'): CPStats {
   const newStats = {
     ...stats,
-    [isWin ? 'wins' : 'losses']: (isWin ? stats.wins : stats.losses) + 1,
-    longestChain: Math.max(stats.longestChain, state.longestChain),
+    ...(result === 'won' && {wins: stats.wins + 1}),
+    ...(result === 'lost' && {losses: stats.losses + 1}),
+    ...(result === 'draw' && {draws: (stats.draws ?? 0) + 1}),
+    longestChain: Math.max(stats.longestChain, state.playerLongestChain),
     totalTurns: stats.totalTurns + state.turnCount,
     byDifficulty: {
       ...stats.byDifficulty,
-      ...(isWin && {
+      ...(result === 'won' && {
         [state.difficulty]: {
           ...stats.byDifficulty[state.difficulty],
           wins: stats.byDifficulty[state.difficulty].wins + 1,
@@ -183,6 +188,7 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
       : false;
     const newChainLength = chainOccurred ? state.chainLength + 1 : 0;
     const newLongestChain = Math.max(state.longestChain, newChainLength);
+    const newPlayerLongestChain = Math.max(state.playerLongestChain, newChainLength);
 
     // Check win
     if (playerTheme && checkWinCondition(newGrid, playerTheme)) {
@@ -190,7 +196,7 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
       const newStats = {
         ...stats,
         wins: stats.wins + 1,
-        longestChain: Math.max(stats.longestChain, newLongestChain),
+        longestChain: Math.max(stats.longestChain, newPlayerLongestChain),
         totalTurns: stats.totalTurns + state.turnCount + 1,
         byDifficulty: {
           ...stats.byDifficulty,
@@ -205,6 +211,7 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
         activeTile: null,
         chainLength: newChainLength,
         longestChain: newLongestChain,
+        playerLongestChain: newPlayerLongestChain,
         playerTheme,
         status: 'won',
         stats: newStats,
@@ -231,6 +238,7 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
         activeTile: poppedTile,
         chainLength: newChainLength,
         longestChain: newLongestChain,
+        playerLongestChain: newPlayerLongestChain,
         playerTheme,
       });
     } else {
@@ -239,6 +247,7 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
         activeTile: poppedTile,
         chainLength: 0,
         longestChain: newLongestChain,
+        playerLongestChain: newPlayerLongestChain,
         currentTurn: 'bot',
         turnCount: state.turnCount + 1,
         playerTheme,
@@ -383,7 +392,7 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
     // Check player win
     if (checkWinCondition(playerGrid, state.playerTheme)) {
       const {stats} = get();
-      const newStats = saveWinStats(stats, state, true);
+      const newStats = saveWinStats(stats, state, 'won');
       set({playerGrid, centerTiles, status: 'won', stats: newStats});
       saveColumnPushStats(newStats);
       return;
@@ -404,7 +413,7 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
       // Check bot win
       if (checkWinCondition(botGrid, botTheme)) {
         const {stats} = get();
-        const newStats = saveWinStats(stats, state, false);
+        const newStats = saveWinStats(stats, state, 'lost');
         set({playerGrid, botGrid, centerTiles, status: 'lost', stats: newStats});
         saveColumnPushStats(newStats);
         return;
@@ -417,7 +426,7 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
     if (centerTiles.length === 0) {
       const result = determineWinner(playerGrid, botGrid, state.playerTheme);
       const {stats} = get();
-      const newStats = saveWinStats(stats, state, result === 'won');
+      const newStats = saveWinStats(stats, state, result);
       set({status: result, stats: newStats});
       saveColumnPushStats(newStats);
     }

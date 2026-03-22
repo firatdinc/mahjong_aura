@@ -1,9 +1,10 @@
-import React, {useState, useCallback, useRef} from 'react';
+import React, {useState, useCallback, useRef, useEffect} from 'react';
 import {Animated, Easing} from 'react-native';
 import {useTileMatchStore} from '../../store/useTileMatchStore';
 import {TileMatchStartScreen} from './TileMatchStartScreen';
 import {TileMatchGameScreen} from './TileMatchGameScreen';
 import {TileMatchTutorialScreen} from './TileMatchTutorialScreen';
+import {loadInterstitial, showInterstitialIfReady} from '../../utils/adHelpers';
 
 type TileMatchSub = 'start' | 'game' | 'tutorial';
 
@@ -14,6 +15,8 @@ interface TileMatchRouterProps {
 export const TileMatchRouter: React.FC<TileMatchRouterProps> = ({onBack}) => {
   const [sub, setSub] = useState<TileMatchSub>('start');
   const {startLevel} = useTileMatchStore();
+
+  useEffect(() => { loadInterstitial(); }, []);
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -64,6 +67,7 @@ export const TileMatchRouter: React.FC<TileMatchRouterProps> = ({onBack}) => {
   );
 
   const handleExit = useCallback(() => {
+    showInterstitialIfReady();
     animateTo('start');
   }, [animateTo]);
 

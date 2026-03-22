@@ -24,17 +24,21 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
 }) => {
   const {t} = useLanguage();
 
+  const isPlayerTurn = currentTurn === 'player';
+
   const statusText = winner
     ? `${getSeatLabel(winner, t)} ${t.winsExcl}`
     : turnPhase === 'gameOver'
       ? t.drawNoTiles
-      : `${getSeatLabel(currentTurn, t)}${t.turn}`;
+      : isPlayerTurn
+        ? t.yourTurnLabel
+        : `${getSeatLabel(currentTurn, t)}${t.turn}`;
 
-  const phaseText =
-    turnPhase === 'drawing' ? t.drawing
-    : turnPhase === 'discarding' ? t.discarding
-    : turnPhase === 'claiming' ? t.claiming
-    : turnPhase;
+  const phaseText = winner || turnPhase === 'gameOver'
+    ? ''
+    : isPlayerTurn
+      ? (turnPhase === 'drawing' ? t.waitingDraw : turnPhase === 'discarding' ? t.pickDiscard : t.claiming)
+      : t.botThinking;
 
   return (
     <View style={styles.container}>
@@ -55,11 +59,12 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
               styles.status,
               winner && styles.winnerText,
               turnPhase === 'gameOver' && !winner && styles.drawText,
+              isPlayerTurn && !winner && turnPhase !== 'gameOver' && styles.yourTurnText,
             ]}>
             {statusText}
           </Text>
         </View>
-        {turnPhase !== 'gameOver' && (
+        {phaseText !== '' && (
           <Text style={styles.phase}>{phaseText}</Text>
         )}
       </View>
@@ -118,6 +123,10 @@ const styles = StyleSheet.create({
   },
   drawText: {
     color: '#FF8A65',
+  },
+  yourTurnText: {
+    color: '#FAEAB1',
+    fontFamily: 'Nunito_700Bold',
   },
   phase: {
     color: '#6B9C93',

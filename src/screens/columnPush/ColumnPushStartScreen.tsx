@@ -16,6 +16,8 @@ import {useSettings} from '../../store/useSettings';
 import {AnimatedPressable} from '../../components/shared/AnimatedPressable';
 import {StaggeredEntry} from '../../components/shared/StaggeredEntry';
 import {ms, modalWidth, contentMaxWidth} from '../../utils/scaling';
+import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
+import {AD_IDS} from '../../constants/adConfig';
 
 const trophyImg = require('../../../assets/game/trophy.png');
 const medalImg = require('../../../assets/game/medal.png');
@@ -233,6 +235,15 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
           <Text style={styles.tutorialLabel}>{t.howToPlay}</Text>
         </AnimatedPressable>
       </StaggeredEntry>
+
+      {/* Banner Ad */}
+      <View style={styles.bannerContainer}>
+        <BannerAd
+          unitId={AD_IDS.BANNER}
+          size={BannerAdSize.BANNER}
+          requestOptions={{requestNonPersonalizedAdsOnly: true}}
+        />
+      </View>
     </View>
   );
 };
@@ -347,14 +358,14 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 16,
   },
   titleEmoji: {
-    fontSize: ms(64),
-    marginBottom: 12,
+    fontSize: ms(48),
+    marginBottom: 8,
   },
   title: {
-    fontSize: ms(42),
+    fontSize: ms(32),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
@@ -385,7 +396,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
   },
   statsContainer: {
-    marginBottom: 24,
+    marginBottom: 12,
     backgroundColor: '#34656D',
     borderRadius: 12,
     paddingVertical: 12,
@@ -420,7 +431,7 @@ const styles = StyleSheet.create({
   prompt: {
     fontSize: 14,
     color: '#8AABA5',
-    marginBottom: 20,
+    marginBottom: 12,
     letterSpacing: 2,
   },
   buttons: {
@@ -433,7 +444,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3D7A74',
     borderRadius: 14,
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
@@ -476,7 +487,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   tutorialButton: {
-    marginTop: 24,
+    marginTop: 16,
+    marginBottom: 60,
     paddingVertical: 12,
     paddingHorizontal: 28,
     borderRadius: 12,
@@ -489,4 +501,12 @@ const styles = StyleSheet.create({
   },
   tutorialIcon: {fontSize: 16},
   tutorialLabel: {fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#FAEAB1', letterSpacing: 1},
+  bannerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingBottom: 4,
+  },
 });

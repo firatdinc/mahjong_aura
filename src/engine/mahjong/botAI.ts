@@ -88,18 +88,41 @@ export function chooseDiscardHard(
 export function evaluateClaimEasy(
   hand: Tile[],
   discard: Tile,
+  botSeat: SeatId,
+  discardedBy: SeatId,
 ): ClaimDecision {
-  // Only consider Pong, and only 10% of the time
-  if (Math.random() > 0.1) {return NO_CLAIM;}
+  // Kong — always claim
+  const kongTiles = findKongMatch(hand, discard);
+  if (kongTiles) {
+    return {
+      shouldClaim: true,
+      meldType: 'kong',
+      tileIds: kongTiles.map(t => t.id),
+    };
+  }
 
+  // Pong — claim 70% of the time
   const pongTiles = findPongMatch(hand, discard);
-  if (pongTiles) {
+  if (pongTiles && Math.random() < 0.7) {
     return {
       shouldClaim: true,
       meldType: 'pong',
       tileIds: pongTiles.map(t => t.id),
     };
   }
+
+  // Chow — claim 50% of the time (next in turn only)
+  if (canClaimChow(botSeat, discardedBy) && Math.random() < 0.5) {
+    const chowOptions = findChowMatches(hand, discard);
+    if (chowOptions.length > 0) {
+      return {
+        shouldClaim: true,
+        meldType: 'chow',
+        tileIds: chowOptions[0].map(t => t.id),
+      };
+    }
+  }
+
   return NO_CLAIM;
 }
 
@@ -241,7 +264,7 @@ export function evaluateBotClaim(
 ): ClaimDecision {
   switch (difficulty) {
     case 'easy':
-      return evaluateClaimEasy(hand, discard);
+      return evaluateClaimEasy(hand, discard, botSeat, discardedBy);
     case 'medium':
       return evaluateClaimMedium(hand, discard, botSeat, discardedBy);
     case 'hard':
@@ -290,7 +313,7 @@ function findOrphanTile(hand: Tile[]): Tile | null {
 }
 
 /** Score how useful a tile is for forming melds (higher = more useful) */
-function scoreTileUsefulness(tile: Tile, hand: Tile[]): number {
+export function scoreTileUsefulness(tile: Tile, hand: Tile[]): number {
   let score = 0;
   const counts = countTiles(hand);
   const key = tileKey(tile);

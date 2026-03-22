@@ -47,7 +47,7 @@ export function generateLevel(levelNumber: number): TileMatchGameState {
     bar: [],
     timeRemaining: config.timerSeconds,
     powerUps: {...INITIAL_POWERUPS} as Record<string, number> as TileMatchGameState['powerUps'],
-    powerUpsUsed: false,
+    powerUpsUsed: 0,
     moveHistory: [],
     status: 'playing',
     combo: 0,

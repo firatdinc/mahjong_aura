@@ -1,6 +1,5 @@
-import {OkeyTile, TrashOkeyColor, GridSlot, TrashOkeyPlayerState, TrashOkeyGameState, TrashOkeyDifficulty} from '../../types/trashOkey';
-import {OKEY_COLORS, TILE_NUMBERS, COPIES_PER_TILE, TILES_PER_PLAYER} from '../../constants/trashOkey/tiles';
-import {GRID_COLS, GRID_ROWS, getTargetNumber} from '../../constants/trashOkey/grid';
+import {TrashTile, GridSlot, TrashPlayerState, TrashGameState, TrashDifficulty} from '../../types/trashOkey';
+import {TILE_NUMBERS, COPIES_PER_NUMBER, JOKER_COUNT, TILES_PER_PLAYER} from '../../constants/trashOkey/tiles';
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -11,111 +10,78 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/**
- * Generate the 97 okey tiles (106 - 8 thirteens - 1 false joker).
- */
-function generateOkeyTiles(): OkeyTile[] {
-  const tiles: OkeyTile[] = [];
+function generateTiles(): TrashTile[] {
+  const tiles: TrashTile[] = [];
   let id = 0;
 
-  // Generate numbered tiles (1-12 x 4 colors x 2 copies)
   for (const num of TILE_NUMBERS) {
-    for (const color of OKEY_COLORS) {
-      for (let copy = 0; copy < COPIES_PER_TILE; copy++) {
-        tiles.push({
-          id: `okey_${id++}`,
-          number: num,
-          color,
-          isFalseJoker: false,
-          isFaceUp: false,
-        });
-      }
+    for (let copy = 0; copy < COPIES_PER_NUMBER; copy++) {
+      tiles.push({
+        id: `t_${id++}`,
+        number: num,
+        isJoker: false,
+      });
     }
   }
 
-  // Add 1 false joker (out of 2 total, we keep 1)
-  tiles.push({
-    id: `okey_joker`,
-    number: 0,
-    color: 'red',
-    isFalseJoker: true,
-    isFaceUp: false,
-  });
-
-  // Note: We did not add 13s at all (they're removed)
-  // We added 12*4*2 = 96 numbered + 1 joker = 97 tiles total
+  for (let j = 0; j < JOKER_COUNT; j++) {
+    tiles.push({
+      id: `t_joker_${j}`,
+      number: 0,
+      isJoker: true,
+    });
+  }
 
   return tiles;
 }
 
-/**
- * Create an empty grid for a player (8 rows x 6 cols).
- */
-function createEmptyGrid(): GridSlot[][] {
-  const grid: GridSlot[][] = [];
-  for (let row = 0; row < GRID_ROWS; row++) {
-    const gridRow: GridSlot[] = [];
-    for (let col = 0; col < GRID_COLS; col++) {
-      gridRow.push({
-        row,
-        col,
-        targetNumber: getTargetNumber(row, col),
-        tile: null,
-        isFaceDown: true,
-        isRevealed: false,
-      });
-    }
-    grid.push(gridRow);
+function createSlots(): GridSlot[] {
+  const slots: GridSlot[] = [];
+  for (let i = 1; i <= TILES_PER_PLAYER; i++) {
+    slots.push({
+      position: i,
+      tile: null,
+      isRevealed: false,
+    });
   }
-  return grid;
+  return slots;
 }
 
-/**
- * Deal a new Trash Okey game.
- */
-export function dealTrashOkey(difficulty: TrashOkeyDifficulty): TrashOkeyGameState {
-  const allTiles = shuffle(generateOkeyTiles());
+export function dealTrashOkey(difficulty: TrashDifficulty): TrashGameState {
+  const allTiles = shuffle(generateTiles());
 
-  // Deal 48 to each player
   const playerTiles = allTiles.slice(0, TILES_PER_PLAYER);
   const botTiles = allTiles.slice(TILES_PER_PLAYER, TILES_PER_PLAYER * 2);
-  const centerTile = allTiles[TILES_PER_PLAYER * 2];
+  const drawPile = allTiles.slice(TILES_PER_PLAYER * 2);
 
-  // Place tiles face-down in grids
-  const playerGrid = createEmptyGrid();
-  const botGrid = createEmptyGrid();
+  const playerSlots = createSlots();
+  const botSlots = createSlots();
 
-  let tileIndex = 0;
-  for (let row = 0; row < GRID_ROWS; row++) {
-    for (let col = 0; col < GRID_COLS; col++) {
-      playerGrid[row][col].tile = playerTiles[tileIndex];
-      botGrid[row][col].tile = botTiles[tileIndex];
-      tileIndex++;
-    }
+  for (let i = 0; i < TILES_PER_PLAYER; i++) {
+    playerSlots[i].tile = playerTiles[i];
+    botSlots[i].tile = botTiles[i];
   }
 
-  // Center tile is face up
-  centerTile.isFaceUp = true;
-
-  const playerState: TrashOkeyPlayerState = {
+  const playerState: TrashPlayerState = {
     side: 'player',
-    grid: playerGrid,
+    slots: playerSlots,
     revealedCount: 0,
   };
 
-  const botState: TrashOkeyPlayerState = {
+  const botState: TrashPlayerState = {
     side: 'bot',
-    grid: botGrid,
+    slots: botSlots,
     revealedCount: 0,
   };
 
   return {
     players: {player: playerState, bot: botState},
-    centerTile,
+    drawPile,
+    discardPile: [],
+    drawnTile: null,
     currentTurn: 'player',
     chainActive: false,
     chainLength: 0,
-    currentChainTile: null,
     status: 'playing',
     difficulty,
     turnCount: 0,

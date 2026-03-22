@@ -16,6 +16,8 @@ import {useSettings} from '../../store/useSettings';
 import {AnimatedPressable} from '../../components/shared/AnimatedPressable';
 import {StaggeredEntry} from '../../components/shared/StaggeredEntry';
 import {ms, modalWidth, contentMaxWidth} from '../../utils/scaling';
+import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
+import {AD_IDS} from '../../constants/adConfig';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const logoImg = require('../../../assets/mahjong_aura_logo.png');
@@ -250,6 +252,15 @@ export const MahjongStartScreen: React.FC<MahjongStartScreenProps> = ({onStart, 
           <Text style={styles.tutorialLabel}>{t.howToPlay}</Text>
         </AnimatedPressable>
       </StaggeredEntry>
+
+      {/* Banner Ad */}
+      <View style={styles.bannerContainer}>
+        <BannerAd
+          unitId={AD_IDS.BANNER}
+          size={BannerAdSize.BANNER}
+          requestOptions={{requestNonPersonalizedAdsOnly: true}}
+        />
+      </View>
     </View>
   );
 };
@@ -553,5 +564,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
     color: '#FAEAB1',
     letterSpacing: 1,
+  },
+  bannerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingBottom: 4,
   },
 });

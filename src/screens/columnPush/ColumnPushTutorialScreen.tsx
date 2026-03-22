@@ -6,7 +6,7 @@ interface ColumnPushTutorialScreenProps {
   onComplete: () => void;
 }
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 6;
 
 export const ColumnPushTutorialScreen: React.FC<ColumnPushTutorialScreenProps> = ({onComplete}) => {
   const [step, setStep] = useState(0);
@@ -27,7 +27,9 @@ export const ColumnPushTutorialScreen: React.FC<ColumnPushTutorialScreenProps> =
   const steps = [
     {icon: '🏖️', title: t.cpTutWelcomeTitle, body: t.cpTutWelcomeBody},
     {icon: '⬇️', title: t.cpTutPushTitle, body: t.cpTutPushBody},
+    {icon: '🎨', title: t.cpTutThemeTitle, body: t.cpTutThemeBody},
     {icon: '🔗', title: t.cpTutChainTitle, body: t.cpTutChainBody},
+    {icon: '🏁', title: t.cpTutFinalTitle, body: t.cpTutFinalBody},
     {icon: '🎮', title: t.cpTutReadyTitle, body: t.cpTutReadyBody},
   ];
 

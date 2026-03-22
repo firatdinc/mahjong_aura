@@ -11,6 +11,7 @@ import {
   Nunito_700Bold,
   Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
+import mobileAds, {AdsConsent} from 'react-native-google-mobile-ads';
 import {GameId} from './src/constants/app';
 import {GameHubScreen} from './src/screens/GameHubScreen';
 import {MahjongRouter} from './src/screens/mahjong/MahjongRouter';
@@ -32,19 +33,31 @@ export default function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    Promise.all([
-      initStorage(),
-      initLanguage(),
-      initSettings(),
-      Font.loadAsync({
-        Nunito_300Light,
-        Nunito_400Regular,
-        Nunito_500Medium,
-        Nunito_600SemiBold,
-        Nunito_700Bold,
-        Nunito_800ExtraBold,
-      }),
-    ]).then(() => setReady(true));
+    async function init() {
+      await Promise.all([
+        initStorage(),
+        initLanguage(),
+        initSettings(),
+        Font.loadAsync({
+          Nunito_300Light,
+          Nunito_400Regular,
+          Nunito_500Medium,
+          Nunito_600SemiBold,
+          Nunito_700Bold,
+          Nunito_800ExtraBold,
+        }),
+      ]);
+      // GDPR consent — shows form in EEA/UK, silent elsewhere
+      try {
+        await AdsConsent.gatherConsent();
+      } catch {}
+      // Initialize Mobile Ads SDK after consent
+      try {
+        await mobileAds().initialize();
+      } catch {}
+      setReady(true);
+    }
+    init();
   }, []);
 
   if (!ready) {

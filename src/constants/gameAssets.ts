@@ -55,23 +55,25 @@ export function getTileImage(suit: string, value: string): ImageSourcePropType |
   return TILE_IMAGES[key] ?? null;
 }
 
-// ─── Trash Okey Tile Images ──────────────────────────────────
-// Indexed by tile number (1-12)
+// ─── Trash Tile Images ───────────────────────────────────────
+// Indexed by tile number (1-10), 0 = joker
 
-export const OKEY_TILE_IMAGES: Record<number, ImageSourcePropType> = {
+export const TRASH_TILE_IMAGES: Record<number, ImageSourcePropType> = {
   1: require('../../assets/game/Game_3D_Pack/PNGs/Tools/Key.png'),
-  2: require('../../assets/game/Game_3D_Pack/PNGs/Tools/Gun.png'),
-  3: require('../../assets/game/Game_3D_Pack/PNGs/Tools/Hoe.png'),
-  4: require('../../assets/game/Game_3D_Pack/PNGs/Tools/Lighter.png'),
+  2: require('../../assets/game/Game_3D_Pack/PNGs/Tools/Shield.png'),
+  3: require('../../assets/game/Game_3D_Pack/PNGs/Tools/Sword.png'),
+  4: require('../../assets/game/Game_3D_Pack/PNGs/Resources/Gem.png'),
   5: require('../../assets/game/Game_3D_Pack/PNGs/Tools/Magic-Wand.png'),
-  6: require('../../assets/game/Game_3D_Pack/PNGs/Tools/Shotgun.png'),
-  7: require('../../assets/game/Game_3D_Pack/PNGs/Resources/Loot.png'),
-  8: require('../../assets/game/Game_3D_Pack/PNGs/Resources/Wood.png'),
-  9: require('../../assets/game/Game_3D_Pack/PNGs/Other/Bone.png'),
-  10: require('../../assets/game/Game_3D_Pack/PNGs/UI Elements/Meat.png'),
-  11: require('../../assets/game/Game_3D_Pack/PNGs/Other/First-aid-kit.png'),
-  12: require('../../assets/game/Game_3D_Pack/PNGs/UI Elements/Book.png'),
+  6: require('../../assets/game/Game_3D_Pack/PNGs/Resources/Coin.png'),
+  7: require('../../assets/game/Game_3D_Pack/PNGs/Resources/Apple.png'),
+  8: require('../../assets/game/Game_3D_Pack/PNGs/Other/Chest.png'),
+  9: require('../../assets/game/Game_3D_Pack/PNGs/Other/Ring.png'),
+  10: require('../../assets/game/Game_3D_Pack/PNGs/UI Elements/Crown.png'),
+  0: require('../../assets/game/Game_3D_Pack/PNGs/UI Elements/Star.png'), // joker
 };
+
+// Keep old export for any remaining references
+export const OKEY_TILE_IMAGES = TRASH_TILE_IMAGES;
 
 // ─── Column Push (Seaside Escape) Tile Images ────────────────
 

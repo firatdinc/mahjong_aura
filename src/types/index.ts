@@ -69,6 +69,12 @@ export type TurnPhase =
   | 'claiming'     // A discard is available for claiming
   | 'gameOver';    // The game has ended
 
+// ─── Player Claim Option ─────────────────────────────────────
+export interface ClaimOption {
+  meldType: MeldType;
+  tileIds: string[]; // IDs of tiles from hand used in the meld
+}
+
 // ─── Game State ──────────────────────────────────────────────
 export interface GameState {
   /** The wall of undrawn tiles */
@@ -89,6 +95,10 @@ export interface GameState {
   lastDiscardedBy: SeatId | null;
   /** Winner of the game, if any */
   winner: SeatId | null;
+  /** Available claim options for the human player (shown as buttons) */
+  playerClaimOptions: ClaimOption[];
+  /** Whether we are waiting for the player to decide on a claim */
+  waitingForPlayerClaim: boolean;
 }
 
 // ─── Game Store Actions ──────────────────────────────────────
@@ -104,6 +114,10 @@ export interface GameActions {
   claimTile: (claimingSeat: SeatId, meldType: MeldType, meldTileIds: string[]) => void;
   /** Skip claiming the last discarded tile */
   skipClaim: () => void;
+  /** Player chooses to claim with a specific option */
+  playerClaim: (option: ClaimOption) => void;
+  /** Player skips claiming */
+  playerSkipClaim: () => void;
   /** Execute a bot's turn (AI logic) */
   playBotTurn: () => Promise<void>;
   /** Process bot claiming after a discard, then continue bot turns */

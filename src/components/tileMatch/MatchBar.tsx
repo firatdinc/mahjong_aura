@@ -1,10 +1,11 @@
-import React, {useRef, useEffect} from 'react';
-import {StyleSheet, View, Animated} from 'react-native';
+import React, {useRef, useEffect, useMemo} from 'react';
+import {StyleSheet, View, Animated, Dimensions} from 'react-native';
 import {TileMatchTile} from '../../types/tileMatch';
 import {TileComponent} from '../shared/TileComponent';
 import {Tile, Suit} from '../../types';
 import {BAR_SIZE} from '../../constants/tileMatch/levels';
-import {useSettings} from '../../store/useSettings';
+
+const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
 interface MatchBarProps {
   bar: TileMatchTile[];
@@ -21,11 +22,21 @@ function toDisplayTile(t: TileMatchTile): Tile {
 }
 
 export const MatchBar: React.FC<MatchBarProps> = ({bar}) => {
-  const {tileScale} = useSettings();
-  const slotW = Math.round(46 * tileScale);
-  const slotH = Math.round(64 * tileScale);
-  const emptyW = Math.round(44 * tileScale);
-  const emptyH = Math.round(62 * tileScale);
+  const {slotW, slotH, emptyW, emptyH, tileFontSize, tileLabelSize} = useMemo(() => {
+    const barPadding = 6 * 2;
+    const totalGap = (BAR_SIZE - 1) * 4;
+    const availableW = SCREEN_WIDTH - 32 - barPadding - totalGap;
+    const sw = Math.min(46, Math.floor(availableW / BAR_SIZE));
+    const sh = Math.round(sw * 1.4);
+    return {
+      slotW: sw,
+      slotH: sh,
+      emptyW: sw - 2,
+      emptyH: sh - 2,
+      tileFontSize: Math.max(Math.round(sw * 0.38), 10),
+      tileLabelSize: Math.max(Math.round(sw * 0.22), 6),
+    };
+  }, []);
   const slots = Array.from({length: BAR_SIZE}, (_, i) => bar[i] ?? null);
 
   // Track previous tile IDs to detect new arrivals
@@ -91,7 +102,10 @@ export const MatchBar: React.FC<MatchBarProps> = ({bar}) => {
                   {scale: getAnim(tile.id).scale},
                 ],
               }}>
-              <TileComponent tile={toDisplayTile(tile)} size="large" />
+              <TileComponent
+                tile={toDisplayTile(tile)}
+                customSize={{width: emptyW, height: emptyH, fontSize: tileFontSize, labelSize: tileLabelSize}}
+              />
             </Animated.View>
           ) : (
             <View style={[styles.emptySlot, {width: emptyW, height: emptyH}]} />

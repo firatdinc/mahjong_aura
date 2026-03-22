@@ -16,6 +16,8 @@ import {useSettings} from '../../store/useSettings';
 import {AnimatedPressable} from '../../components/shared/AnimatedPressable';
 import {StaggeredEntry} from '../../components/shared/StaggeredEntry';
 import {ms, modalWidth, contentMaxWidth} from '../../utils/scaling';
+import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
+import {AD_IDS} from '../../constants/adConfig';
 
 const trophyImg = require('../../../assets/game/trophy.png');
 const starImg = require('../../../assets/game/star.png');
@@ -35,7 +37,7 @@ export const TrashOkeyStartScreen: React.FC<TrashOkeyStartScreenProps> = ({
 }) => {
   const {stats, loadStats} = useTrashOkeyStore();
   const {t} = useLanguage();
-  const {toHighlightSlots, setToHighlightSlots, tileScale, setTileScale} = useSettings();
+  const _settings = useSettings();
   const [settingsVisible, setSettingsVisible] = useState(false);
 
   // Title entrance animation
@@ -81,73 +83,7 @@ export const TrashOkeyStartScreen: React.FC<TrashOkeyStartScreenProps> = ({
         <Text style={styles.backIcon}>&#x2039;</Text>
       </AnimatedPressable>
 
-      {/* Settings gear icon */}
-      <AnimatedPressable
-        style={styles.gearButton}
-        onPress={() => setSettingsVisible(true)}
-        activeScale={0.85}>
-        <Text style={styles.gearIcon}>{'\u2699'}</Text>
-      </AnimatedPressable>
-
-      {/* Settings modal */}
-      <Modal
-        visible={settingsVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSettingsVisible(false)}>
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setSettingsVisible(false)}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t.settings}</Text>
-
-            {/* Highlight Slots toggle */}
-            <TouchableOpacity
-              style={styles.settingRow}
-              onPress={() => setToHighlightSlots(!toHighlightSlots)}>
-              <View style={styles.settingTextContainer}>
-                <Text style={styles.settingLabel}>{t.toHighlightSlots}</Text>
-                <Text style={styles.settingDesc}>{t.toHighlightSlotsDesc}</Text>
-              </View>
-              <View
-                style={[
-                  styles.toggle,
-                  toHighlightSlots && styles.toggleActive,
-                ]}>
-                <View
-                  style={[
-                    styles.toggleThumb,
-                    toHighlightSlots && styles.toggleThumbActive,
-                  ]}
-                />
-              </View>
-            </TouchableOpacity>
-
-            {/* Large Tiles toggle */}
-            <TouchableOpacity
-              style={styles.settingRow}
-              onPress={() => setTileScale(tileScale === 1.0 ? 1.25 : 1.0)}>
-              <View style={styles.settingTextContainer}>
-                <Text style={styles.settingLabel}>{t.largeTiles}</Text>
-                <Text style={styles.settingDesc}>{t.largeTilesDesc}</Text>
-              </View>
-              <View
-                style={[
-                  styles.toggle,
-                  tileScale > 1 && styles.toggleActive,
-                ]}>
-                <View
-                  style={[
-                    styles.toggleThumb,
-                    tileScale > 1 && styles.toggleThumbActive,
-                  ]}
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+      {/* Settings placeholder - no game-specific settings needed */}
 
       {/* Title */}
       <Animated.View
@@ -237,6 +173,15 @@ export const TrashOkeyStartScreen: React.FC<TrashOkeyStartScreenProps> = ({
           <Text style={styles.tutorialLabel}>{t.howToPlay}</Text>
         </AnimatedPressable>
       </StaggeredEntry>
+
+      {/* Banner Ad */}
+      <View style={styles.bannerContainer}>
+        <BannerAd
+          unitId={AD_IDS.BANNER}
+          size={BannerAdSize.BANNER}
+          requestOptions={{requestNonPersonalizedAdsOnly: true}}
+        />
+      </View>
     </View>
   );
 };
@@ -499,4 +444,12 @@ const styles = StyleSheet.create({
   },
   tutorialIcon: {fontSize: 16},
   tutorialLabel: {fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#FAEAB1', letterSpacing: 1},
+  bannerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingBottom: 4,
+  },
 });

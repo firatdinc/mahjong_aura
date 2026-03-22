@@ -5,6 +5,12 @@ import {TileComponent} from '../shared/TileComponent';
 import {useLanguage} from '../../i18n/useLanguage';
 import {getSeatLabel} from '../../constants/mahjong/game';
 
+const MELD_LABEL_COLORS: Record<string, string> = {
+  pong: '#FF9800',
+  kong: '#E91E63',
+  chow: '#4CAF50',
+};
+
 interface BotHandProps {
   seatId: SeatId;
   tileCount: number;
@@ -81,9 +87,14 @@ export const BotHand: React.FC<BotHandProps> = ({
                 styles.meldGroup,
                 isHorizontal ? styles.meldHorizontal : styles.meldVertical,
               ]}>
-              {meld.tiles.map(tile => (
-                <TileComponent key={tile.id} tile={tile} size="small" />
-              ))}
+              <View style={[styles.meldLabel, {backgroundColor: MELD_LABEL_COLORS[meld.type]}]}>
+                <Text style={styles.meldLabelText}>{meld.type.toUpperCase()}</Text>
+              </View>
+              <View style={styles.meldTilesRow}>
+                {meld.tiles.map(tile => (
+                  <TileComponent key={tile.id} tile={tile} size="small" />
+                ))}
+              </View>
             </View>
           ))}
         </View>
@@ -147,15 +158,30 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   meldGroup: {
-    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(250,248,241,0.08)',
+    borderRadius: 4,
+    padding: 2,
+    gap: 1,
+  },
+  meldLabel: {
     borderRadius: 3,
-    padding: 1,
+    paddingHorizontal: 4,
+    paddingVertical: 0,
+  },
+  meldLabelText: {
+    color: '#FFF',
+    fontSize: 7,
+    fontFamily: 'Nunito_700Bold',
+    letterSpacing: 0.5,
+  },
+  meldTilesRow: {
+    flexDirection: 'row',
   },
   meldHorizontal: {
-    flexDirection: 'row',
+    flexDirection: 'column',
   },
   meldVertical: {
-    flexDirection: 'row',
+    flexDirection: 'column',
   },
 });

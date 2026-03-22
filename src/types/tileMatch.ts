@@ -60,7 +60,7 @@ export interface TileMatchGameState {
   bar: TileMatchTile[];
   timeRemaining: number;
   powerUps: Record<TileMatchPowerUp, number>;
-  powerUpsUsed: boolean;
+  powerUpsUsed: number;
   moveHistory: TileMatchTile[];
   status: TileMatchStatus;
   combo: number;

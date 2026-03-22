@@ -56,6 +56,9 @@ export function generateTilePool(
   tileTypes: number,
   totalTiles: number,
 ): Omit<TileMatchTile, 'layer' | 'row' | 'col' | 'isFree'>[] {
+  if (totalTiles % 3 !== 0) {
+    totalTiles = Math.floor(totalTiles / 3) * 3;
+  }
   const groupsNeeded = totalTiles / 3;
   const selectedTypes = shuffle(ALL_TILE_TYPES).slice(0, tileTypes);
 

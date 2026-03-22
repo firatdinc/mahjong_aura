@@ -6,8 +6,11 @@ import {SeatId} from '../../types';
 export const TURN_ORDER: SeatId[] = ['player', 'bot1', 'bot2', 'bot3'];
 
 /** Bot thinking delay range (ms) */
-export const BOT_THINK_MIN_MS = 1000;
-export const BOT_THINK_MAX_MS = 2500;
+export const BOT_THINK_MIN_MS = 200;
+export const BOT_THINK_MAX_MS = 600;
+
+/** How long the player has to decide on a claim before auto-skip (ms) */
+export const PLAYER_CLAIM_TIMEOUT_MS = 8000;
 
 /** Labels for display (English fallback) */
 export const SEAT_LABELS: Record<SeatId, string> = {

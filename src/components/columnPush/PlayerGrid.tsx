@@ -14,6 +14,7 @@ interface PlayerGridProps {
   activeTile: CPTile | null;
   chainLength: number;
   onColumnPress: (colIndex: number) => void;
+  hintCol?: number | null;
 }
 
 const OWNER_BG = {
@@ -28,6 +29,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
   activeTile,
   chainLength,
   onColumnPress,
+  hintCol,
 }) => {
   const {tileScale} = useSettings();
   const SLOT_GAP = 3;
@@ -134,6 +136,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({
                 styles.column,
                 enabled && styles.columnActive,
                 chainLength > 0 && enabled && styles.columnChain,
+                hintCol === col && styles.columnHint,
               ]}
               onPress={() => handlePress(col)}
               disabled={!enabled}
@@ -227,6 +230,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(39, 174, 96, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(39, 174, 96, 0.4)',
+  },
+  columnHint: {
+    backgroundColor: 'rgba(250, 234, 177, 0.2)',
+    borderWidth: 2,
+    borderColor: '#FAEAB1',
   },
   slot: {
     borderRadius: 5,

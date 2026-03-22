@@ -1,5 +1,5 @@
 import React, {useRef, useEffect, useCallback} from 'react';
-import {StyleSheet, View, Text, Animated} from 'react-native';
+import {StyleSheet, View, Text, Animated, ScrollView} from 'react-native';
 import {Tile} from '../../types';
 import {TileComponent} from '../shared/TileComponent';
 import {useLanguage} from '../../i18n/useLanguage';
@@ -15,6 +15,7 @@ export const DiscardPile: React.FC<DiscardPileProps> = ({
   lastDiscardedTile,
 }) => {
   const {t} = useLanguage();
+  const scrollRef = useRef<ScrollView>(null);
 
   // Animation tracking for new tiles entering the discard pile
   const prevIdsRef = useRef<Set<string>>(new Set());
@@ -59,31 +60,52 @@ export const DiscardPile: React.FC<DiscardPileProps> = ({
     prevIdsRef.current = currentIds;
   }, [tiles, getAnim]);
 
+  // Auto-scroll to bottom when new tiles are added
+  useEffect(() => {
+    if (tiles.length > 0) {
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({animated: true});
+      }, 300);
+    }
+  }, [tiles.length]);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t.discards}</Text>
-      <View style={styles.grid}>
-        {tiles.map(tile => {
-          const anim = getAnim(tile.id);
-          return (
-            <Animated.View
-              key={tile.id}
-              style={{
-                transform: [{scale: anim.scale}],
-                opacity: anim.opacity,
-              }}>
-              <TileComponent
-                tile={tile}
-                size="small"
-                highlighted={tile.id === lastDiscardedTile?.id}
-              />
-            </Animated.View>
-          );
-        })}
-        {tiles.length === 0 && (
-          <Text style={styles.empty}>{t.noDiscardsYet}</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>{t.discards}</Text>
+        {tiles.length > 0 && (
+          <Text style={styles.count}>{tiles.length}</Text>
         )}
       </View>
+      <ScrollView
+        ref={scrollRef}
+        style={styles.scrollArea}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}>
+        <View style={styles.grid}>
+          {tiles.map(tile => {
+            const anim = getAnim(tile.id);
+            return (
+              <Animated.View
+                key={tile.id}
+                style={{
+                  transform: [{scale: anim.scale}],
+                  opacity: anim.opacity,
+                }}>
+                <TileComponent
+                  tile={tile}
+                  size="small"
+                  highlighted={tile.id === lastDiscardedTile?.id}
+                />
+              </Animated.View>
+            );
+          })}
+        </View>
+      </ScrollView>
+      {tiles.length === 0 && (
+        <Text style={styles.empty}>{t.noDiscardsYet}</Text>
+      )}
     </View>
   );
 };
@@ -91,16 +113,33 @@ export const DiscardPile: React.FC<DiscardPileProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 8,
+    padding: 4,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
   },
   title: {
     color: '#6B9C93',
     fontSize: 10,
     fontFamily: 'Nunito_600SemiBold',
-    marginBottom: 4,
     letterSpacing: 1,
+  },
+  count: {
+    color: '#8AABA5',
+    fontSize: 9,
+    fontFamily: 'Nunito_600SemiBold',
+  },
+  scrollArea: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContent: {
+    alignItems: 'center',
   },
   grid: {
     flexDirection: 'row',
