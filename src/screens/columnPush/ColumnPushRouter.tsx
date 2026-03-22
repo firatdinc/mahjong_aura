@@ -68,8 +68,9 @@ export const ColumnPushRouter: React.FC<ColumnPushRouterProps> = ({onBack}) => {
   );
 
   const handleExit = useCallback(() => {
-    showInterstitialIfReady();
-    animateTo('start');
+    showInterstitialIfReady(() => {
+      animateTo('start');
+    });
   }, [animateTo]);
 
   const handleOpenTutorial = useCallback(() => {

@@ -75,8 +75,9 @@ export const MahjongRouter: React.FC<MahjongRouterProps> = ({onBack}) => {
   }, [resumeGame, animateTo]);
 
   const handleExit = useCallback(() => {
-    showInterstitialIfReady();
-    animateTo('start', () => resetGame());
+    showInterstitialIfReady(() => {
+      animateTo('start', () => resetGame());
+    });
   }, [resetGame, animateTo]);
 
   const handleTutorialComplete = useCallback(() => {

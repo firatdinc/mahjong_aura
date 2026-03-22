@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mahjong Aura",
     "slug": "mahjong-aura",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/mahjong_aura_logo.png",
     "userInterfaceStyle": "dark",

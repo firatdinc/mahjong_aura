@@ -68,8 +68,9 @@ export const TrashOkeyRouter: React.FC<TrashOkeyRouterProps> = ({onBack}) => {
   );
 
   const handleExit = useCallback(() => {
-    showInterstitialIfReady();
-    animateTo('start');
+    showInterstitialIfReady(() => {
+      animateTo('start');
+    });
   }, [animateTo]);
 
   const handleOpenTutorial = useCallback(() => {
