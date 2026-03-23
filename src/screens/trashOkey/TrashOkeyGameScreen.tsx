@@ -125,7 +125,7 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
 
   const [paused, setPaused] = useState(false);
 
-  const canDraw = status === 'playing' && currentTurn === 'player' && !drawnTile && drawPile.length > 0;
+  const canDraw = status === 'playing' && currentTurn === 'player' && !drawnTile && (drawPile.length > 0 || discardPile.length > 1);
 
   const topDiscard = discardPile.length > 0 ? discardPile[discardPile.length - 1] : null;
   const canDrawDiscard = status === 'playing' && currentTurn === 'player' && !drawnTile &&

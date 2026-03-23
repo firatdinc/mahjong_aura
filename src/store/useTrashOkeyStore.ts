@@ -71,9 +71,27 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
     const state = get();
     if (state.status !== 'playing' || state.currentTurn !== 'player') return;
     if (state.drawnTile || state.chainActive) return;
-    if (state.drawPile.length === 0) return;
 
-    const newPile = [...state.drawPile];
+    let newPile = [...state.drawPile];
+
+    // If draw pile is empty, reshuffle discard pile (except top card) into draw pile
+    if (newPile.length === 0) {
+      if (state.discardPile.length <= 1) {
+        // Nothing to reshuffle — skip turn
+        set({currentTurn: 'bot', turnCount: state.turnCount + 1});
+        return;
+      }
+      const newDiscard = [state.discardPile[state.discardPile.length - 1]];
+      const toShuffle = state.discardPile.slice(0, -1);
+      // Shuffle
+      for (let i = toShuffle.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [toShuffle[i], toShuffle[j]] = [toShuffle[j], toShuffle[i]];
+      }
+      newPile = toShuffle;
+      set({discardPile: newDiscard});
+    }
+
     const drawn = newPile.pop()!;
 
     set({
@@ -226,9 +244,20 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
     }
 
     if (!currentTile) {
+      // If draw pile is empty, reshuffle discard (except top) into draw pile
       if (newDrawPile.length === 0) {
-        set({currentTurn: 'player', turnCount: freshState.turnCount + 1});
-        return;
+        if (newDiscardPile.length <= 1) {
+          set({currentTurn: 'player', turnCount: freshState.turnCount + 1});
+          return;
+        }
+        const topCard = newDiscardPile[newDiscardPile.length - 1];
+        const toShuffle = newDiscardPile.slice(0, -1);
+        for (let i = toShuffle.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [toShuffle[i], toShuffle[j]] = [toShuffle[j], toShuffle[i]];
+        }
+        newDrawPile = toShuffle;
+        newDiscardPile = [topCard];
       }
       currentTile = newDrawPile.pop()!;
     }

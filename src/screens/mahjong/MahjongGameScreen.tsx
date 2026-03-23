@@ -232,6 +232,18 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
         </View>
       </Animated.View>
 
+      {/* Hint button — placed above PlayerHand */}
+      {canDiscard && !winner && (
+        <View style={styles.hintRow}>
+          <TouchableOpacity
+            style={[styles.hintBtn, !isRewardedReady() && styles.hintBtnDisabled]}
+            onPress={handleHint}
+            activeOpacity={0.7}>
+            <Text style={styles.hintBtnText}>{t.watchAdHint}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <PlayerHand
         hand={playerState.hand}
         revealedMelds={playerState.revealedMelds}
@@ -242,16 +254,6 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
         canDraw={canDraw}
         hintTileId={hintTileId}
       />
-
-      {/* Hint button */}
-      {canDiscard && !winner && (
-        <TouchableOpacity
-          style={[styles.hintBtn, !isRewardedReady() && styles.hintBtnDisabled]}
-          onPress={handleHint}
-          activeOpacity={0.7}>
-          <Text style={styles.hintBtnText}>{t.watchAdHint}</Text>
-        </TouchableOpacity>
-      )}
 
       {/* Pause Modal */}
       <Modal visible={pauseVisible} transparent animationType="fade">
@@ -451,10 +453,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
     color: '#EF5350',
   },
+  hintRow: {
+    alignItems: 'flex-end',
+    paddingRight: 12,
+    paddingBottom: 4,
+  },
   hintBtn: {
-    position: 'absolute',
-    bottom: ms(90),
-    right: 12,
     backgroundColor: 'rgba(250,234,177,0.15)',
     borderRadius: 10,
     paddingVertical: 8,
