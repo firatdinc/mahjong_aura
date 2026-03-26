@@ -35,6 +35,7 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({type: 'upToDate'});
   const [updateDismissed, setUpdateDismissed] = useState(false);
+  const t = useLanguage(s => s.t);
 
   useEffect(() => {
     async function init() {
@@ -78,8 +79,6 @@ export default function App() {
       </View>
     );
   }
-
-  const t = useLanguage(s => s.t);
 
   const showUpdateModal =
     (updateStatus.type === 'forceUpdate') ||
