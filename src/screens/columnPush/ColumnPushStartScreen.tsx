@@ -239,9 +239,11 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
       {/* Banner Ad */}
       <View style={styles.bannerContainer}>
         <BannerAd
+          key="columnpush-banner"
           unitId={AD_IDS.BANNER}
           size={BannerAdSize.BANNER}
           requestOptions={{requestNonPersonalizedAdsOnly: true}}
+          onAdFailedToLoad={() => {}}
         />
       </View>
     </View>
@@ -502,11 +504,8 @@ const styles = StyleSheet.create({
   tutorialIcon: {fontSize: 16},
   tutorialLabel: {fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#FAEAB1', letterSpacing: 1},
   bannerContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     alignItems: 'center',
-    paddingBottom: 4,
+    paddingBottom: 8,
+    marginTop: 'auto',
   },
 });

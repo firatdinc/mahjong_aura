@@ -30,6 +30,7 @@ interface ColumnPushStore extends CPGameState {
   pickCenterTile: (index: number) => void;
   loadStats: () => void;
   resetGame: () => void;
+  continueGame: () => void;
 }
 
 const DEFAULT_STATS: CPStats = {
@@ -430,6 +431,13 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
       set({status: result, stats: newStats});
       saveColumnPushStats(newStats);
     }
+  },
+
+  continueGame: () => {
+    const state = get();
+    if (state.status !== 'lost') return;
+    // Give 3 extra turns by resetting status to playing
+    set({status: 'playing', turnCount: state.turnCount});
   },
 
   resetGame: () => {

@@ -1,5 +1,5 @@
 import React, {useState, useCallback, useEffect, useRef} from 'react';
-import {StatusBar, StyleSheet, ActivityIndicator, View, Animated, Easing} from 'react-native';
+import {StatusBar, StyleSheet, ActivityIndicator, View, Animated, Easing, Modal, Text, TouchableOpacity, Linking} from 'react-native';
 import {SafeAreaProvider, SafeAreaView} from 'react-native-safe-area-context';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import * as Font from 'expo-font';
@@ -19,8 +19,10 @@ import {TileMatchRouter} from './src/screens/tileMatch/TileMatchRouter';
 import {TrashOkeyRouter} from './src/screens/trashOkey/TrashOkeyRouter';
 import {ColumnPushRouter} from './src/screens/columnPush/ColumnPushRouter';
 import {initStorage} from './src/utils/storage';
-import {initLanguage} from './src/i18n/useLanguage';
+import {initLanguage, useLanguage} from './src/i18n/useLanguage';
 import {initSettings} from './src/store/useSettings';
+import {loadInterstitial, loadRewarded} from './src/utils/adHelpers';
+import {checkForUpdate, UpdateStatus, openStore} from './src/utils/versionCheck';
 
 type Screen =
   | {type: 'hub'}
@@ -31,6 +33,8 @@ type Screen =
 
 export default function App() {
   const [ready, setReady] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({type: 'upToDate'});
+  const [updateDismissed, setUpdateDismissed] = useState(false);
 
   useEffect(() => {
     async function init() {
@@ -54,6 +58,13 @@ export default function App() {
       // Initialize Mobile Ads SDK after consent
       try {
         await mobileAds().initialize();
+        loadInterstitial();
+        loadRewarded();
+      } catch {}
+      // Check for updates
+      try {
+        const status = await checkForUpdate();
+        setUpdateStatus(status);
       } catch {}
       setReady(true);
     }
@@ -68,6 +79,12 @@ export default function App() {
     );
   }
 
+  const t = useLanguage(s => s.t);
+
+  const showUpdateModal =
+    (updateStatus.type === 'forceUpdate') ||
+    (updateStatus.type === 'updateAvailable' && !updateDismissed);
+
   return (
     <GestureHandlerRootView style={styles.flex}>
       <SafeAreaProvider>
@@ -75,6 +92,43 @@ export default function App() {
         <SafeAreaView style={styles.safeArea} edges={['top']}>
           <AppContent />
         </SafeAreaView>
+
+        {/* Update Modal */}
+        <Modal visible={showUpdateModal} transparent animationType="fade">
+          <View style={styles.updateOverlay}>
+            <View style={styles.updateCard}>
+              <Text style={styles.updateIcon}>
+                {updateStatus.type === 'forceUpdate' ? '🔒' : '🎉'}
+              </Text>
+              <Text style={styles.updateTitle}>
+                {updateStatus.type === 'forceUpdate'
+                  ? t.updateRequired
+                  : t.updateAvailable}
+              </Text>
+              <Text style={styles.updateMessage}>
+                {updateStatus.type === 'forceUpdate'
+                  ? t.updateRequiredMsg
+                  : t.updateAvailableMsg}
+              </Text>
+              <TouchableOpacity
+                style={styles.updateBtn}
+                onPress={() => {
+                  if (updateStatus.type !== 'upToDate') openStore(updateStatus.storeUrl);
+                }}
+                activeOpacity={0.8}>
+                <Text style={styles.updateBtnText}>{t.updateNow}</Text>
+              </TouchableOpacity>
+              {updateStatus.type === 'updateAvailable' && (
+                <TouchableOpacity
+                  style={styles.updateLaterBtn}
+                  onPress={() => setUpdateDismissed(true)}
+                  activeOpacity={0.8}>
+                  <Text style={styles.updateLaterText}>{t.updateLater}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -179,5 +233,59 @@ const styles = StyleSheet.create({
     backgroundColor: '#334443',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  updateOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  updateCard: {
+    backgroundColor: '#34656D',
+    borderRadius: 20,
+    padding: 28,
+    width: 300,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3D7A74',
+  },
+  updateIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  updateTitle: {
+    fontSize: 20,
+    fontFamily: 'Nunito_700Bold',
+    color: '#FAF8F1',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  updateMessage: {
+    fontSize: 14,
+    color: '#B0CBC5',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  updateBtn: {
+    backgroundColor: '#FAEAB1',
+    borderRadius: 14,
+    paddingVertical: 14,
+    width: '100%',
+    alignItems: 'center',
+  },
+  updateBtnText: {
+    fontSize: 16,
+    fontFamily: 'Nunito_700Bold',
+    color: '#334443',
+  },
+  updateLaterBtn: {
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+  updateLaterText: {
+    fontSize: 14,
+    fontFamily: 'Nunito_600SemiBold',
+    color: '#8AABA5',
   },
 });

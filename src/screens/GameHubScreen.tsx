@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
 import {
   StyleSheet,
   View,
@@ -20,6 +20,8 @@ import {AnimatedPressable} from '../components/shared/AnimatedPressable';
 import {StaggeredEntry} from '../components/shared/StaggeredEntry';
 import {useLanguage} from '../i18n/useLanguage';
 import {LANGUAGES, Language, translations} from '../i18n/translations';
+import {isRewardedReady, showRewarded, loadRewarded} from '../utils/adHelpers';
+import {canClaimDailyReward, claimDailyReward, getFreeHints} from '../utils/storage';
 
 const logoImg = require('../../assets/mahjong_aura_logo.png');
 
@@ -42,6 +44,19 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [privacyVisible, setPrivacyVisible] = useState(false);
   const [privacyLang, setPrivacyLang] = useState<Language>(language);
+  const [canClaim, setCanClaim] = useState(canClaimDailyReward());
+  const [freeHints, setFreeHints] = useState(getFreeHints());
+
+  useEffect(() => { loadRewarded(); }, []);
+
+  const handleDailyReward = useCallback(() => {
+    if (!canClaim || !isRewardedReady()) return;
+    showRewarded(() => {
+      claimDailyReward();
+      setCanClaim(false);
+      setFreeHints(getFreeHints());
+    });
+  }, [canClaim]);
 
   // Title entrance animation
   const titleOpacity = useRef(new Animated.Value(0)).current;
@@ -220,6 +235,23 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
         })}
       </View>
 
+      {/* Daily Reward */}
+      <TouchableOpacity
+        style={[styles.dailyRewardBtn, !canClaim && styles.dailyRewardClaimed]}
+        onPress={handleDailyReward}
+        activeOpacity={canClaim ? 0.7 : 1}
+        disabled={!canClaim}>
+        <Text style={styles.dailyRewardIcon}>{canClaim ? '🎁' : '✅'}</Text>
+        <View>
+          <Text style={[styles.dailyRewardText, !canClaim && styles.dailyRewardTextClaimed]}>
+            {canClaim ? t.dailyReward : t.dailyRewardClaimed}
+          </Text>
+          {freeHints > 0 && (
+            <Text style={styles.dailyRewardHints}>{t.freeHints}: {freeHints}</Text>
+          )}
+        </View>
+      </TouchableOpacity>
+
       {/* Privacy Policy link */}
       <TouchableOpacity
         style={styles.privacyLink}
@@ -230,6 +262,7 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
         activeOpacity={0.7}>
         <Text style={styles.privacyLinkText}>{t.privacyPolicy}</Text>
       </TouchableOpacity>
+
     </View>
   );
 };
@@ -449,8 +482,43 @@ const styles = StyleSheet.create({
     maxWidth: contentMaxWidth(340),
     gap: 12,
   },
-  privacyLink: {
+  dailyRewardBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     marginTop: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    backgroundColor: 'rgba(250,234,177,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(250,234,177,0.35)',
+    width: '100%',
+    maxWidth: contentMaxWidth(340),
+  },
+  dailyRewardClaimed: {
+    backgroundColor: 'rgba(250,248,241,0.05)',
+    borderColor: 'rgba(250,248,241,0.1)',
+  },
+  dailyRewardIcon: {
+    fontSize: 24,
+  },
+  dailyRewardText: {
+    fontSize: 14,
+    fontFamily: 'Nunito_600SemiBold',
+    color: '#FAEAB1',
+  },
+  dailyRewardTextClaimed: {
+    color: '#6B9C93',
+  },
+  dailyRewardHints: {
+    fontSize: 11,
+    fontFamily: 'Nunito_500Medium',
+    color: '#8AABA5',
+    marginTop: 2,
+  },
+  privacyLink: {
+    marginTop: 12,
     paddingVertical: 8,
   },
   privacyLinkText: {

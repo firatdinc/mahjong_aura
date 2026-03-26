@@ -7,51 +7,73 @@ const isDev = typeof __DEV__ !== 'undefined' && __DEV__;
 // ─── Ad showing state (freeze guard) ─────────────────────
 let adShowing = false;
 
-// When app returns from background while ad is showing, force cleanup
 AppState.addEventListener('change', (state: AppStateStatus) => {
-  if (state === 'active' && adShowing) {
+  if (state === 'active') {
+    // Always reset adShowing when app becomes active
     adShowing = false;
-    // Reload ads in case CLOSED event was missed
-    if (!interstitialLoaded) loadInterstitial();
-    if (!rewardedLoaded) loadRewarded();
+    // Reload ads if needed
+    if (!interstitialLoaded && !interstitialLoading) loadInterstitial();
+    if (!rewardedLoaded && !rewardedLoading) loadRewarded();
   }
 });
 
 // ─── Interstitial (game over) ─────────────────────────────
 let interstitial: InterstitialAd | null = null;
 let interstitialLoaded = false;
+let interstitialLoading = false;
 let gamesPlayed = 0;
 let interstitialCloseCallback: (() => void) | null = null;
+let interstitialUnsubscribers: (() => void)[] = [];
 
-export function loadInterstitial() {
-  try {
-    interstitial = InterstitialAd.createForAdRequest(AD_IDS.INTERSTITIAL);
-    interstitial.addAdEventListener(AdEventType.LOADED, () => {
-      interstitialLoaded = true;
-    });
-    interstitial.addAdEventListener(AdEventType.CLOSED, () => {
-      adShowing = false;
-      interstitialLoaded = false;
-      if (interstitialCloseCallback) {
-        interstitialCloseCallback();
-        interstitialCloseCallback = null;
-      }
-      loadInterstitial();
-    });
-    interstitial.addAdEventListener(AdEventType.ERROR, () => {
-      adShowing = false;
-      interstitialLoaded = false;
-      if (interstitialCloseCallback) {
-        interstitialCloseCallback();
-        interstitialCloseCallback = null;
-      }
-      setTimeout(() => loadInterstitial(), 30000);
-    });
-    interstitial.load();
-  } catch {}
+function cleanupInterstitial() {
+  const unsubs = interstitialUnsubscribers;
+  interstitialUnsubscribers = [];
+  interstitial = null;
+  interstitialLoaded = false;
+  interstitialLoading = false;
+  // Unsubscribe after clearing references to avoid re-entrancy
+  unsubs.forEach(unsub => { try { unsub(); } catch {} });
 }
 
-// Shows interstitial if ready; calls onDone after ad closes (or immediately if no ad)
+export function loadInterstitial() {
+  if (interstitialLoading || interstitialLoaded) return;
+  try {
+    cleanupInterstitial();
+    interstitialLoading = true;
+    const ad = InterstitialAd.createForAdRequest(AD_IDS.INTERSTITIAL);
+
+    const unsubLoaded = ad.addAdEventListener(AdEventType.LOADED, () => {
+      interstitialLoaded = true;
+      interstitialLoading = false;
+    });
+    const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
+      adShowing = false;
+      const cb = interstitialCloseCallback;
+      interstitialCloseCallback = null;
+      cleanupInterstitial();
+      // Delay callback and reload to let the ad fully dismiss
+      setTimeout(() => {
+        cb?.();
+        loadInterstitial();
+      }, 100);
+    });
+    const unsubError = ad.addAdEventListener(AdEventType.ERROR, () => {
+      adShowing = false;
+      const cb = interstitialCloseCallback;
+      interstitialCloseCallback = null;
+      cleanupInterstitial();
+      cb?.();
+      setTimeout(() => loadInterstitial(), 10000);
+    });
+
+    interstitialUnsubscribers = [unsubLoaded, unsubClosed, unsubError];
+    interstitial = ad;
+    ad.load();
+  } catch {
+    interstitialLoading = false;
+  }
+}
+
 export function showInterstitialIfReady(onDone?: () => void): void {
   gamesPlayed++;
   if (gamesPlayed % INTERSTITIAL_FREQUENCY !== 0 || !interstitialLoaded || !interstitial) {
@@ -66,39 +88,67 @@ export function showInterstitialIfReady(onDone?: () => void): void {
     adShowing = false;
     interstitialCloseCallback = null;
     onDone?.();
+    loadInterstitial();
   }
 }
 
-// ─── Rewarded (hint) ──────────────────────────────────────
+// ─── Rewarded (hint / continue / double score) ───────────
 let rewarded: RewardedAd | null = null;
 let rewardedLoaded = false;
+let rewardedLoading = false;
 let rewardedCallback: (() => void) | null = null;
+let rewardedEarned = false;
+let rewardedUnsubscribers: (() => void)[] = [];
+
+function cleanupRewarded() {
+  const unsubs = rewardedUnsubscribers;
+  rewardedUnsubscribers = [];
+  rewarded = null;
+  rewardedLoaded = false;
+  rewardedLoading = false;
+  rewardedEarned = false;
+  unsubs.forEach(unsub => { try { unsub(); } catch {} });
+}
 
 export function loadRewarded() {
+  if (rewardedLoading || rewardedLoaded) return;
   try {
-    rewarded = RewardedAd.createForAdRequest(AD_IDS.REWARDED);
-    rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
+    cleanupRewarded();
+    rewardedLoading = true;
+    const ad = RewardedAd.createForAdRequest(AD_IDS.REWARDED);
+
+    const unsubLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
       rewardedLoaded = true;
+      rewardedLoading = false;
     });
-    rewarded.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
-      if (rewardedCallback) {
-        rewardedCallback();
-        rewardedCallback = null;
-      }
+    const unsubEarned = ad.addAdEventListener(RewardedAdEventType.EARNED_REWARD, () => {
+      rewardedEarned = true;
     });
-    rewarded.addAdEventListener(AdEventType.CLOSED, () => {
+    const unsubClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
       adShowing = false;
-      rewardedLoaded = false;
+      // Call callback on close (after earned) to avoid state updates while ad is visible
+      const cb = rewardedEarned ? rewardedCallback : null;
       rewardedCallback = null;
-      loadRewarded();
+      cleanupRewarded();
+      // Delay to let ad fully dismiss before triggering UI updates
+      setTimeout(() => {
+        cb?.();
+        loadRewarded();
+      }, 100);
     });
-    rewarded.addAdEventListener(AdEventType.ERROR, () => {
+    const unsubError = ad.addAdEventListener(AdEventType.ERROR, () => {
       adShowing = false;
-      rewardedLoaded = false;
-      setTimeout(() => loadRewarded(), 30000);
+      rewardedCallback = null;
+      cleanupRewarded();
+      setTimeout(() => loadRewarded(), 10000);
     });
-    rewarded.load();
-  } catch {}
+
+    rewardedUnsubscribers = [unsubLoaded, unsubEarned, unsubClosed, unsubError];
+    rewarded = ad;
+    ad.load();
+  } catch {
+    rewardedLoading = false;
+  }
 }
 
 export function isRewardedReady(): boolean {
@@ -108,18 +158,21 @@ export function isRewardedReady(): boolean {
 
 export function showRewarded(onRewarded: () => void): boolean {
   if (isDev) {
-    onRewarded();
+    // Use setTimeout to avoid synchronous state updates during render
+    setTimeout(() => onRewarded(), 50);
     return true;
   }
   if (!rewardedLoaded || !rewarded) return false;
   try {
     adShowing = true;
     rewardedCallback = onRewarded;
+    rewardedEarned = false;
     rewarded.show();
     return true;
   } catch {
     adShowing = false;
     rewardedCallback = null;
+    loadRewarded();
     return false;
   }
 }

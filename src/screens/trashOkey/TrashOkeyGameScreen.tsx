@@ -9,8 +9,9 @@ import {DrawArea} from '../../components/trashOkey/CenterTile';
 import {ChainIndicator} from '../../components/trashOkey/ChainIndicator';
 import {ms, modalWidth} from '../../utils/scaling';
 import {canPlaceTile} from '../../engine/trashOkey/gridLogic';
-import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
+import {loadRewarded, isRewardedReady, showRewarded, showInterstitialIfReady} from '../../utils/adHelpers';
 import {getSlotForNumber} from '../../engine/trashOkey/gridLogic';
+import {getFreeHints, useFreeHint} from '../../utils/storage';
 
 const GUIDE_KEY = '@mahjong_aura/trash_guide_seen';
 
@@ -37,6 +38,7 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
     placeDrawnTile,
     discardDrawnTile,
     playBotTurn,
+    continueGame,
   } = useTrashOkeyStore();
   const {t} = useLanguage();
 
@@ -106,24 +108,55 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
 
   // Hint state
   const [hintSlot, setHintSlot] = useState<number | null>(null);
-  const handleHint = useCallback(() => {
-    if (!isRewardedReady()) return;
-    showRewarded(() => {
-      const state = useTrashOkeyStore.getState();
-      const tile = state.drawnTile;
-      if (!tile) return;
-      if (tile.isJoker) {
-        const unrevealed = state.players.player.slots.filter(s => !s.isRevealed);
-        if (unrevealed.length > 0) setHintSlot(unrevealed[0].position);
-      } else {
-        const slot = getSlotForNumber(state.players.player.slots, tile.number);
-        if (slot) setHintSlot(slot.position);
-      }
-      setTimeout(() => setHintSlot(null), 5000);
-    });
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const doHint = useCallback(() => {
+    const state = useTrashOkeyStore.getState();
+    const tile = state.drawnTile;
+    if (!tile) return;
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    if (tile.isJoker) {
+      const unrevealed = state.players.player.slots.filter(s => !s.isRevealed);
+      if (unrevealed.length > 0) setHintSlot(unrevealed[0].position);
+    } else {
+      const slot = getSlotForNumber(state.players.player.slots, tile.number);
+      if (slot) setHintSlot(slot.position);
+    }
+    hintTimerRef.current = setTimeout(() => setHintSlot(null), 5000);
   }, []);
+  const handleHint = useCallback(() => {
+    if (getFreeHints() > 0 && useFreeHint()) {
+      doHint();
+      return;
+    }
+    if (!isRewardedReady()) return;
+    showRewarded(doHint);
+  }, [doHint]);
 
   const [paused, setPaused] = useState(false);
+  const [scoreDoubled, setScoreDoubled] = useState(false);
+  const [hasUsedContinue, setHasUsedContinue] = useState(false);
+  const [continueDeclined, setContinueDeclined] = useState(false);
+  const baseScore = longestChain * 100 + Math.max(0, 20 - turnCount) * 10;
+  const displayScore = scoreDoubled ? baseScore * 2 : baseScore;
+
+  // Reset continue state on new game
+  const prevStatus = useRef(status);
+  useEffect(() => {
+    if (prevStatus.current !== 'playing' && status === 'playing') {
+      setHasUsedContinue(false);
+      setContinueDeclined(false);
+      setScoreDoubled(false);
+    }
+    prevStatus.current = status;
+  }, [status]);
+
+  const handleContinueAd = useCallback(() => {
+    if (!isRewardedReady()) return;
+    showRewarded(() => {
+      setHasUsedContinue(true);
+      continueGame();
+    });
+  }, [continueGame]);
 
   const canDraw = status === 'playing' && currentTurn === 'player' && !drawnTile && (drawPile.length > 0 || discardPile.length > 1);
 
@@ -131,7 +164,8 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
   const canDrawDiscard = status === 'playing' && currentTurn === 'player' && !drawnTile &&
     topDiscard !== null && canPlaceTile(players.player.slots, topDiscard);
 
-  const showResult = status === 'won' || status === 'lost';
+  const shouldShowContinue = status === 'lost' && !hasUsedContinue && !continueDeclined;
+  const showResult = status === 'won' || (status === 'lost' && !shouldShowContinue);
 
 
   return (
@@ -186,10 +220,12 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
       {/* Hint button */}
       {currentTurn === 'player' && drawnTile && status === 'playing' && (
         <TouchableOpacity
-          style={[styles.hintBtn, !isRewardedReady() && styles.hintBtnDisabled]}
+          style={[styles.hintBtn, !isRewardedReady() && getFreeHints() <= 0 && styles.hintBtnDisabled]}
           onPress={handleHint}
           activeOpacity={0.7}>
-          <Text style={styles.hintBtnText}>{t.watchAdHint}</Text>
+          <Text style={styles.hintBtnText}>
+            {getFreeHints() > 0 ? `${t.freeHints} (${getFreeHints()})` : t.watchAdHint}
+          </Text>
         </TouchableOpacity>
       )}
 
@@ -237,6 +273,26 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
         </View>
       </Modal>
 
+      {/* Continue Modal */}
+      <Modal visible={shouldShowContinue} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={{fontSize: ms(40), marginBottom: 8}}>🎬</Text>
+            <Text style={styles.modalTitle}>{t.continueTitle}</Text>
+            <Text style={{fontSize: 14, color: '#B0CBC5', textAlign: 'center', marginBottom: 16}}>{t.continueDesc}</Text>
+            <TouchableOpacity
+              style={[styles.modalBtn, !isRewardedReady() && {opacity: 0.4}]}
+              onPress={handleContinueAd}
+              activeOpacity={0.8}>
+              <Text style={styles.modalBtnText}>{t.continueWatchAd}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{paddingVertical: 12, marginTop: 8}} onPress={() => setContinueDeclined(true)} activeOpacity={0.8}>
+              <Text style={{fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#8AABA5'}}>{t.continueNoThanks}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* Result modal */}
       <Modal visible={showResult} transparent animationType="fade">
         <View style={styles.modalOverlay}>
@@ -245,8 +301,22 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
             <View style={styles.modalStats}>
               <Text style={styles.modalStat}>{t.toLongestChain}: {longestChain}</Text>
               <Text style={styles.modalStat}>{t.turns}: {turnCount}</Text>
+              <Text style={[styles.scoreStat, scoreDoubled && styles.scoreDoubledText]}>
+                {t.scoreLabel}: {displayScore}{scoreDoubled ? ' 🎉' : ''}
+              </Text>
             </View>
-            <TouchableOpacity style={styles.modalBtn} onPress={onExit} activeOpacity={0.8}>
+            {status === 'won' && !scoreDoubled && (
+              <TouchableOpacity
+                style={[styles.doubleBtn, !isRewardedReady() && {opacity: 0.4}]}
+                onPress={() => { if (!isRewardedReady()) return; showRewarded(() => setScoreDoubled(true)); }}
+                activeOpacity={0.8}>
+                <Text style={styles.doubleBtnText}>{t.doubleScoreAd}</Text>
+              </TouchableOpacity>
+            )}
+            {scoreDoubled && (
+              <Text style={styles.scoreDoubledLabel}>{t.scoreDoubled}</Text>
+            )}
+            <TouchableOpacity style={styles.modalBtn} onPress={() => showInterstitialIfReady(onExit)} activeOpacity={0.8}>
               <Text style={styles.modalBtnText}>{t.back}</Text>
             </TouchableOpacity>
           </View>
@@ -329,4 +399,12 @@ const styles = StyleSheet.create({
   },
   hintBtnDisabled: {opacity: 0.4},
   hintBtnText: {fontSize: 11, fontFamily: 'Nunito_600SemiBold', color: '#FAEAB1'},
+  scoreStat: {fontSize: 18, fontFamily: 'Nunito_700Bold', color: '#FAEAB1', marginTop: 4},
+  scoreDoubledText: {fontSize: 22, color: '#27AE60'},
+  scoreDoubledLabel: {fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#27AE60', marginBottom: 4},
+  doubleBtn: {
+    backgroundColor: 'rgba(39,174,96,0.2)', borderRadius: 12, paddingVertical: 10,
+    paddingHorizontal: 20, marginTop: 8, borderWidth: 1, borderColor: 'rgba(39,174,96,0.5)',
+  },
+  doubleBtnText: {fontSize: 13, fontFamily: 'Nunito_600SemiBold', color: '#27AE60'},
 });

@@ -29,4 +29,4 @@ export const AD_IDS = {
 };
 
 // Show interstitial every N games (not every single game)
-export const INTERSTITIAL_FREQUENCY = 3;
+export const INTERSTITIAL_FREQUENCY = 2;

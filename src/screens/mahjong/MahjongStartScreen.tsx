@@ -8,6 +8,7 @@ import {
   Modal,
   Animated,
   Easing,
+  ScrollView,
 } from 'react-native';
 import {Difficulty} from '../../types';
 import {loadStats, loadGameState, PlayerStats} from '../../utils/storage';
@@ -19,8 +20,6 @@ import {ms, modalWidth, contentMaxWidth} from '../../utils/scaling';
 import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
 import {AD_IDS} from '../../constants/adConfig';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const logoImg = require('../../../assets/mahjong_aura_logo.png');
 const trophyImg = require('../../../assets/game/trophy.png');
 const starImg = require('../../../assets/game/star.png');
 const medalImg = require('../../../assets/game/medal.png');
@@ -95,6 +94,11 @@ export const MahjongStartScreen: React.FC<MahjongStartScreenProps> = ({onStart, 
         <Text style={styles.gearIcon}>{'\u2699'}</Text>
       </AnimatedPressable>
 
+      <ScrollView
+        style={{width: '100%'}}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+
       {/* Settings modal */}
       <Modal
         visible={langModalVisible}
@@ -161,7 +165,7 @@ export const MahjongStartScreen: React.FC<MahjongStartScreenProps> = ({onStart, 
           styles.titleContainer,
           {opacity: titleOpacity, transform: [{scale: titleScale}]},
         ]}>
-        <Image source={logoImg} style={styles.logoImage} />
+        <Text style={styles.titleEmoji}>&#x1F004;</Text>
         <Text style={styles.title}>{t.mahjong}</Text>
         <Text style={styles.subtitle}>{t.aura}</Text>
       </Animated.View>
@@ -226,11 +230,7 @@ export const MahjongStartScreen: React.FC<MahjongStartScreenProps> = ({onStart, 
               onPress={() => onStart(level)}
               activeScale={0.96}>
               <View style={styles.buttonIconWrap}>
-                {level === 'hard' ? (
-                  <Image source={medalImg} style={styles.difficultyIcon} />
-                ) : (
-                  <Text style={styles.difficultyEmoji}>{icon}</Text>
-                )}
+                <Text style={styles.difficultyEmoji}>{icon}</Text>
               </View>
               <View style={styles.buttonTextContainer}>
                 <Text style={styles.buttonLabel}>{label}</Text>
@@ -253,12 +253,16 @@ export const MahjongStartScreen: React.FC<MahjongStartScreenProps> = ({onStart, 
         </AnimatedPressable>
       </StaggeredEntry>
 
+      </ScrollView>
+
       {/* Banner Ad */}
       <View style={styles.bannerContainer}>
         <BannerAd
+          key="mahjong-banner"
           unitId={AD_IDS.BANNER}
           size={BannerAdSize.BANNER}
           requestOptions={{requestNonPersonalizedAdsOnly: true}}
+          onAdFailedToLoad={() => {}}
         />
       </View>
     </View>
@@ -284,9 +288,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#334443',
-    justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    paddingTop: 40,
+    paddingBottom: 16,
+    flexGrow: 1,
+    justifyContent: 'center',
+    width: '100%',
   },
   backButton: {
     position: 'absolute',
@@ -392,12 +403,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  logoImage: {
-    width: ms(100),
-    height: ms(100),
-    borderRadius: ms(20),
-    resizeMode: 'contain',
-    marginBottom: 12,
+  titleEmoji: {
+    fontSize: ms(48),
+    marginBottom: 8,
   },
   title: {
     fontSize: ms(42),
@@ -520,11 +528,6 @@ const styles = StyleSheet.create({
   difficultyEmoji: {
     fontSize: 22,
   },
-  difficultyIcon: {
-    width: 28,
-    height: 28,
-    resizeMode: 'contain',
-  },
   buttonTextContainer: {
     flex: 1,
   },
@@ -566,11 +569,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   bannerContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     alignItems: 'center',
-    paddingBottom: 4,
+    paddingBottom: 8,
   },
 });

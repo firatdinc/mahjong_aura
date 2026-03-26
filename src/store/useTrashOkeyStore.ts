@@ -26,6 +26,7 @@ interface TrashOkeyStore extends TrashGameState {
   playBotTurn: () => Promise<void>;
   resetGame: () => void;
   loadStats: () => void;
+  continueGame: () => void;
 
   // Keep old API names for router compatibility
   pickUpCenterTile: () => void;
@@ -361,6 +362,30 @@ export const useTrashOkeyStore = create<TrashOkeyStore>((set, get) => ({
         drawnTile: currentTile,
       });
     }
+  },
+
+  continueGame: () => {
+    const state = get();
+    if (state.status !== 'lost') return;
+    // Reveal 2 random unrevealed player slots
+    const unrevealed = state.players.player.slots.filter(s => !s.isRevealed);
+    const toReveal = unrevealed.slice(0, 2);
+    if (toReveal.length === 0) return;
+    const newSlots = state.players.player.slots.map(s => {
+      if (toReveal.some(r => r.position === s.position)) {
+        return {...s, isRevealed: true};
+      }
+      return s;
+    });
+    const revealedCount = newSlots.filter(s => s.isRevealed).length;
+    set({
+      status: 'playing',
+      currentTurn: 'player',
+      players: {
+        ...state.players,
+        player: {...state.players.player, slots: newSlots, revealedCount},
+      },
+    });
   },
 
   resetGame: () => {

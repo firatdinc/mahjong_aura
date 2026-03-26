@@ -145,7 +145,7 @@ export const TileMatchStartScreen: React.FC<TileMatchStartScreenProps> = ({
           styles.titleContainer,
           {opacity: titleOpacity, transform: [{scale: titleScale}]},
         ]}>
-        <Text style={styles.titleEmoji}>&#x1F004;</Text>
+        <Text style={styles.titleEmoji}>&#x1F9E9;</Text>
         <Text style={styles.title}>{t.hubTileMatchTitle}</Text>
         <Text style={styles.subtitle}>{t.tmTapToMatch}</Text>
       </Animated.View>
@@ -250,9 +250,11 @@ export const TileMatchStartScreen: React.FC<TileMatchStartScreenProps> = ({
       {/* Banner Ad */}
       <View style={styles.bannerContainer}>
         <BannerAd
+          key="tilematch-banner"
           unitId={AD_IDS.BANNER}
           size={BannerAdSize.BANNER}
           requestOptions={{requestNonPersonalizedAdsOnly: true}}
+          onAdFailedToLoad={() => {}}
         />
       </View>
     </View>
@@ -531,11 +533,8 @@ const styles = StyleSheet.create({
   tutorialIcon: {fontSize: 16},
   tutorialLabel: {fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#FAEAB1', letterSpacing: 1},
   bannerContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     alignItems: 'center',
-    paddingBottom: 4,
+    paddingBottom: 8,
+    marginTop: 'auto',
   },
 });

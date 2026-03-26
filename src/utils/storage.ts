@@ -17,6 +17,9 @@ const KEYS = {
   TO_STATS: '@mahjong_aura/trash_okey_stats',
   // Column Push
   CP_STATS: '@mahjong_aura/column_push_stats',
+  // Daily reward
+  DAILY_REWARD_DATE: '@mahjong_aura/daily_reward_date',
+  FREE_HINTS: '@mahjong_aura/free_hints',
 } as const;
 
 // ─── In-memory cache ────────────────────────────────────────
@@ -29,6 +32,8 @@ let cachedTMProgress: TileMatchProgress | null = null;
 let cachedTMStats: TileMatchStats | null = null;
 let cachedTOStats: TrashOkeyStats | null = null;
 let cachedCPStats: CPStats | null = null;
+let cachedDailyRewardDate: string | null = null;
+let cachedFreeHints = 0;
 let cacheLoaded = false;
 
 // Load cache from disk on startup
@@ -57,10 +62,14 @@ export async function initStorage(): Promise<void> {
     if (tmStatsRaw) cachedTMStats = JSON.parse(tmStatsRaw);
     if (toStatsRaw) cachedTOStats = JSON.parse(toStatsRaw);
 
-    const [cpStatsRaw] = await Promise.all([
+    const [cpStatsRaw, dailyRewardRaw, freeHintsRaw] = await Promise.all([
       AsyncStorage.getItem(KEYS.CP_STATS),
+      AsyncStorage.getItem(KEYS.DAILY_REWARD_DATE),
+      AsyncStorage.getItem(KEYS.FREE_HINTS),
     ]);
     if (cpStatsRaw) cachedCPStats = JSON.parse(cpStatsRaw);
+    if (dailyRewardRaw) cachedDailyRewardDate = dailyRewardRaw;
+    if (freeHintsRaw) cachedFreeHints = parseInt(freeHintsRaw, 10) || 0;
   } catch {
     // Silently fail
   }
@@ -207,4 +216,33 @@ export function saveColumnPushStats(stats: CPStats): void {
 
 export function loadColumnPushStats(): CPStats | null {
   return cachedCPStats;
+}
+
+// ─── Daily Reward & Free Hints ──────────────────────────
+
+function getTodayString(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
+export function canClaimDailyReward(): boolean {
+  return cachedDailyRewardDate !== getTodayString();
+}
+
+export function claimDailyReward(): void {
+  const today = getTodayString();
+  cachedDailyRewardDate = today;
+  cachedFreeHints += 3;
+  AsyncStorage.setItem(KEYS.DAILY_REWARD_DATE, today).catch(() => {});
+  AsyncStorage.setItem(KEYS.FREE_HINTS, String(cachedFreeHints)).catch(() => {});
+}
+
+export function getFreeHints(): number {
+  return cachedFreeHints;
+}
+
+export function useFreeHint(): boolean {
+  if (cachedFreeHints <= 0) return false;
+  cachedFreeHints--;
+  AsyncStorage.setItem(KEYS.FREE_HINTS, String(cachedFreeHints)).catch(() => {});
+  return true;
 }

@@ -11,8 +11,9 @@ import {BotHand} from '../../components/mahjong/BotHand';
 import {DiscardPile} from '../../components/mahjong/DiscardPile';
 import {ClaimPanel} from '../../components/mahjong/ClaimPanel';
 import {ms, modalWidth} from '../../utils/scaling';
-import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
+import {loadRewarded, isRewardedReady, showRewarded, showInterstitialIfReady} from '../../utils/adHelpers';
 import {scoreTileUsefulness} from '../../engine/mahjong/botAI';
+import {getFreeHints, useFreeHint} from '../../utils/storage';
 
 interface MahjongGameScreenProps {
   onExit: () => void;
@@ -93,24 +94,41 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
 
   // Hint state
   const [hintTileId, setHintTileId] = useState<string | null>(null);
-  const handleHint = useCallback(() => {
-    if (!isRewardedReady()) return;
-    showRewarded(() => {
-      const state = useGameStore.getState();
-      const hand = state.players.player.hand;
-      if (hand.length === 0) return;
-      let worst = hand[0];
-      let worstScore = Infinity;
-      for (const tile of hand) {
-        const score = scoreTileUsefulness(tile, hand);
-        if (score < worstScore) {
-          worstScore = score;
-          worst = tile;
-        }
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const doHint = useCallback(() => {
+    const state = useGameStore.getState();
+    const hand = state.players.player.hand;
+    if (hand.length === 0) return;
+    let worst = hand[0];
+    let worstScore = Infinity;
+    for (const tile of hand) {
+      const score = scoreTileUsefulness(tile, hand);
+      if (score < worstScore) {
+        worstScore = score;
+        worst = tile;
       }
-      setHintTileId(worst.id);
-      setTimeout(() => setHintTileId(null), 5000);
-    });
+    }
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    setHintTileId(worst.id);
+    hintTimerRef.current = setTimeout(() => setHintTileId(null), 5000);
+  }, []);
+  const handleHint = useCallback(() => {
+    if (getFreeHints() > 0 && useFreeHint()) {
+      doHint();
+      return;
+    }
+    if (!isRewardedReady()) return;
+    showRewarded(doHint);
+  }, [doHint]);
+
+  // Score 2x state
+  const [scoreDoubled, setScoreDoubled] = useState(false);
+  const baseScore = winner === 'player' ? (wall.length * 5 + players.player.revealedMelds.length * 50 + 200) : 0;
+  const displayScore = scoreDoubled ? baseScore * 2 : baseScore;
+
+  const handleDoubleScore = useCallback(() => {
+    if (!isRewardedReady()) return;
+    showRewarded(() => setScoreDoubled(true));
   }, []);
 
   // Show game over modal
@@ -236,10 +254,12 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
       {canDiscard && !winner && (
         <View style={styles.hintRow}>
           <TouchableOpacity
-            style={[styles.hintBtn, !isRewardedReady() && styles.hintBtnDisabled]}
+            style={[styles.hintBtn, !isRewardedReady() && getFreeHints() <= 0 && styles.hintBtnDisabled]}
             onPress={handleHint}
             activeOpacity={0.7}>
-            <Text style={styles.hintBtnText}>{t.watchAdHint}</Text>
+            <Text style={styles.hintBtnText}>
+              {getFreeHints() > 0 ? `${t.freeHints} (${getFreeHints()})` : t.watchAdHint}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -313,10 +333,27 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
                   : t.betterLuck
                 : t.wallExhausted}
             </Text>
+            {winner === 'player' && (
+              <View style={{marginBottom: 12, alignItems: 'center'}}>
+                <Text style={{fontSize: 18, fontFamily: 'Nunito_700Bold', color: '#FAEAB1', marginBottom: 4}}>
+                  {t.scoreLabel}: {displayScore}{scoreDoubled ? ' 🎉' : ''}
+                </Text>
+                {!scoreDoubled ? (
+                  <TouchableOpacity
+                    style={{backgroundColor: 'rgba(39,174,96,0.2)', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 20, marginTop: 4, borderWidth: 1, borderColor: 'rgba(39,174,96,0.5)', opacity: isRewardedReady() ? 1 : 0.4}}
+                    onPress={handleDoubleScore}
+                    activeOpacity={0.8}>
+                    <Text style={{fontSize: 13, fontFamily: 'Nunito_600SemiBold', color: '#27AE60'}}>{t.doubleScoreAd}</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text style={{fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: '#27AE60'}}>{t.scoreDoubled}</Text>
+                )}
+              </View>
+            )}
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.modalBtnPrimary}
-                onPress={() => { setGameOverVisible(false); onExit(); }}
+                onPress={() => { setGameOverVisible(false); showInterstitialIfReady(() => onExit()); }}
                 activeOpacity={0.8}>
                 <Text style={styles.modalBtnPrimaryText}>{t.newGame}</Text>
               </TouchableOpacity>

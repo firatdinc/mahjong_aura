@@ -265,6 +265,26 @@ export interface Translations {
   // Hint ad
   watchAdHint: string;
   hintNotReady: string;
+  // Continue ad (game over)
+  continueTitle: string;
+  continueDesc: string;
+  continueWatchAd: string;
+  continueNoThanks: string;
+  // Daily reward
+  dailyReward: string;
+  dailyRewardClaimed: string;
+  freeHints: string;
+  // Score 2x
+  scoreLabel: string;
+  doubleScoreAd: string;
+  scoreDoubled: string;
+  // Update modal
+  updateRequired: string;
+  updateAvailable: string;
+  updateRequiredMsg: string;
+  updateAvailableMsg: string;
+  updateNow: string;
+  updateLater: string;
 }
 
 const en: Translations = {
@@ -498,6 +518,22 @@ const en: Translations = {
   cpTutReadyBody: 'Roll dice to see who goes first. Fill your grid with your theme to win!',
   watchAdHint: 'Watch Ad for Hint',
   hintNotReady: 'Hint not ready yet',
+  continueTitle: 'Continue?',
+  continueDesc: 'Watch an ad to keep playing!',
+  continueWatchAd: 'Watch Ad to Continue',
+  continueNoThanks: 'No Thanks',
+  dailyReward: 'Daily Reward: 3 Free Hints',
+  dailyRewardClaimed: 'Claimed Today',
+  freeHints: 'Free Hints',
+  scoreLabel: 'Score',
+  doubleScoreAd: 'Watch Ad to Double Score',
+  scoreDoubled: 'Score Doubled!',
+  updateRequired: 'Update Required',
+  updateAvailable: 'New Version Available',
+  updateRequiredMsg: 'Please update Mahjong Aura to continue playing. This update includes important fixes.',
+  updateAvailableMsg: 'A new version of Mahjong Aura is available with new features and bug fixes!',
+  updateNow: 'Update Now',
+  updateLater: 'Later',
 };
 
 const tr: Translations = {
@@ -728,6 +764,22 @@ const tr: Translations = {
   cpTutReadyBody: 'Kimin başlayacağını belirlemek için zar atın. Izgaranı temanla doldurarak kazan!',
   watchAdHint: 'Reklam Izle, Ipucu Kazan',
   hintNotReady: 'Ipucu henuz hazir degil',
+  continueTitle: 'Devam Et?',
+  continueDesc: 'Reklam izleyerek oynamaya devam et!',
+  continueWatchAd: 'Reklam Izle ve Devam Et',
+  continueNoThanks: 'Hayır, Teşekkürler',
+  dailyReward: 'Günlük Ödül: 3 Ücretsiz İpucu',
+  dailyRewardClaimed: 'Bugün Alındı',
+  freeHints: 'Ücretsiz İpucu',
+  scoreLabel: 'Skor',
+  doubleScoreAd: 'Reklam Izle, Skoru 2x Yap',
+  scoreDoubled: 'Skor İkiye Katlandı!',
+  updateRequired: 'Güncelleme Gerekli',
+  updateAvailable: 'Yeni Sürüm Mevcut',
+  updateRequiredMsg: 'Oynamaya devam etmek için Mahjong Aura\'yı güncelleyin. Bu güncelleme önemli düzeltmeler içerir.',
+  updateAvailableMsg: 'Mahjong Aura\'nın yeni özellikleri ve hata düzeltmeleri içeren yeni bir sürümü mevcut!',
+  updateNow: 'Şimdi Güncelle',
+  updateLater: 'Daha Sonra',
 };
 
 const zh: Translations = {
@@ -958,6 +1010,22 @@ const zh: Translations = {
   cpTutReadyBody: '掷骰子决定谁先开始。用你的主题填满网格即可获胜！',
   watchAdHint: '看广告获提示',
   hintNotReady: '提示尚未准备好',
+  continueTitle: '继续？',
+  continueDesc: '观看广告继续游戏！',
+  continueWatchAd: '看广告继续',
+  continueNoThanks: '不了，谢谢',
+  dailyReward: '每日奖励：3个免费提示',
+  dailyRewardClaimed: '今日已领取',
+  freeHints: '免费提示',
+  scoreLabel: '分数',
+  doubleScoreAd: '看广告双倍分数',
+  scoreDoubled: '分数翻倍！',
+  updateRequired: '需要更新',
+  updateAvailable: '新版本可用',
+  updateRequiredMsg: '请更新 Mahjong Aura 以继续游戏。此更新包含重要修复。',
+  updateAvailableMsg: 'Mahjong Aura 有新版本可用，包含新功能和错误修复！',
+  updateNow: '立即更新',
+  updateLater: '稍后',
 };
 
 const es: Translations = {
@@ -1188,6 +1256,22 @@ const es: Translations = {
   cpTutReadyBody: 'Tira los dados para ver quien empieza. Llena tu cuadricula con tu tema para ganar!',
   watchAdHint: 'Ver anuncio para pista',
   hintNotReady: 'Pista aun no lista',
+  continueTitle: '¿Continuar?',
+  continueDesc: '¡Mira un anuncio para seguir jugando!',
+  continueWatchAd: 'Ver anuncio para continuar',
+  continueNoThanks: 'No, gracias',
+  dailyReward: 'Recompensa diaria: 3 pistas gratis',
+  dailyRewardClaimed: 'Reclamado hoy',
+  freeHints: 'Pistas gratis',
+  scoreLabel: 'Puntuación',
+  doubleScoreAd: 'Ver anuncio para duplicar puntuación',
+  scoreDoubled: '¡Puntuación duplicada!',
+  updateRequired: 'Actualización Necesaria',
+  updateAvailable: 'Nueva Versión Disponible',
+  updateRequiredMsg: 'Actualiza Mahjong Aura para seguir jugando. Esta actualización incluye correcciones importantes.',
+  updateAvailableMsg: '¡Una nueva versión de Mahjong Aura está disponible con nuevas funciones y correcciones!',
+  updateNow: 'Actualizar Ahora',
+  updateLater: 'Más Tarde',
 };
 
 const fr: Translations = {
@@ -1418,6 +1502,22 @@ const fr: Translations = {
   cpTutReadyBody: 'Lancez les des pour savoir qui commence. Remplissez votre grille avec votre theme pour gagner !',
   watchAdHint: 'Voir pub pour indice',
   hintNotReady: 'Indice pas encore pret',
+  continueTitle: 'Continuer ?',
+  continueDesc: 'Regardez une pub pour continuer à jouer !',
+  continueWatchAd: 'Voir pub pour continuer',
+  continueNoThanks: 'Non merci',
+  dailyReward: 'Récompense quotidienne : 3 indices gratuits',
+  dailyRewardClaimed: 'Réclamé aujourd\'hui',
+  freeHints: 'Indices gratuits',
+  scoreLabel: 'Score',
+  doubleScoreAd: 'Voir pub pour doubler le score',
+  scoreDoubled: 'Score doublé !',
+  updateRequired: 'Mise à jour requise',
+  updateAvailable: 'Nouvelle version disponible',
+  updateRequiredMsg: 'Veuillez mettre à jour Mahjong Aura pour continuer à jouer. Cette mise à jour contient des corrections importantes.',
+  updateAvailableMsg: 'Une nouvelle version de Mahjong Aura est disponible avec de nouvelles fonctionnalités et des corrections !',
+  updateNow: 'Mettre à jour',
+  updateLater: 'Plus tard',
 };
 
 const de: Translations = {
@@ -1648,6 +1748,22 @@ const de: Translations = {
   cpTutReadyBody: 'Wurfel, wer beginnt. Fulle dein Gitter mit deinem Thema zum Sieg!',
   watchAdHint: 'Werbung fur Hinweis',
   hintNotReady: 'Hinweis noch nicht bereit',
+  continueTitle: 'Weitermachen?',
+  continueDesc: 'Schau eine Werbung, um weiterzuspielen!',
+  continueWatchAd: 'Werbung ansehen & weitermachen',
+  continueNoThanks: 'Nein, danke',
+  dailyReward: 'Tägliche Belohnung: 3 kostenlose Hinweise',
+  dailyRewardClaimed: 'Heute eingelöst',
+  freeHints: 'Gratis-Hinweise',
+  scoreLabel: 'Punktzahl',
+  doubleScoreAd: 'Werbung für doppelte Punktzahl',
+  scoreDoubled: 'Punktzahl verdoppelt!',
+  updateRequired: 'Update erforderlich',
+  updateAvailable: 'Neue Version verfügbar',
+  updateRequiredMsg: 'Bitte aktualisiere Mahjong Aura, um weiterzuspielen. Dieses Update enthält wichtige Korrekturen.',
+  updateAvailableMsg: 'Eine neue Version von Mahjong Aura ist verfügbar mit neuen Funktionen und Fehlerbehebungen!',
+  updateNow: 'Jetzt aktualisieren',
+  updateLater: 'Später',
 };
 
 export const translations: Record<Language, Translations> = {

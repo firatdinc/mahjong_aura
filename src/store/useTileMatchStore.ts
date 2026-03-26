@@ -35,6 +35,7 @@ interface TileMatchStore extends TileMatchGameState {
   resetLevel: () => void;
   nextLevel: () => void;
   loadProgress: () => void;
+  continueGame: () => void;
 }
 
 const DEFAULT_PROGRESS: TileMatchProgress = {
@@ -305,5 +306,28 @@ export const useTileMatchStore = create<TileMatchStore>((set, get) => ({
     const nextLvl = progress.currentLevel;
     const gameState = generateLevel(nextLvl);
     set(gameState);
+  },
+
+  continueGame: () => {
+    const state = get();
+    if (state.status !== 'lost') return;
+    if (state.timeRemaining <= 0) {
+      // Time up: add 30 seconds
+      set({status: 'playing', timeRemaining: 30});
+    } else {
+      // Bar full: remove last 3 tiles from bar
+      const tilesToRemove = state.bar.slice(-3);
+      const removeIds = new Set(tilesToRemove.map(t => t.id));
+      const newBar = state.bar.filter(t => !removeIds.has(t.id));
+      const newBoard = state.board.map(t =>
+        removeIds.has(t.id) ? {...t, isInBar: false, isMatched: true} : t,
+      );
+      const freeIds = computeFreeTiles(newBoard);
+      const boardWithFree = newBoard.map(t => ({
+        ...t,
+        isFree: !t.isInBar && !t.isMatched && freeIds.has(t.id),
+      }));
+      set({status: 'playing', bar: newBar, board: boardWithFree});
+    }
   },
 }));
