@@ -77,6 +77,10 @@ export const ColumnPushRouter: React.FC<ColumnPushRouterProps> = ({onBack}) => {
     animateTo('tutorial');
   }, [animateTo]);
 
+  const handleTutorialComplete = useCallback(() => {
+    animateTo('start');
+  }, [animateTo]);
+
   return (
     <Animated.View
       style={{
@@ -87,7 +91,7 @@ export const ColumnPushRouter: React.FC<ColumnPushRouterProps> = ({onBack}) => {
       {sub === 'game' ? (
         <ColumnPushGameScreen onExit={handleExit} />
       ) : sub === 'tutorial' ? (
-        <ColumnPushTutorialScreen onComplete={handleExit} />
+        <ColumnPushTutorialScreen onComplete={handleTutorialComplete} />
       ) : (
         <ColumnPushStartScreen onStart={handleStart} onBack={onBack} onTutorial={handleOpenTutorial} />
       )}

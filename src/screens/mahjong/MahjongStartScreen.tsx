@@ -260,8 +260,8 @@ export const MahjongStartScreen: React.FC<MahjongStartScreenProps> = ({onStart, 
         <BannerAd
           key="mahjong-banner"
           unitId={AD_IDS.BANNER}
-          size={BannerAdSize.BANNER}
-          requestOptions={{requestNonPersonalizedAdsOnly: true}}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{requestNonPersonalizedAdsOnly: false}}
           onAdFailedToLoad={() => {}}
         />
       </View>

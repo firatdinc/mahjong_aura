@@ -77,6 +77,10 @@ export const TrashOkeyRouter: React.FC<TrashOkeyRouterProps> = ({onBack}) => {
     animateTo('tutorial');
   }, [animateTo]);
 
+  const handleTutorialComplete = useCallback(() => {
+    animateTo('start');
+  }, [animateTo]);
+
   return (
     <Animated.View
       style={{
@@ -87,7 +91,7 @@ export const TrashOkeyRouter: React.FC<TrashOkeyRouterProps> = ({onBack}) => {
       {sub === 'game' ? (
         <TrashOkeyGameScreen onExit={handleExit} />
       ) : sub === 'tutorial' ? (
-        <TrashOkeyTutorialScreen onComplete={handleExit} />
+        <TrashOkeyTutorialScreen onComplete={handleTutorialComplete} />
       ) : (
         <TrashOkeyStartScreen onStart={handleStart} onBack={onBack} onTutorial={handleOpenTutorial} />
       )}

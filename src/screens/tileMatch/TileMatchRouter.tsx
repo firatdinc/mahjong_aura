@@ -76,6 +76,10 @@ export const TileMatchRouter: React.FC<TileMatchRouterProps> = ({onBack}) => {
     animateTo('tutorial');
   }, [animateTo]);
 
+  const handleTutorialComplete = useCallback(() => {
+    animateTo('start');
+  }, [animateTo]);
+
   return (
     <Animated.View
       style={{
@@ -86,7 +90,7 @@ export const TileMatchRouter: React.FC<TileMatchRouterProps> = ({onBack}) => {
       {sub === 'game' ? (
         <TileMatchGameScreen onExit={handleExit} />
       ) : sub === 'tutorial' ? (
-        <TileMatchTutorialScreen onComplete={handleExit} />
+        <TileMatchTutorialScreen onComplete={handleTutorialComplete} />
       ) : (
         <TileMatchStartScreen onStartLevel={handleStartLevel} onBack={onBack} onTutorial={handleOpenTutorial} />
       )}

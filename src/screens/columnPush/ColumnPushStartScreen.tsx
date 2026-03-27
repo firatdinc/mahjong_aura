@@ -241,8 +241,8 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
         <BannerAd
           key="columnpush-banner"
           unitId={AD_IDS.BANNER}
-          size={BannerAdSize.BANNER}
-          requestOptions={{requestNonPersonalizedAdsOnly: true}}
+          size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+          requestOptions={{requestNonPersonalizedAdsOnly: false}}
           onAdFailedToLoad={() => {}}
         />
       </View>

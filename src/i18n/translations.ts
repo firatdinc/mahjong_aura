@@ -278,6 +278,7 @@ export interface Translations {
   scoreLabel: string;
   doubleScoreAd: string;
   scoreDoubled: string;
+  adNotLoaded: string;
   // Update modal
   updateRequired: string;
   updateAvailable: string;
@@ -528,6 +529,7 @@ const en: Translations = {
   scoreLabel: 'Score',
   doubleScoreAd: 'Watch Ad to Double Score',
   scoreDoubled: 'Score Doubled!',
+  adNotLoaded: 'Ad not available right now. Please try again later.',
   updateRequired: 'Update Required',
   updateAvailable: 'New Version Available',
   updateRequiredMsg: 'Please update Mahjong Aura to continue playing. This update includes important fixes.',
@@ -774,6 +776,7 @@ const tr: Translations = {
   scoreLabel: 'Skor',
   doubleScoreAd: 'Reklam Izle, Skoru 2x Yap',
   scoreDoubled: 'Skor İkiye Katlandı!',
+  adNotLoaded: 'Reklam şu anda yüklenemedi. Lütfen daha sonra tekrar deneyin.',
   updateRequired: 'Güncelleme Gerekli',
   updateAvailable: 'Yeni Sürüm Mevcut',
   updateRequiredMsg: 'Oynamaya devam etmek için Mahjong Aura\'yı güncelleyin. Bu güncelleme önemli düzeltmeler içerir.',
@@ -1020,6 +1023,7 @@ const zh: Translations = {
   scoreLabel: '分数',
   doubleScoreAd: '看广告双倍分数',
   scoreDoubled: '分数翻倍！',
+  adNotLoaded: '广告暂时无法加载，请稍后再试。',
   updateRequired: '需要更新',
   updateAvailable: '新版本可用',
   updateRequiredMsg: '请更新 Mahjong Aura 以继续游戏。此更新包含重要修复。',
@@ -1266,6 +1270,7 @@ const es: Translations = {
   scoreLabel: 'Puntuación',
   doubleScoreAd: 'Ver anuncio para duplicar puntuación',
   scoreDoubled: '¡Puntuación duplicada!',
+  adNotLoaded: 'El anuncio no está disponible ahora. Inténtalo más tarde.',
   updateRequired: 'Actualización Necesaria',
   updateAvailable: 'Nueva Versión Disponible',
   updateRequiredMsg: 'Actualiza Mahjong Aura para seguir jugando. Esta actualización incluye correcciones importantes.',
@@ -1512,6 +1517,7 @@ const fr: Translations = {
   scoreLabel: 'Score',
   doubleScoreAd: 'Voir pub pour doubler le score',
   scoreDoubled: 'Score doublé !',
+  adNotLoaded: 'La publicité n\'est pas disponible pour le moment. Réessayez plus tard.',
   updateRequired: 'Mise à jour requise',
   updateAvailable: 'Nouvelle version disponible',
   updateRequiredMsg: 'Veuillez mettre à jour Mahjong Aura pour continuer à jouer. Cette mise à jour contient des corrections importantes.',
@@ -1758,6 +1764,7 @@ const de: Translations = {
   scoreLabel: 'Punktzahl',
   doubleScoreAd: 'Werbung für doppelte Punktzahl',
   scoreDoubled: 'Punktzahl verdoppelt!',
+  adNotLoaded: 'Werbung ist derzeit nicht verfügbar. Bitte versuche es später erneut.',
   updateRequired: 'Update erforderlich',
   updateAvailable: 'Neue Version verfügbar',
   updateRequiredMsg: 'Bitte aktualisiere Mahjong Aura, um weiterzuspielen. Dieses Update enthält wichtige Korrekturen.',

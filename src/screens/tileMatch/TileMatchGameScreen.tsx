@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useCallback, useState} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Modal, SafeAreaView, ScrollView} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Modal, SafeAreaView, ScrollView, Alert} from 'react-native';
 import {useTileMatchStore} from '../../store/useTileMatchStore';
 import {useLanguage} from '../../i18n/useLanguage';
 import {TileBoard} from '../../components/tileMatch/TileBoard';
@@ -50,6 +50,7 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
   const [scoreDoubled, setScoreDoubled] = useState(false);
 
   // Hint state
+  const [freeHintCount, setFreeHintCount] = useState(getFreeHints());
   const [hintTileId, setHintTileId] = useState<string | null>(null);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showHint = useCallback((tileId: string) => {
@@ -68,27 +69,26 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
     return null;
   }, []);
   const handleHint = useCallback(() => {
-    if (getFreeHints() > 0) {
-      if (useFreeHint()) {
-        const id = findHintTile();
-        if (id) showHint(id);
-        return;
-      }
-    }
-    if (!isRewardedReady()) return;
-    showRewarded(() => {
+    if (freeHintCount > 0 && useFreeHint()) {
+      setFreeHintCount(getFreeHints());
       const id = findHintTile();
       if (id) showHint(id);
-    });
-  }, [findHintTile, showHint]);
+      return;
+    }
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(() => {
+      const id = findHintTile();
+      if (id) showHint(id);
+    })) Alert.alert('', t.adNotLoaded);
+  }, [findHintTile, showHint, freeHintCount, t]);
 
   const handleContinueAd = useCallback(() => {
-    if (!isRewardedReady()) return;
-    showRewarded(() => {
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(() => {
       setHasUsedContinue(true);
       continueGame();
-    });
-  }, [continueGame]);
+    })) Alert.alert('', t.adNotLoaded);
+  }, [continueGame, t]);
 
   const handleContinueDecline = useCallback(() => {
     setContinueDeclined(true);
@@ -96,11 +96,11 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
 
   // Score 2x handler
   const handleDoubleScore = useCallback(() => {
-    if (!isRewardedReady()) return;
-    showRewarded(() => {
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(() => {
       setScoreDoubled(true);
-    });
-  }, []);
+    })) Alert.alert('', t.adNotLoaded);
+  }, [t]);
 
   // Reset continue/score state when a new game starts
   const prevStatus = useRef(status);
@@ -141,8 +141,6 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
 
   const shouldShowContinue = status === 'lost' && !hasUsedContinue && !continueDeclined;
   const showModal = status === 'won' || (status === 'lost' && !shouldShowContinue) || status === 'paused';
-
-  const freeHintCount = getFreeHints();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -207,7 +205,7 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
                 <TouchableOpacity style={styles.modalBtn} onPress={handleResume} activeOpacity={0.8}>
                   <Text style={styles.modalBtnText}>{t.resume}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.modalBtnSecondary} onPress={onExit} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.modalBtnSecondary} onPress={() => setTimeout(onExit, 100)} activeOpacity={0.8}>
                   <Text style={styles.modalBtnSecondaryText}>{t.quitGame}</Text>
                 </TouchableOpacity>
               </>
@@ -243,10 +241,10 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
                 {scoreDoubled && (
                   <Text style={styles.scoreDoubledLabel}>{t.scoreDoubled}</Text>
                 )}
-                <TouchableOpacity style={styles.modalBtn} onPress={() => showInterstitialIfReady(nextLevel)} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.modalBtn} onPress={() => showInterstitialIfReady(() => setTimeout(nextLevel, 100))} activeOpacity={0.8}>
                   <Text style={styles.modalBtnText}>{t.tmNextLevel}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.modalBtnSecondary} onPress={onExit} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.modalBtnSecondary} onPress={() => setTimeout(onExit, 100)} activeOpacity={0.8}>
                   <Text style={styles.modalBtnSecondaryText}>{t.quitGame}</Text>
                 </TouchableOpacity>
               </>
@@ -260,10 +258,10 @@ export const TileMatchGameScreen: React.FC<TileMatchGameScreenProps> = ({onExit}
                 <Text style={styles.modalStat}>
                   {t.scoreLabel}: {baseScore}
                 </Text>
-                <TouchableOpacity style={styles.modalBtn} onPress={() => showInterstitialIfReady(resetLevel)} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.modalBtn} onPress={() => showInterstitialIfReady(() => setTimeout(resetLevel, 100))} activeOpacity={0.8}>
                   <Text style={styles.modalBtnText}>{t.tmRetry}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.modalBtnSecondary} onPress={onExit} activeOpacity={0.8}>
+                <TouchableOpacity style={styles.modalBtnSecondary} onPress={() => setTimeout(onExit, 100)} activeOpacity={0.8}>
                   <Text style={styles.modalBtnSecondaryText}>{t.quitGame}</Text>
                 </TouchableOpacity>
               </>

@@ -1,5 +1,5 @@
 import React, {useEffect, useCallback, useState, useRef} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Modal, Animated} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Modal, Animated, Alert} from 'react-native';
 import {useGameStore} from '../../store/useGameStore';
 import {Tile, ClaimOption} from '../../types';
 import {useLanguage} from '../../i18n/useLanguage';
@@ -11,7 +11,7 @@ import {BotHand} from '../../components/mahjong/BotHand';
 import {DiscardPile} from '../../components/mahjong/DiscardPile';
 import {ClaimPanel} from '../../components/mahjong/ClaimPanel';
 import {ms, modalWidth} from '../../utils/scaling';
-import {loadRewarded, isRewardedReady, showRewarded, showInterstitialIfReady} from '../../utils/adHelpers';
+import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
 import {scoreTileUsefulness} from '../../engine/mahjong/botAI';
 import {getFreeHints, useFreeHint} from '../../utils/storage';
 
@@ -93,6 +93,7 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
   useEffect(() => { loadRewarded(); }, []);
 
   // Hint state
+  const [freeHintCount, setFreeHintCount] = useState(getFreeHints());
   const [hintTileId, setHintTileId] = useState<string | null>(null);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const doHint = useCallback(() => {
@@ -113,13 +114,14 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
     hintTimerRef.current = setTimeout(() => setHintTileId(null), 5000);
   }, []);
   const handleHint = useCallback(() => {
-    if (getFreeHints() > 0 && useFreeHint()) {
+    if (freeHintCount > 0 && useFreeHint()) {
+      setFreeHintCount(getFreeHints());
       doHint();
       return;
     }
-    if (!isRewardedReady()) return;
-    showRewarded(doHint);
-  }, [doHint]);
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(doHint)) Alert.alert('', t.adNotLoaded);
+  }, [doHint, freeHintCount, t]);
 
   // Score 2x state
   const [scoreDoubled, setScoreDoubled] = useState(false);
@@ -127,9 +129,9 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
   const displayScore = scoreDoubled ? baseScore * 2 : baseScore;
 
   const handleDoubleScore = useCallback(() => {
-    if (!isRewardedReady()) return;
-    showRewarded(() => setScoreDoubled(true));
-  }, []);
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(() => setScoreDoubled(true))) Alert.alert('', t.adNotLoaded);
+  }, [t]);
 
   // Show game over modal
   const [gameOverVisible, setGameOverVisible] = useState(false);
@@ -254,11 +256,11 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
       {canDiscard && !winner && (
         <View style={styles.hintRow}>
           <TouchableOpacity
-            style={[styles.hintBtn, !isRewardedReady() && getFreeHints() <= 0 && styles.hintBtnDisabled]}
+            style={[styles.hintBtn, !isRewardedReady() && freeHintCount <= 0 && styles.hintBtnDisabled]}
             onPress={handleHint}
             activeOpacity={0.7}>
             <Text style={styles.hintBtnText}>
-              {getFreeHints() > 0 ? `${t.freeHints} (${getFreeHints()})` : t.watchAdHint}
+              {freeHintCount > 0 ? `${t.freeHints} (${freeHintCount})` : t.watchAdHint}
             </Text>
           </TouchableOpacity>
         </View>
@@ -292,7 +294,7 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalBtnDanger}
-                onPress={() => { setPauseVisible(false); onExit(); }}
+                onPress={() => { setPauseVisible(false); setTimeout(onExit, 100); }}
                 activeOpacity={0.8}>
                 <Text style={styles.modalBtnDangerText}>{t.quitGame}</Text>
               </TouchableOpacity>
@@ -353,7 +355,7 @@ export const MahjongGameScreen: React.FC<MahjongGameScreenProps> = ({onExit}) =>
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.modalBtnPrimary}
-                onPress={() => { setGameOverVisible(false); showInterstitialIfReady(() => onExit()); }}
+                onPress={() => { setGameOverVisible(false); setTimeout(onExit, 100); }}
                 activeOpacity={0.8}>
                 <Text style={styles.modalBtnPrimaryText}>{t.newGame}</Text>
               </TouchableOpacity>

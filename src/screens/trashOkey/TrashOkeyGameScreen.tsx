@@ -1,5 +1,5 @@
 import React, {useEffect, useCallback, useState, useRef} from 'react';
-import {StyleSheet, View, Text, TouchableOpacity, Modal, Animated} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Modal, Animated, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useTrashOkeyStore} from '../../store/useTrashOkeyStore';
 import {useLanguage} from '../../i18n/useLanguage';
@@ -9,7 +9,7 @@ import {DrawArea} from '../../components/trashOkey/CenterTile';
 import {ChainIndicator} from '../../components/trashOkey/ChainIndicator';
 import {ms, modalWidth} from '../../utils/scaling';
 import {canPlaceTile} from '../../engine/trashOkey/gridLogic';
-import {loadRewarded, isRewardedReady, showRewarded, showInterstitialIfReady} from '../../utils/adHelpers';
+import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
 import {getSlotForNumber} from '../../engine/trashOkey/gridLogic';
 import {getFreeHints, useFreeHint} from '../../utils/storage';
 
@@ -107,6 +107,7 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
   useEffect(() => { loadRewarded(); }, []);
 
   // Hint state
+  const [freeHintCount, setFreeHintCount] = useState(getFreeHints());
   const [hintSlot, setHintSlot] = useState<number | null>(null);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const doHint = useCallback(() => {
@@ -124,13 +125,14 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
     hintTimerRef.current = setTimeout(() => setHintSlot(null), 5000);
   }, []);
   const handleHint = useCallback(() => {
-    if (getFreeHints() > 0 && useFreeHint()) {
+    if (freeHintCount > 0 && useFreeHint()) {
+      setFreeHintCount(getFreeHints());
       doHint();
       return;
     }
-    if (!isRewardedReady()) return;
-    showRewarded(doHint);
-  }, [doHint]);
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(doHint)) Alert.alert('', t.adNotLoaded);
+  }, [doHint, freeHintCount, t]);
 
   const [paused, setPaused] = useState(false);
   const [scoreDoubled, setScoreDoubled] = useState(false);
@@ -151,12 +153,12 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
   }, [status]);
 
   const handleContinueAd = useCallback(() => {
-    if (!isRewardedReady()) return;
-    showRewarded(() => {
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(() => {
       setHasUsedContinue(true);
       continueGame();
-    });
-  }, [continueGame]);
+    })) Alert.alert('', t.adNotLoaded);
+  }, [continueGame, t]);
 
   const canDraw = status === 'playing' && currentTurn === 'player' && !drawnTile && (drawPile.length > 0 || discardPile.length > 1);
 
@@ -220,11 +222,11 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
       {/* Hint button */}
       {currentTurn === 'player' && drawnTile && status === 'playing' && (
         <TouchableOpacity
-          style={[styles.hintBtn, !isRewardedReady() && getFreeHints() <= 0 && styles.hintBtnDisabled]}
+          style={[styles.hintBtn, !isRewardedReady() && freeHintCount <= 0 && styles.hintBtnDisabled]}
           onPress={handleHint}
           activeOpacity={0.7}>
           <Text style={styles.hintBtnText}>
-            {getFreeHints() > 0 ? `${t.freeHints} (${getFreeHints()})` : t.watchAdHint}
+            {freeHintCount > 0 ? `${t.freeHints} (${freeHintCount})` : t.watchAdHint}
           </Text>
         </TouchableOpacity>
       )}
@@ -266,7 +268,7 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
             <TouchableOpacity style={styles.modalBtn} onPress={() => setPaused(false)} activeOpacity={0.8}>
               <Text style={styles.modalBtnText}>{t.resume}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quitBtn} onPress={onExit} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.quitBtn} onPress={() => { setPaused(false); setTimeout(onExit, 100); }} activeOpacity={0.8}>
               <Text style={styles.quitBtnText}>{t.quitGame}</Text>
             </TouchableOpacity>
           </View>
@@ -308,7 +310,7 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
             {status === 'won' && !scoreDoubled && (
               <TouchableOpacity
                 style={[styles.doubleBtn, !isRewardedReady() && {opacity: 0.4}]}
-                onPress={() => { if (!isRewardedReady()) return; showRewarded(() => setScoreDoubled(true)); }}
+                onPress={() => { if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; } if (!showRewarded(() => setScoreDoubled(true))) Alert.alert('', t.adNotLoaded); }}
                 activeOpacity={0.8}>
                 <Text style={styles.doubleBtnText}>{t.doubleScoreAd}</Text>
               </TouchableOpacity>
@@ -316,7 +318,7 @@ export const TrashOkeyGameScreen: React.FC<TrashOkeyGameScreenProps> = ({onExit}
             {scoreDoubled && (
               <Text style={styles.scoreDoubledLabel}>{t.scoreDoubled}</Text>
             )}
-            <TouchableOpacity style={styles.modalBtn} onPress={() => showInterstitialIfReady(onExit)} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.modalBtn} onPress={() => setTimeout(onExit, 100)} activeOpacity={0.8}>
               <Text style={styles.modalBtnText}>{t.back}</Text>
             </TouchableOpacity>
           </View>

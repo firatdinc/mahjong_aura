@@ -1,5 +1,5 @@
 import React, {useEffect, useCallback, useState, useRef} from 'react';
-import {StyleSheet, View, Text, Image, TouchableOpacity, Modal} from 'react-native';
+import {StyleSheet, View, Text, Image, TouchableOpacity, Modal, Alert} from 'react-native';
 import {useColumnPushStore} from '../../store/useColumnPushStore';
 import {useLanguage} from '../../i18n/useLanguage';
 import {PlayerGrid} from '../../components/columnPush/PlayerGrid';
@@ -10,7 +10,7 @@ import {ChainBadge} from '../../components/columnPush/ChainBadge';
 import {FinalPickOverlay} from '../../components/columnPush/FinalPickOverlay';
 import {CP_PLAYER_IMAGES, CP_BOT_IMAGES} from '../../constants/gameAssets';
 import {ms, modalWidth} from '../../utils/scaling';
-import {loadRewarded, isRewardedReady, showRewarded, showInterstitialIfReady} from '../../utils/adHelpers';
+import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
 import {getValidColumnsForPlacement} from '../../engine/columnPush/gridLogic';
 import {getFreeHints, useFreeHint} from '../../utils/storage';
 
@@ -95,17 +95,18 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
   }, [status]);
 
   const handleContinueAd = useCallback(() => {
-    if (!isRewardedReady()) return;
-    showRewarded(() => {
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(() => {
       setHasUsedContinue(true);
       continueGame();
-    });
-  }, [continueGame]);
+    })) Alert.alert('', t.adNotLoaded);
+  }, [continueGame, t]);
 
   // Preload interstitial + rewarded + show on game end
   useEffect(() => { loadRewarded(); }, []);
 
   // Hint state
+  const [freeHintCount, setFreeHintCount] = useState(getFreeHints());
   const [hintCol, setHintCol] = useState<number | null>(null);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const doHint = useCallback(() => {
@@ -119,13 +120,14 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
     hintTimerRef.current = setTimeout(() => setHintCol(null), 5000);
   }, []);
   const handleHint = useCallback(() => {
-    if (getFreeHints() > 0 && useFreeHint()) {
+    if (freeHintCount > 0 && useFreeHint()) {
+      setFreeHintCount(getFreeHints());
       doHint();
       return;
     }
-    if (!isRewardedReady()) return;
-    showRewarded(doHint);
-  }, [doHint]);
+    if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; }
+    if (!showRewarded(doHint)) Alert.alert('', t.adNotLoaded);
+  }, [doHint, freeHintCount, t]);
 
   // Theme indicator images
   const playerThemeImg = playerTheme
@@ -209,11 +211,11 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
       {/* Hint button */}
       {status === 'playing' && currentTurn === 'player' && activeTile && (
         <TouchableOpacity
-          style={[styles.hintBtn, !isRewardedReady() && getFreeHints() <= 0 && styles.hintBtnDisabled]}
+          style={[styles.hintBtn, !isRewardedReady() && freeHintCount <= 0 && styles.hintBtnDisabled]}
           onPress={handleHint}
           activeOpacity={0.7}>
           <Text style={styles.hintBtnText}>
-            {getFreeHints() > 0 ? `${t.freeHints} (${getFreeHints()})` : t.watchAdHint}
+            {freeHintCount > 0 ? `${t.freeHints} (${freeHintCount})` : t.watchAdHint}
           </Text>
         </TouchableOpacity>
       )}
@@ -246,7 +248,7 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.quitBtn}
-              onPress={onExit}
+              onPress={() => { setPaused(false); setTimeout(onExit, 100); }}
               activeOpacity={0.8}>
               <Text style={styles.quitBtnText}>{t.quitGame}</Text>
             </TouchableOpacity>
@@ -295,7 +297,7 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
             {status === 'won' && !scoreDoubled && (
               <TouchableOpacity
                 style={[styles.doubleBtn, !isRewardedReady() && {opacity: 0.4}]}
-                onPress={() => { if (!isRewardedReady()) return; showRewarded(() => setScoreDoubled(true)); }}
+                onPress={() => { if (!isRewardedReady()) { Alert.alert('', t.adNotLoaded); return; } if (!showRewarded(() => setScoreDoubled(true))) Alert.alert('', t.adNotLoaded); }}
                 activeOpacity={0.8}>
                 <Text style={styles.doubleBtnText}>{t.doubleScoreAd}</Text>
               </TouchableOpacity>
@@ -305,7 +307,7 @@ export const ColumnPushGameScreen: React.FC<ColumnPushGameScreenProps> = ({onExi
             )}
             <TouchableOpacity
               style={styles.modalBtn}
-              onPress={() => showInterstitialIfReady(onExit)}
+              onPress={() => setTimeout(onExit, 100)}
               activeOpacity={0.8}>
               <Text style={styles.modalBtnText}>{t.back}</Text>
             </TouchableOpacity>
