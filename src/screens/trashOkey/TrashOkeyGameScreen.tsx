@@ -7,7 +7,7 @@ import {PlayerGrid} from '../../components/trashOkey/PlayerGrid';
 import {BotGrid} from '../../components/trashOkey/BotGrid';
 import {DrawArea} from '../../components/trashOkey/CenterTile';
 import {ChainIndicator} from '../../components/trashOkey/ChainIndicator';
-import {ms, modalWidth} from '../../utils/scaling';
+import {ms, modalWidth, isSmallScreen} from '../../utils/scaling';
 import {canPlaceTile} from '../../engine/trashOkey/gridLogic';
 import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
 import {getSlotForNumber} from '../../engine/trashOkey/gridLogic';
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#334443'},
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 10,
+    paddingHorizontal: 16, paddingVertical: isSmallScreen ? 6 : 10,
   },
   pauseBtn: {
     width: ms(36), height: ms(36), borderRadius: ms(10),
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   sectionLabel: {fontSize: 11, fontFamily: 'Nunito_600SemiBold', color: '#6B9C93', letterSpacing: 1, marginBottom: 6},
   centerSection: {alignItems: 'center', justifyContent: 'center', flex: 1},
   hintText: {fontSize: 12, color: '#8AABA5', fontFamily: 'Nunito_500Medium', marginTop: 4},
-  playerSection: {paddingBottom: 24, alignItems: 'center'},
+  playerSection: {paddingBottom: isSmallScreen ? 12 : 24, alignItems: 'center'},
   guideOverlay: {
     ...StyleSheet.absoluteFillObject, zIndex: 200, justifyContent: 'center', alignItems: 'center',
   },
@@ -373,10 +373,10 @@ const styles = StyleSheet.create({
   guideDismissText: {fontSize: 14, fontFamily: 'Nunito_700Bold', color: '#334443'},
   modalOverlay: {flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center'},
   modalContent: {
-    backgroundColor: '#34656D', borderRadius: 20, padding: ms(28), width: modalWidth(280),
+    backgroundColor: '#34656D', borderRadius: 20, padding: ms(isSmallScreen ? 20 : 28), width: modalWidth(280),
     alignItems: 'center', borderWidth: 1, borderColor: '#2A5450',
   },
-  modalTitle: {fontSize: ms(24), fontFamily: 'Nunito_700Bold', color: '#FAF8F1', marginBottom: 16},
+  modalTitle: {fontSize: ms(isSmallScreen ? 20 : 24), fontFamily: 'Nunito_700Bold', color: '#FAF8F1', marginBottom: isSmallScreen ? 10 : 16},
   modalStats: {gap: 6, marginBottom: 20},
   modalStat: {fontSize: 14, color: '#8AABA5', textAlign: 'center'},
   modalBtn: {

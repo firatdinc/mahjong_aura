@@ -5,7 +5,8 @@ import {TileComponent} from '../shared/TileComponent';
 import {Tile, Suit} from '../../types';
 import {BAR_SIZE} from '../../constants/tileMatch/levels';
 
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
+const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
+const isSmall = SCREEN_HEIGHT < 700;
 
 interface MatchBarProps {
   bar: TileMatchTile[];
@@ -25,8 +26,9 @@ export const MatchBar: React.FC<MatchBarProps> = ({bar}) => {
   const {slotW, slotH, emptyW, emptyH, tileFontSize, tileLabelSize} = useMemo(() => {
     const barPadding = 6 * 2;
     const totalGap = (BAR_SIZE - 1) * 4;
-    const availableW = SCREEN_WIDTH - 32 - barPadding - totalGap;
-    const sw = Math.min(46, Math.floor(availableW / BAR_SIZE));
+    const availableW = SCREEN_WIDTH - 24 - barPadding - totalGap;
+    const maxSlot = isSmall ? 38 : 46;
+    const sw = Math.min(maxSlot, Math.floor(availableW / BAR_SIZE));
     const sh = Math.round(sw * 1.4);
     return {
       slotW: sw,

@@ -78,6 +78,12 @@ export function checkLoss(bar: TileMatchTile[]): boolean {
   return bar.length >= BAR_SIZE;
 }
 
+/** Check if board is empty but bar still has unmatched tiles (deadlock) */
+export function checkDeadlock(board: TileMatchTile[], bar: TileMatchTile[]): boolean {
+  const activeBoardTiles = board.filter(t => !t.isMatched && !t.isInBar);
+  return activeBoardTiles.length === 0 && bar.length > 0;
+}
+
 /** Shuffle remaining board tiles' positions */
 export function shuffleBoard(board: TileMatchTile[]): TileMatchTile[] {
   const active = board.filter(t => !t.isInBar && !t.isMatched);

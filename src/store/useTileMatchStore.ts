@@ -12,6 +12,7 @@ import {
   addToBar,
   checkWin,
   checkLoss,
+  checkDeadlock,
   shuffleBoard,
   calculateStars,
 } from '../engine/tileMatch/matchLogic';
@@ -168,6 +169,20 @@ export const useTileMatchStore = create<TileMatchStore>((set, get) => ({
         return;
       }
 
+      // Check deadlock: board empty but bar still has tiles
+      if (checkDeadlock(boardWithFree, newBar)) {
+        set({
+          board: boardWithFree,
+          bar: newBar,
+          status: 'lost',
+          combo,
+          bestCombo,
+          matchCount,
+          moveHistory: [...state.moveHistory, tile],
+        });
+        return;
+      }
+
       set({
         board: boardWithFree,
         bar: newBar,
@@ -188,6 +203,18 @@ export const useTileMatchStore = create<TileMatchStore>((set, get) => ({
 
       // Check loss (bar full)
       if (checkLoss(newBar)) {
+        set({
+          board: boardWithFree,
+          bar: newBar,
+          status: 'lost',
+          combo,
+          moveHistory: [...state.moveHistory, tile],
+        });
+        return;
+      }
+
+      // Check deadlock: board empty but bar still has tiles
+      if (checkDeadlock(boardWithFree, newBar)) {
         set({
           board: boardWithFree,
           bar: newBar,

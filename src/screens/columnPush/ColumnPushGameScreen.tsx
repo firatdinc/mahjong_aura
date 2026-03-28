@@ -9,7 +9,7 @@ import {DiceRollOverlay} from '../../components/columnPush/DiceRollOverlay';
 import {ChainBadge} from '../../components/columnPush/ChainBadge';
 import {FinalPickOverlay} from '../../components/columnPush/FinalPickOverlay';
 import {CP_PLAYER_IMAGES, CP_BOT_IMAGES} from '../../constants/gameAssets';
-import {ms, modalWidth} from '../../utils/scaling';
+import {ms, modalWidth, isSmallScreen} from '../../utils/scaling';
 import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
 import {getValidColumnsForPlacement} from '../../engine/columnPush/gridLogic';
 import {getFreeHints, useFreeHint} from '../../utils/storage';
@@ -411,8 +411,8 @@ const styles = StyleSheet.create({
   centerSection: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    gap: 6,
+    paddingVertical: isSmallScreen ? 6 : 12,
+    gap: isSmallScreen ? 3 : 6,
   },
   hintText: {
     fontSize: 12,
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 16,
+    paddingBottom: isSmallScreen ? 8 : 16,
   },
   modalOverlay: {
     flex: 1,
@@ -434,17 +434,17 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#34656D',
     borderRadius: 20,
-    padding: ms(28),
+    padding: ms(isSmallScreen ? 20 : 28),
     width: modalWidth(280),
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#2A5450',
   },
   modalTitle: {
-    fontSize: ms(24),
+    fontSize: ms(isSmallScreen ? 20 : 24),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
-    marginBottom: 16,
+    marginBottom: isSmallScreen ? 10 : 16,
   },
   modalStats: {
     gap: 6,
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
   },
   hintBtn: {
     position: 'absolute',
-    bottom: ms(16),
+    bottom: ms(isSmallScreen ? 8 : 16),
     right: 12,
     backgroundColor: 'rgba(250,234,177,0.15)',
     borderRadius: 10,

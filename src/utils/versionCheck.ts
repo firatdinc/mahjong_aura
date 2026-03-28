@@ -4,7 +4,7 @@ const VERSION_URL =
   'https://gist.githubusercontent.com/firatdinc/3befbb6ef0f8ae36927bb73997e31977/raw/version.json';
 
 // Current app version — keep in sync with Info.plist / build.gradle
-export const APP_VERSION = '1.1.4';
+export const APP_VERSION = '1.1.5';
 
 interface VersionInfo {
   ios: {latestVersion: string; minVersion: string};

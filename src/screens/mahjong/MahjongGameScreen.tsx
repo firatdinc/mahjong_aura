@@ -10,7 +10,7 @@ import {PlayerHand} from '../../components/mahjong/PlayerHand';
 import {BotHand} from '../../components/mahjong/BotHand';
 import {DiscardPile} from '../../components/mahjong/DiscardPile';
 import {ClaimPanel} from '../../components/mahjong/ClaimPanel';
-import {ms, modalWidth} from '../../utils/scaling';
+import {ms, modalWidth, isSmallScreen} from '../../utils/scaling';
 import {loadRewarded, isRewardedReady, showRewarded} from '../../utils/adHelpers';
 import {scoreTileUsefulness} from '../../engine/mahjong/botAI';
 import {getFreeHints, useFreeHint} from '../../utils/storage';
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   modalCard: {
     backgroundColor: '#34656D',
     borderRadius: 20,
-    padding: ms(28),
+    padding: ms(isSmallScreen ? 20 : 28),
     width: modalWidth(280),
     alignItems: 'center',
     borderWidth: 1,
@@ -419,8 +419,8 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   modalIcon: {
-    fontSize: ms(48),
-    marginBottom: 12,
+    fontSize: ms(isSmallScreen ? 36 : 48),
+    marginBottom: isSmallScreen ? 6 : 12,
   },
   modalTitle: {
     fontSize: ms(22),
@@ -433,10 +433,10 @@ const styles = StyleSheet.create({
     color: '#FAEAB1',
   },
   modalMessage: {
-    fontSize: 14,
+    fontSize: isSmallScreen ? 13 : 14,
     color: '#B0CBC5',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: isSmallScreen ? 14 : 24,
     lineHeight: 20,
   },
   modalButtons: {

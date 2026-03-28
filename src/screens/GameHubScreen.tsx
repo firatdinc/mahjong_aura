@@ -10,9 +10,10 @@ import {
   Animated,
   Easing,
   SafeAreaView,
+  ScrollView,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
-import {ms, modalWidth, contentMaxWidth} from '../utils/scaling';
+import {ms, vs, modalWidth, contentMaxWidth, isSmallScreen} from '../utils/scaling';
 import {GameId} from '../constants/app';
 import {GAMES} from '../constants/app';
 import {GameCard} from '../components/shared/GameCard';
@@ -201,68 +202,74 @@ export const GameHubScreen: React.FC<GameHubScreenProps> = ({onSelectGame}) => {
         </SafeAreaView>
       </Modal>
 
-      {/* Title */}
-      <Animated.View
-        style={[
-          styles.titleContainer,
-          {opacity: titleOpacity, transform: [{scale: titleScale}]},
-        ]}>
-        <Animated.Image
-          source={logoImg}
-          style={[styles.logoImage, {transform: [{rotate: logoSpin}]}]}
-        />
-        <Text style={styles.title}>{t.mahjong}</Text>
-        <Text style={styles.subtitle}>{t.aura}</Text>
-      </Animated.View>
+      <ScrollView
+        style={{width: '100%'}}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
 
-      {/* Game Cards */}
-      <View style={styles.gameList}>
-        {GAMES.map((game, index) => {
-          const isAvailable = game.id === 'mahjong' || game.id === 'tileMatch' || game.id === 'trashOkey' || game.id === 'columnPush';
-          return (
-            <StaggeredEntry key={game.id} index={index} delay={80}>
-              <GameCard
-                icon={game.icon}
-                title={getTitle(game.titleKey)}
-                description={getTitle(game.descriptionKey)}
-                badge={game.id === 'columnPush' ? t.cpTrending : undefined}
-                disabled={!isAvailable}
-                disabledLabel={t.hubComingSoon}
-                onPress={() => onSelectGame(game.id)}
-              />
-            </StaggeredEntry>
-          );
-        })}
-      </View>
+        {/* Title */}
+        <Animated.View
+          style={[
+            styles.titleContainer,
+            {opacity: titleOpacity, transform: [{scale: titleScale}]},
+          ]}>
+          <Animated.Image
+            source={logoImg}
+            style={[styles.logoImage, {transform: [{rotate: logoSpin}]}]}
+          />
+          <Text style={styles.title}>{t.mahjong}</Text>
+          <Text style={styles.subtitle}>{t.aura}</Text>
+        </Animated.View>
 
-      {/* Daily Reward */}
-      <TouchableOpacity
-        style={[styles.dailyRewardBtn, !canClaim && styles.dailyRewardClaimed]}
-        onPress={handleDailyReward}
-        activeOpacity={canClaim ? 0.7 : 1}
-        disabled={!canClaim}>
-        <Text style={styles.dailyRewardIcon}>{canClaim ? '🎁' : '✅'}</Text>
-        <View>
-          <Text style={[styles.dailyRewardText, !canClaim && styles.dailyRewardTextClaimed]}>
-            {canClaim ? t.dailyReward : t.dailyRewardClaimed}
-          </Text>
-          {freeHints > 0 && (
-            <Text style={styles.dailyRewardHints}>{t.freeHints}: {freeHints}</Text>
-          )}
+        {/* Game Cards */}
+        <View style={styles.gameList}>
+          {GAMES.map((game, index) => {
+            const isAvailable = game.id === 'mahjong' || game.id === 'tileMatch' || game.id === 'trashOkey' || game.id === 'columnPush';
+            return (
+              <StaggeredEntry key={game.id} index={index} delay={80}>
+                <GameCard
+                  icon={game.icon}
+                  title={getTitle(game.titleKey)}
+                  description={getTitle(game.descriptionKey)}
+                  badge={game.id === 'columnPush' ? t.cpTrending : undefined}
+                  disabled={!isAvailable}
+                  disabledLabel={t.hubComingSoon}
+                  onPress={() => onSelectGame(game.id)}
+                />
+              </StaggeredEntry>
+            );
+          })}
         </View>
-      </TouchableOpacity>
 
-      {/* Privacy Policy link */}
-      <TouchableOpacity
-        style={styles.privacyLink}
-        onPress={() => {
-          setPrivacyLang(language);
-          setPrivacyVisible(true);
-        }}
-        activeOpacity={0.7}>
-        <Text style={styles.privacyLinkText}>{t.privacyPolicy}</Text>
-      </TouchableOpacity>
+        {/* Daily Reward */}
+        <TouchableOpacity
+          style={[styles.dailyRewardBtn, !canClaim && styles.dailyRewardClaimed]}
+          onPress={handleDailyReward}
+          activeOpacity={canClaim ? 0.7 : 1}
+          disabled={!canClaim}>
+          <Text style={styles.dailyRewardIcon}>{canClaim ? '🎁' : '✅'}</Text>
+          <View>
+            <Text style={[styles.dailyRewardText, !canClaim && styles.dailyRewardTextClaimed]}>
+              {canClaim ? t.dailyReward : t.dailyRewardClaimed}
+            </Text>
+            {freeHints > 0 && (
+              <Text style={styles.dailyRewardHints}>{t.freeHints}: {freeHints}</Text>
+            )}
+          </View>
+        </TouchableOpacity>
 
+        {/* Privacy Policy link */}
+        <TouchableOpacity
+          style={styles.privacyLink}
+          onPress={() => {
+            setPrivacyLang(language);
+            setPrivacyVisible(true);
+          }}
+          activeOpacity={0.7}>
+          <Text style={styles.privacyLinkText}>{t.privacyPolicy}</Text>
+        </TouchableOpacity>
+
+      </ScrollView>
     </View>
   );
 };
@@ -271,9 +278,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#334443',
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    paddingHorizontal: isSmallScreen ? 20 : 32,
+    paddingTop: isSmallScreen ? 12 : 32,
+    paddingBottom: isSmallScreen ? 8 : 32,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: isSmallScreen ? 'flex-start' : 'center',
+    paddingTop: isSmallScreen ? 10 : vs(20),
+    paddingBottom: 8,
   },
   langButton: {
     position: 'absolute',
@@ -455,38 +470,38 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: isSmallScreen ? 12 : vs(28),
   },
   logoImage: {
-    width: ms(100),
-    height: ms(100),
+    width: ms(isSmallScreen ? 56 : 100),
+    height: ms(isSmallScreen ? 56 : 100),
     borderRadius: ms(20),
     resizeMode: 'contain',
-    marginBottom: 12,
+    marginBottom: isSmallScreen ? 4 : 12,
   },
   title: {
-    fontSize: ms(42),
+    fontSize: ms(isSmallScreen ? 26 : 42),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
   },
   subtitle: {
-    fontSize: ms(20),
+    fontSize: ms(isSmallScreen ? 13 : 20),
     fontFamily: 'Nunito_300Light',
     color: '#FAEAB1',
     letterSpacing: 8,
-    marginTop: 4,
+    marginTop: 2,
   },
   gameList: {
     width: '100%',
     maxWidth: contentMaxWidth(340),
-    gap: 12,
+    gap: isSmallScreen ? 8 : 12,
   },
   dailyRewardBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop: 20,
+    marginTop: vs(16),
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 14,

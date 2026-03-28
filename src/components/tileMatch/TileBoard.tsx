@@ -5,7 +5,8 @@ import {TileComponent} from '../shared/TileComponent';
 import {Tile, Suit} from '../../types';
 import {useSettings} from '../../store/useSettings';
 
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
+const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
+const isSmall = SCREEN_HEIGHT < 700;
 
 interface TileBoardProps {
   board: TileMatchTile[];
@@ -34,15 +35,17 @@ export const TileBoard: React.FC<TileBoardProps> = React.memo(({board, onTapTile
     const maxCol = Math.max(...activeTiles.map(t => t.col)) + 1;
     const maxRow = Math.max(...activeTiles.map(t => t.row)) + 1;
     const maxLayer = Math.max(...activeTiles.map(t => t.layer));
-    const boardWidth = SCREEN_WIDTH - 32;
+    const boardWidth = SCREEN_WIDTH - 24;
     const layerOffset = maxLayer * 4;
     // Calculate tile width so tiles fit with no overlap
-    const maxTileW = Math.round(48 * tileScale);
+    const baseTileW = isSmall ? 40 : 48;
+    const maxTileW = Math.round(baseTileW * tileScale);
     const tw = Math.min(maxTileW, Math.floor((boardWidth - layerOffset) / (maxCol + 0.2)));
     const th = Math.floor(tw * 1.4);
     const totalW = maxCol * tw + layerOffset;
     const oX = Math.max(0, (boardWidth - totalW) / 2);
-    return {tileWidth: tw, tileHeight: th, offsetX: oX, offsetY: 8, spacingX: tw + 2, spacingY: th + 2};
+    const gap = isSmall ? 1 : 2;
+    return {tileWidth: tw, tileHeight: th, offsetX: oX, offsetY: 4, spacingX: tw + gap, spacingY: th + gap};
   }, [activeTiles.length, tileScale]);
 
   const containerHeight = useMemo(() => {

@@ -15,7 +15,7 @@ import {useLanguage} from '../../i18n/useLanguage';
 import {useSettings} from '../../store/useSettings';
 import {AnimatedPressable} from '../../components/shared/AnimatedPressable';
 import {StaggeredEntry} from '../../components/shared/StaggeredEntry';
-import {ms, modalWidth, contentMaxWidth} from '../../utils/scaling';
+import {ms, vs, modalWidth, contentMaxWidth, isSmallScreen} from '../../utils/scaling';
 import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
 import {AD_IDS} from '../../constants/adConfig';
 
@@ -139,6 +139,11 @@ export const TileMatchStartScreen: React.FC<TileMatchStartScreenProps> = ({
         </TouchableOpacity>
       </Modal>
 
+      <ScrollView
+        style={{width: '100%'}}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+
       {/* Title */}
       <Animated.View
         style={[
@@ -247,6 +252,8 @@ export const TileMatchStartScreen: React.FC<TileMatchStartScreenProps> = ({
         </AnimatedPressable>
       </StaggeredEntry>
 
+      </ScrollView>
+
       {/* Banner Ad */}
       <View style={styles.bannerContainer}>
         <BannerAd
@@ -265,9 +272,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#334443',
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    paddingHorizontal: isSmallScreen ? 20 : 32,
+    paddingTop: isSmallScreen ? 12 : 32,
+    paddingBottom: isSmallScreen ? 8 : 32,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingTop: vs(20),
+    paddingBottom: 8,
   },
   backButton: {
     position: 'absolute',
@@ -371,14 +386,14 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: vs(24),
   },
   titleEmoji: {
-    fontSize: ms(64),
-    marginBottom: 12,
+    fontSize: ms(isSmallScreen ? 44 : 64),
+    marginBottom: isSmallScreen ? 6 : 12,
   },
   title: {
-    fontSize: ms(42),
+    fontSize: ms(isSmallScreen ? 32 : 42),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
@@ -472,7 +487,7 @@ const styles = StyleSheet.create({
   levelScroll: {
     width: '100%',
     maxWidth: contentMaxWidth(320),
-    maxHeight: ms(220),
+    maxHeight: ms(isSmallScreen ? 150 : 220),
   },
   levelGrid: {
     flexDirection: 'row',

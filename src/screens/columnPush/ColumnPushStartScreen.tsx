@@ -8,6 +8,7 @@ import {
   Image,
   Animated,
   Easing,
+  ScrollView,
 } from 'react-native';
 import {useColumnPushStore} from '../../store/useColumnPushStore';
 import {CPDifficulty} from '../../types/columnPush';
@@ -15,7 +16,7 @@ import {useLanguage} from '../../i18n/useLanguage';
 import {useSettings} from '../../store/useSettings';
 import {AnimatedPressable} from '../../components/shared/AnimatedPressable';
 import {StaggeredEntry} from '../../components/shared/StaggeredEntry';
-import {ms, modalWidth, contentMaxWidth} from '../../utils/scaling';
+import {ms, vs, modalWidth, contentMaxWidth, isSmallScreen} from '../../utils/scaling';
 import {BannerAd, BannerAdSize} from 'react-native-google-mobile-ads';
 import {AD_IDS} from '../../constants/adConfig';
 
@@ -147,6 +148,11 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
         </TouchableOpacity>
       </Modal>
 
+      <ScrollView
+        style={{width: '100%'}}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}>
+
       {/* Title */}
       <Animated.View
         style={[
@@ -236,6 +242,8 @@ export const ColumnPushStartScreen: React.FC<ColumnPushStartScreenProps> = ({
         </AnimatedPressable>
       </StaggeredEntry>
 
+      </ScrollView>
+
       {/* Banner Ad */}
       <View style={styles.bannerContainer}>
         <BannerAd
@@ -254,9 +262,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#334443',
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    paddingHorizontal: isSmallScreen ? 20 : 32,
+    paddingTop: isSmallScreen ? 12 : 32,
+    paddingBottom: isSmallScreen ? 8 : 32,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingTop: vs(20),
+    paddingBottom: 8,
   },
   backButton: {
     position: 'absolute',
@@ -360,14 +376,14 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: vs(12),
   },
   titleEmoji: {
-    fontSize: ms(48),
-    marginBottom: 8,
+    fontSize: ms(isSmallScreen ? 36 : 48),
+    marginBottom: isSmallScreen ? 4 : 8,
   },
   title: {
-    fontSize: ms(32),
+    fontSize: ms(isSmallScreen ? 26 : 32),
     fontFamily: 'Nunito_700Bold',
     color: '#FAF8F1',
     letterSpacing: 4,
@@ -489,8 +505,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   tutorialButton: {
-    marginTop: 16,
-    marginBottom: 60,
+    marginTop: vs(12),
+    marginBottom: vs(20),
     paddingVertical: 12,
     paddingHorizontal: 28,
     borderRadius: 12,

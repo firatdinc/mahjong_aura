@@ -7,7 +7,7 @@ import {MatchBar} from '../../components/tileMatch/MatchBar';
 import {PowerUpBar} from '../../components/tileMatch/PowerUpBar';
 import {LevelHeader} from '../../components/tileMatch/LevelHeader';
 import {calculateStars} from '../../engine/tileMatch/matchLogic';
-import {ms, modalWidth} from '../../utils/scaling';
+import {ms, modalWidth, isSmallScreen} from '../../utils/scaling';
 import {loadRewarded, isRewardedReady, showRewarded, showInterstitialIfReady} from '../../utils/adHelpers';
 import {computeFreeTiles} from '../../engine/tileMatch/matchLogic';
 import {getFreeHints, useFreeHint} from '../../utils/storage';
@@ -284,12 +284,12 @@ const styles = StyleSheet.create({
   boardContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
   },
   bottomSection: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-    gap: 12,
+    paddingHorizontal: 12,
+    paddingBottom: isSmallScreen ? 6 : 20,
+    gap: isSmallScreen ? 6 : 12,
   },
   powerUpSection: {
     alignItems: 'center',
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
   modalContent: {
     backgroundColor: '#34656D',
     borderRadius: 20,
-    padding: ms(28),
+    padding: ms(isSmallScreen ? 20 : 28),
     width: modalWidth(280),
     alignItems: 'center',
     borderWidth: 1,
@@ -317,8 +317,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   continueIcon: {
-    fontSize: ms(40),
-    marginBottom: 8,
+    fontSize: ms(isSmallScreen ? 30 : 40),
+    marginBottom: isSmallScreen ? 4 : 8,
   },
   continueDesc: {
     fontSize: 14,
@@ -405,10 +405,10 @@ const styles = StyleSheet.create({
     color: '#8AABA5',
   },
   hintBtn: {
-    marginTop: 8,
+    marginTop: isSmallScreen ? 4 : 8,
     backgroundColor: 'rgba(250,234,177,0.15)',
     borderRadius: 10,
-    paddingVertical: 8,
+    paddingVertical: isSmallScreen ? 5 : 8,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: 'rgba(250,234,177,0.4)',

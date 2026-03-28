@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {StyleSheet, View, Text, TouchableOpacity, Dimensions} from 'react-native';
 import {TileMatchPowerUp} from '../../types/tileMatch';
 import {useLanguage} from '../../i18n/useLanguage';
 import {Translations} from '../../i18n/translations';
@@ -48,18 +48,18 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
+    gap: Dimensions.get('window').height < 700 ? 6 : 12,
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#34656D',
     borderRadius: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: Dimensions.get('window').height < 700 ? 5 : 8,
+    paddingHorizontal: Dimensions.get('window').height < 700 ? 8 : 12,
     borderWidth: 1,
     borderColor: '#3D7A74',
-    gap: 6,
+    gap: 4,
   },
   buttonDisabled: {
     opacity: 0.4,
