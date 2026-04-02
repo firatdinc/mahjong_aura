@@ -436,8 +436,8 @@ export const useColumnPushStore = create<ColumnPushStore>((set, get) => ({
   continueGame: () => {
     const state = get();
     if (state.status !== 'lost') return;
-    // Give 3 extra turns by resetting status to playing
-    set({status: 'playing', turnCount: state.turnCount});
+    // Resume with dice roll so player gets a new active tile
+    set({status: 'diceRoll', currentTurn: 'player', activeTile: null});
   },
 
   resetGame: () => {
