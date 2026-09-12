@@ -70,3 +70,6 @@
 "common.cancel" = "Abbrechen";
 
 "lose.continue" = "Weiterspielen";
+
+"stuck.title" = "Festgefahren?";
+"stuck.message" = "Kurzes Video ansehen und wir zeigen dir ein Paar.";

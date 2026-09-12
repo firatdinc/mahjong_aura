@@ -56,7 +56,7 @@ struct MenuSheet: View {
             }
             .padding(.horizontal, 20)
         }
-        .presentationDetents([.medium])
+        .modifier(MediumDetentIfAvailable())
     }
 
     /// Reklam tanılaması — neden reklam gelmediğini tahmin etmek yerine gösterir.
@@ -131,8 +131,7 @@ struct MenuSheet: View {
             } label: {
                 Text(NSLocalizedString("menu.restore", comment: ""))
                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.75))
-                    .underline()
+                    .foregroundStyle(Theme.amberBright.opacity(0.9))
             }
             .buttonStyle(.plain)
         }
@@ -227,8 +226,7 @@ struct ShopSheet: View {
                     } label: {
                         Text(NSLocalizedString("menu.restore", comment: ""))
                             .font(.system(size: 13, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.75))
-                            .underline()
+                            .foregroundStyle(Theme.amberBright.opacity(0.9))
                     }
                     .buttonStyle(.plain)
                     .padding(.top, 10)
@@ -284,5 +282,16 @@ struct ShopSheet: View {
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.06)))
+    }
+}
+
+/// `presentationDetents` iOS 16+ — 15'te sayfa tam ekran açılır.
+private struct MediumDetentIfAvailable: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.presentationDetents([.medium])
+        } else {
+            content
+        }
     }
 }

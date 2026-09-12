@@ -80,3 +80,6 @@
 "common.cancel" = "Cancel";
 
 "lose.continue" = "Continue";
+
+"stuck.title" = "Stuck?";
+"stuck.message" = "Watch a short ad and we'll show you a matching pair.";

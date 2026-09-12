@@ -70,3 +70,6 @@
 "common.cancel" = "取消";
 
 "lose.continue" = "继续游戏";
+
+"stuck.title" = "卡住了？";
+"stuck.message" = "观看一段短广告，我们为你指出一对可消除的牌。";

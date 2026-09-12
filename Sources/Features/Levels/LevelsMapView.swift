@@ -66,10 +66,9 @@ struct LevelsMapView: View {
         VStack {
             ZStack {
                 VStack(spacing: 2) {
-                    Text(NSLocalizedString("levels.title", comment: ""))
+                    Text(NSLocalizedString("levels.title", comment: "").uppercased())
                         .font(.system(size: 20, weight: .heavy, design: .rounded))
                         .foregroundStyle(.white)
-                        .tracking(2)
                     Text(String(format: NSLocalizedString("levels.progress", comment: ""),
                                 player.highestLevel - 1, LevelGenerator.totalLevels))
                         .font(.system(size: 14, weight: .semibold, design: .rounded))

@@ -78,3 +78,6 @@
 "common.cancel" = "Vazgeç";
 
 "lose.continue" = "Devam Et";
+
+"stuck.title" = "Takıldın mı?";
+"stuck.message" = "Kısa bir reklam izle, eşleşen çifti gösterelim.";

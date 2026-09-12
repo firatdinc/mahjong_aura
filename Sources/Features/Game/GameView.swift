@@ -45,6 +45,7 @@ struct GameView: View {
 
             if let toast = model.toast { ToastView(toast: toast) }
             if model.combo >= 1 { comboBurst }
+            if showStuckOffer { stuckOffer }
 
             switch model.phase {
             case .won(let outcome):
@@ -94,6 +95,62 @@ struct GameView: View {
         }
     }
 
+    /// Takılma teklifi yalnızca ipucu bakiyesi bittiğinde anlamlı —
+    /// ipucu varsa oyuncu zaten butonu kullanabilir.
+    private var showStuckOffer: Bool {
+        model.isStuck && !ads.adsSuppressed && player.balance(of: .hint) == 0
+    }
+
+    /// Ekranın ortasında beliren ödüllü reklam teklifi.
+    /// Oyuncunun en çok ihtiyaç duyduğu an, ödüllü reklamın en değerli anı.
+    private var stuckOffer: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "lightbulb.fill")
+                .font(.system(size: 34))
+                .foregroundStyle(Theme.amberBright)
+
+            Text(NSLocalizedString("stuck.title", comment: ""))
+                .font(.system(size: 22, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+
+            Text(NSLocalizedString("stuck.message", comment: ""))
+                .font(.system(size: 14, design: .rounded))
+                .foregroundStyle(.white.opacity(0.75))
+                .multilineTextAlignment(.center)
+
+            Button {
+                Task { await watchAdForHint() }
+            } label: {
+                Text(NSLocalizedString("hint.adOffer.watch", comment: ""))
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Capsule().fill(Theme.actionGreen))
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                model.dismissStuckHelp()
+            } label: {
+                Text(NSLocalizedString("common.cancel", comment: ""))
+                    .font(.system(size: 14, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.6))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(22)
+        .frame(maxWidth: 320)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.black.opacity(0.88))
+                .overlay(RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(Theme.amberBright.opacity(0.35), lineWidth: 1))
+        )
+        .shadow(color: .black.opacity(0.5), radius: 20)
+        .transition(.scale.combined(with: .opacity))
+    }
+
     private var alertTitle: String {
         switch alert {
         case .hintAdOffer:   return NSLocalizedString("hint.adOffer.title", comment: "")
@@ -107,6 +164,7 @@ struct GameView: View {
         if await ads.showRewarded() {
             player.credit(.hint, 1)
             _ = model.useHint()
+            model.dismissStuckHelp()
         } else {
             alert = .adUnavailable
         }

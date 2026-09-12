@@ -22,6 +22,10 @@ final class GameViewModel: ObservableObject {
     /// quickly to build combos" diyordu; zincir bir süre sessiz kalınca kırılır.
     static let comboWindow: TimeInterval = 6
 
+    /// TASARIM KARARI: bu kadar süre hamle yapılmazsa takılmış sayılır.
+    /// Rahatlatıcı bir oyunda çok kısa tutmak rahatsız eder.
+    static let stuckThreshold: TimeInterval = 20
+
     /// Bölüm sonu ekranındaki hediye şeridi 10 segmentliydi ve
     /// "Next gift at Level 10" yazıyordu.
     static let giftInterval = 10
@@ -59,6 +63,12 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var toast: Toast?
     @Published private(set) var hintedTiles: Set<UUID> = []
 
+    /// Oyuncu takıldı mı? İki koşuldan biri yeterli:
+    ///   • tahtada oynanabilir eşleşme kalmadı (kesin takılma), veya
+    ///   • bir süredir hiç hamle yapılmadı (öznel takılma)
+    /// Ekranın ortasındaki ödüllü reklam teklifi buna bağlı.
+    @Published private(set) var isStuck = false
+
     enum Toast: Equatable {
         case blocked            // "Blocked on both sides"
         case trayAlmostFull     // "Careful — tray almost full!"
@@ -68,6 +78,8 @@ final class GameViewModel: ObservableObject {
     private let player: PlayerStore
     private var startedAt = Date()
     private var lastMatchAt: Date?
+    private var lastActionAt = Date()
+    private var stuckWatch: Task<Void, Never>?
     private var rng: SplitMix64
 
     init(level: Int, player: PlayerStore) {
@@ -76,6 +88,36 @@ final class GameViewModel: ObservableObject {
         self.player = player
         self.board = BoardEngine(tiles: generated.tiles, zenMode: player.zenModeEnabled)
         self.rng = SplitMix64(seed: UInt64(level) &* UInt64(7919))
+        beginStuckWatch()
+    }
+
+    deinit { stuckWatch?.cancel() }
+
+    private func beginStuckWatch() {
+        stuckWatch = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                self?.evaluateStuck()
+            }
+        }
+    }
+
+    private func evaluateStuck() {
+        guard phase == .playing, !board.tiles.isEmpty else {
+            isStuck = false
+            return
+        }
+        if !board.hasAvailableMatch {
+            isStuck = true
+            return
+        }
+        isStuck = Date().timeIntervalSince(lastActionAt) >= Self.stuckThreshold
+    }
+
+    /// Teklif reddedilince sayaç sıfırlanır, hemen tekrar çıkmasın.
+    func dismissStuckHelp() {
+        isStuck = false
+        lastActionAt = Date()
     }
 
     var levelNumber: Int { level.number }
@@ -86,6 +128,8 @@ final class GameViewModel: ObservableObject {
     func tap(_ tile: Tile) {
         guard phase == .playing else { return }
         hintedTiles.removeAll()
+        lastActionAt = Date()
+        isStuck = false
 
         switch board.tap(tile) {
         case .blocked:

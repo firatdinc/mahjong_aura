@@ -10,7 +10,6 @@ struct ResultView: View {
     @EnvironmentObject private var player: PlayerStore
     @EnvironmentObject private var ads: AdService
     @EnvironmentObject private var gameCenter: GameCenterService
-    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         ZStack {
@@ -19,7 +18,7 @@ struct ResultView: View {
             VStack(spacing: 22) {
                 Spacer()
 
-                Image(systemName: "camera.macro")
+                Image(systemName: Self.lotusSymbol)
                     .font(.system(size: 64))
                     .foregroundStyle(
                         LinearGradient(colors: [.pink.opacity(0.9), Theme.actionGreen],
@@ -79,14 +78,30 @@ struct ResultView: View {
     private func promptForReviewIfEarned() async {
         guard player.shouldRequestReview(afterLevel: model.levelNumber) else { return }
         try? await Task.sleep(nanoseconds: 1_200_000_000)
-        requestReview()
+        Self.askForReview()
         player.markReviewRequested(atLevel: model.levelNumber)
+    }
+
+    /// iOS 15 uyumu: `@Environment(\.requestReview)` iOS 16+ olduğu için
+    /// StoreKit'in sahne tabanlı API'si kullanılıyor.
+    private static func askForReview() {
+        guard let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive })
+        else { return }
+        SKStoreReviewController.requestReview(in: scene)
     }
 
     /// İki lider tablosuna da yazar. Kimlik doğrulanmadıysa sessizce geçer.
     private func submitScores() async {
         await gameCenter.submit(highestLevel: player.highestLevel,
                                 bestAura: player.bestAura)
+    }
+
+    /// "camera.macro" iOS 16 ile geldi; 15'te boş görünürdü.
+    private static var lotusSymbol: String {
+        if #available(iOS 16.0, *) { return "camera.macro" }
+        return "leaf.fill"
     }
 
     private var timeText: String {

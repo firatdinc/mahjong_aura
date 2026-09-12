@@ -70,3 +70,6 @@
 "common.cancel" = "Cancelar";
 
 "lose.continue" = "Continuar";
+
+"stuck.title" = "Travou?";
+"stuck.message" = "Assista a um anúncio curto e mostramos um par.";
