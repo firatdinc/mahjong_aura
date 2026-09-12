@@ -58,4 +58,33 @@ enum AdConfig {
     /// ATT izin istemi açılıştan hemen sonra gösterilirse yutuluyor;
     /// bu gecikme diğer oyunlarda çalıştığı doğrulanmış değer.
     static let attPromptDelay: TimeInterval = 1.2
+
+    // MARK: - Test cihazları
+
+    /// ⚠️ BAN RİSKİ — buraya kendi cihazlarınızın kimliğini ekleyin.
+    ///
+    /// Test birimi kimliği ile test **cihazı** farklı şeylerdir:
+    ///   • Test birimi (`TestUnit`) → sahte reklam, gelir yok, risk yok.
+    ///     Yalnızca Debug'da kullanılır.
+    ///   • Gerçek birim + tanıtılmamış cihaz → GERÇEK reklam gelir.
+    ///     Kendi uygulamanızda izleyip tıklamanız geçersiz trafik sayılır
+    ///     ve hesabın askıya alınmasına yol açabilir.
+    ///   • Gerçek birim + tanıtılmış cihaz → test reklamı gösterilir, güvenli.
+    ///
+    /// TestFlight veya Release derlemesini kendi telefonunuzda denemeden ÖNCE
+    /// buraya kimliğini ekleyin. Kimliği öğrenmek için uygulamayı bir kez
+    /// çalıştırın; SDK konsola şu satırı yazar:
+    ///   "To get test ads on this device, set ... testDeviceIdentifiers = @[ "..." ]"
+    /// `AdService` bu satırı `ads` kategorisinde ayrıca vurgular.
+    ///
+    /// Not: Bu liste Release'te de geçerlidir — kasıtlı. Kendi cihazınız
+    /// yayına çıktıktan sonra da test reklamı görmeli.
+    /// AdMob konsolundaki "Test cihazları" listesiyle aynı olmalı.
+    /// Konsol kaydı yalnızca AdMob Ağı'nı kapsar; uyumlulaştırma üzerinden
+    /// gelen reklamlara uygulanmaz. Buradaki liste istek düzeyinde çalışır,
+    /// bu yüzden ikisi birlikte tutulur.
+    static let testDeviceIdentifiers: [String] = [
+        "26078A84-52D0-40B5-86C7-BB2E0BE1585F",  // ergn
+        "2362EB31-0BFE-4FC3-AF96-EFD7FCD7C93A",  // Fırat
+    ]
 }

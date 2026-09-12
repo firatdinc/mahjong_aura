@@ -45,12 +45,18 @@ final class AdService: ObservableObject {
     func start() async {
         guard !isReady else { return }
 
+        // Onaydan bağımsız ve önce: onay formu kullanıcıda beklerken bile
+        // test cihazı yapılandırması yerine oturmuş olsun.
+        configureTestDevices()
+
         await requestConsent()
 
         // ATT istemi, onay akışından sonra ve bir gecikmeyle.
         try? await Task.sleep(nanoseconds: UInt64(AdConfig.attPromptDelay * 1_000_000_000))
         let status = await ATTrackingManager.requestTrackingAuthorization()
         Self.log.info("ATT durumu: \(status.rawValue, privacy: .public)")
+
+        configureTestDevices()
 
         await MobileAds.shared.start()
         isReady = true
@@ -59,6 +65,26 @@ final class AdService: ObservableObject {
         // Geçiş reklamı önden yüklenir (bölüm sonunda anında lazım).
         // Ödüllü reklam YÜKLENMEZ — ancak gerektiğinde yüklenir.
         await loadInterstitial()
+    }
+
+    /// Kendi cihazlarımızı test cihazı olarak işaretler.
+    ///
+    /// Bu olmadan, gerçek reklam birimleriyle kendi telefonunda reklam izlemek
+    /// geçersiz trafik sayılır ve AdMob hesabının askıya alınmasına yol açabilir.
+    /// Simülatör SDK tarafından zaten otomatik test cihazı sayılır.
+    private func configureTestDevices() {
+        let ids = AdConfig.testDeviceIdentifiers
+        if !ids.isEmpty {
+            MobileAds.shared.requestConfiguration.testDeviceIdentifiers = ids
+            Self.log.info("test cihazi sayisi: \(ids.count, privacy: .public)")
+        } else {
+            Self.log.warning("""
+            ⚠️ Kayitli test cihazi YOK. Gercek reklam birimleriyle kendi \
+            cihazinizda reklam izlemek gecersiz trafik sayilir. Konsolda \
+            SDK'nin yazdigi "testDeviceIdentifiers" satirindaki kimligi \
+            AdConfig.testDeviceIdentifiers icine ekleyin.
+            """)
+        }
     }
 
     /// Aracı (mediation) adaptörlerinin hazır olup olmadığını yazar.
