@@ -10,7 +10,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: K858B9M275
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 
@@ -77,11 +77,13 @@ targets:
           - zh-Hans
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
+        # iPad için AYRI anahtar tanımlanmıyor — kasıtlı.
+        # `…~ipad` anahtarını yalnızca portrait ile doldurmak, Apple'ın iPad
+        # çoklu görev kuralını tetikliyor ve yükleme 409 ile reddediliyor.
+        # Yayındaki 2.0.1 de bu anahtarı hiç tanımlamıyor; birebir aynısı.
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
-        UISupportedInterfaceOrientations~ipad:
-          - UIInterfaceOrientationPortrait
-          - UIInterfaceOrientationPortraitUpsideDown
+        UIRequiresFullScreen: true
         GADApplicationIdentifier: ca-app-pub-8571533711927103~6034352154
         NSUserTrackingUsageDescription: This identifier will be used to deliver personalized ads to you.
         SKAdNetworkItems:
