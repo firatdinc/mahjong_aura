@@ -11,6 +11,8 @@ struct GameView: View {
 
     @State private var showMenu = false
     @State private var showShop = false
+    @State private var showHintAdOffer = false
+    @State private var hintAdUnavailable = false
 
     init(level: Int, player: PlayerStore) {
         _model = StateObject(wrappedValue: GameViewModel(level: level, player: player))
@@ -25,7 +27,8 @@ struct GameView: View {
                 TrayView(tiles: model.board.tray, capacity: model.board.trayCapacity)
                     .padding(.horizontal, 20)
                 boardArea
-                BoosterBar(model: model, player: player)
+                BoosterBar(model: model, player: player,
+                           onHintDepleted: { showHintAdOffer = true })
                     .padding(.bottom, 8)
             }
 
@@ -51,6 +54,37 @@ struct GameView: View {
         }
         .sheet(isPresented: $showShop) {
             ShopSheet().environmentObject(player).environmentObject(store)
+        }
+        // İpucu bitince ödüllü reklam teklifi. Birim AdMob'da zaten
+        // "İpucu Reklam" adıyla bu iş için tanımlı.
+        .alert(NSLocalizedString("hint.adOffer.title", comment: ""),
+               isPresented: $showHintAdOffer) {
+            Button(NSLocalizedString("hint.adOffer.watch", comment: "")) {
+                Task { await watchAdForHint() }
+            }
+            Button(NSLocalizedString("common.cancel", comment: ""), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString("hint.adOffer.message", comment: ""))
+        }
+        .alert(NSLocalizedString("ads.notReady", comment: ""),
+               isPresented: $hintAdUnavailable) {
+            Button("OK", role: .cancel) {}
+        }
+        // Bakiye sıfırsa reklamı şimdiden hazırla — buton görünür durumda.
+        .task {
+            if !player.hasRemoveAds, player.balance(of: .hint) == 0 {
+                await ads.prepareRewarded()
+            }
+        }
+    }
+
+    /// Reklam izlenip ödül kazanılırsa bir ipucu verilir ve hemen kullanılır.
+    private func watchAdForHint() async {
+        if await ads.showRewarded() {
+            player.credit(.hint, 1)
+            _ = model.useHint()
+        } else {
+            hintAdUnavailable = true
         }
     }
 
@@ -190,6 +224,7 @@ struct TrayView: View {
 struct BoosterBar: View {
     @ObservedObject var model: GameViewModel
     @ObservedObject var player: PlayerStore
+    var onHintDepleted: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 44) {
@@ -198,7 +233,13 @@ struct BoosterBar: View {
                           locked: !model.isShuffleUnlocked) { model.useShuffle() }
             boosterButton(.hint, system: "lightbulb.fill",
                           count: player.balance(of: .hint),
-                          locked: false) { _ = model.useHint() }
+                          locked: false) {
+                if player.hasRemoveAds || player.balance(of: .hint) > 0 {
+                    _ = model.useHint()
+                } else {
+                    onHintDepleted()
+                }
+            }
             boosterButton(.undo, system: "arrow.uturn.backward",
                           count: player.balance(of: .undo),
                           locked: false) { _ = model.useUndo() }

@@ -70,3 +70,9 @@
 "store.unverified" = "Satın alma doğrulanamadı. Lütfen tekrar dene.";
 
 "ads.notReady" = "Şu anda reklam yok. Lütfen biraz sonra tekrar dene.";
+
+/* --- Ipucu odullu reklam --- */
+"hint.adOffer.title" = "İpucun Kalmadı";
+"hint.adOffer.message" = "Kısa bir reklam izle, bedava ipucu kazan.";
+"hint.adOffer.watch" = "Reklam İzle";
+"common.cancel" = "Vazgeç";

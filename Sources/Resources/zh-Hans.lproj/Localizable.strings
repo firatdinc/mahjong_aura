@@ -62,3 +62,9 @@
 "store.unverified" = "购买无法验证，请重试。";
 
 "ads.notReady" = "暂时没有可用广告，请稍后再试。";
+
+/* --- Ipucu odullu reklam --- */
+"hint.adOffer.title" = "提示已用完";
+"hint.adOffer.message" = "观看一段短广告，免费获得一次提示。";
+"hint.adOffer.watch" = "观看广告";
+"common.cancel" = "取消";

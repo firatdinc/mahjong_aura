@@ -62,3 +62,9 @@
 "store.unverified" = "Der Kauf konnte nicht bestätigt werden. Bitte erneut versuchen.";
 
 "ads.notReady" = "Gerade keine Werbung verfügbar. Bitte gleich noch einmal versuchen.";
+
+/* --- Ipucu odullu reklam --- */
+"hint.adOffer.title" = "Keine Hinweise Mehr";
+"hint.adOffer.message" = "Kurzes Video ansehen und einen Hinweis gratis erhalten.";
+"hint.adOffer.watch" = "Video Ansehen";
+"common.cancel" = "Abbrechen";

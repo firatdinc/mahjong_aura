@@ -62,3 +62,9 @@
 "store.unverified" = "L'achat n'a pas pu être vérifié. Veuillez réessayer.";
 
 "ads.notReady" = "Aucune pub disponible pour le moment. Réessayez dans un instant.";
+
+/* --- Ipucu odullu reklam --- */
+"hint.adOffer.title" = "Plus d'Indices";
+"hint.adOffer.message" = "Regardez une courte pub pour un indice gratuit.";
+"hint.adOffer.watch" = "Voir la Pub";
+"common.cancel" = "Annuler";

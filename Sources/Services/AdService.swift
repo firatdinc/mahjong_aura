@@ -14,7 +14,7 @@ import AppTrackingTransparency
 /// `removeAds` satın alan kullanıcıya hiçbir reklam gösterilmez — mağazadaki
 /// vaat bu: "No interstitials."
 @MainActor
-final class AdService: ObservableObject {
+final class AdService: NSObject, ObservableObject {
 
     /// İstek / dolum / gösterim adımları loglanıyor ki yayın sonrası AdMob'daki
     /// gösterim oranı (şu an %21) uygulama tarafıyla karşılaştırılabilsin.
@@ -36,8 +36,13 @@ final class AdService: ObservableObject {
     private var levelsSinceInterstitial = 0
     private var lastInterstitialAt: Date?
 
+    /// Tam ekran reklam sunumu bitene kadar tutulan devam noktası.
+    private var presentContinuation: CheckedContinuation<Void, Never>?
+    private var earnedReward = false
+
     init(player: PlayerStore) {
         self.player = player
+        super.init()
     }
 
     // MARK: - Başlatma
@@ -55,8 +60,6 @@ final class AdService: ObservableObject {
         try? await Task.sleep(nanoseconds: UInt64(AdConfig.attPromptDelay * 1_000_000_000))
         let status = await ATTrackingManager.requestTrackingAuthorization()
         Self.log.info("ATT durumu: \(status.rawValue, privacy: .public)")
-
-        configureTestDevices()
 
         await MobileAds.shared.start()
         isReady = true
@@ -186,10 +189,8 @@ final class AdService: ObservableObject {
         interstitial = nil
 
         Self.log.info("gecis: gosterim")
+        ad.fullScreenContentDelegate = self
         ad.present(from: root)
-
-        // Kapanmayı beklemeden yenisini yükle — bir sonraki bölüme hazır olsun.
-        Task { await loadInterstitial() }
     }
 
     /// Ödüllü reklam. Ödül kazanıldıysa `true` döner.
@@ -208,16 +209,38 @@ final class AdService: ObservableObject {
         rewarded = nil
         isRewardedReady = false
 
-        var earned = false
         Self.log.info("odullu: gosterim")
+        earnedReward = false
+        ad.fullScreenContentDelegate = self
+
+        // Kapanmayı bekliyoruz, ödülü değil. `userDidEarnRewardHandler`
+        // yalnızca ödül kazanılınca tetikleniyor; ona bağlanırsak reklam
+        // kapatıldığında akış sonsuza kadar askıda kalıyor.
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            ad.present(from: root) {
-                earned = true
-                continuation.resume()
+            presentContinuation = continuation
+            ad.present(from: root) { [weak self] in
+                self?.earnedReward = true
             }
         }
+
+        let earned = earnedReward
         Self.log.info("odullu: odul \(earned ? "kazanildi" : "kazanilmadi", privacy: .public)")
+        await prepareRewarded()          // bir sonrakine hazırlan
         return earned
+    }
+
+    // MARK: - Tam ekran reklam yaşam döngüsü
+
+    /// Sunum akışının tek çıkış noktası. Reklam kapanınca, sunulamayınca ya da
+    /// hata alınca buradan devam edilir; her durumda tam bir kez.
+    private static func logPresentFailure(_ error: Error) {
+        log.error("tam ekran reklam sunulamadi: \(error.localizedDescription, privacy: .public)")
+    }
+
+    private func finishPresentation() {
+        guard let continuation = presentContinuation else { return }
+        presentContinuation = nil
+        continuation.resume()
     }
 
     // MARK: - Hata ayıklama
@@ -240,5 +263,26 @@ final class AdService: ObservableObject {
             .flatMap(\.windows)
             .first(where: \.isKeyWindow)?
             .rootViewController
+    }
+}
+
+// MARK: - FullScreenContentDelegate
+
+extension AdService: FullScreenContentDelegate {
+
+    nonisolated func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
+        Task { @MainActor in
+            self.finishPresentation()
+            // Reklam kapanır kapanmaz yenisini yükle.
+            await self.loadInterstitial()
+        }
+    }
+
+    nonisolated func ad(_ ad: FullScreenPresentingAd,
+                        didFailToPresentFullScreenContentWithError error: Error) {
+        Task { @MainActor in
+            Self.logPresentFailure(error)
+            self.finishPresentation()
+        }
     }
 }
