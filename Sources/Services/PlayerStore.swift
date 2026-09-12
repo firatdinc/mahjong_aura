@@ -1,36 +1,26 @@
 import Foundation
 
-// Release derlemesi, oyuncu kayıt anahtarları doğrulanmadan DERLENMEZ.
-// Bayrak yalnızca Release yapılandırmasında tanımlı (project.yml).
-// Kaldırma koşulu: şifreli iPhone yedeğinden com.mahjongaura.app.plist
-// çıkarılıp aşağıdaki `Key` sabitleri birebir eşlendiğinde.
-#if MAHJONG_KEYS_UNVERIFIED
-#error("Oyuncu kayıt anahtarları doğrulanmadı — yayına çıkılamaz. Detay: PlayerStore.swift başlığı ve CLAUDE.md kural 4.")
-#endif
-
 /// Oyuncu ilerlemesinin kalıcı kaydı.
 ///
-/// ════════════════════════════════════════════════════════════════════
-/// 🚨 ÇÖZÜLMEMİŞ: Yayındaki 2.0.1'in UserDefaults anahtarları BİLİNMİYOR.
+/// **Bilinçli karar (2026-09-12):** Yayındaki 2.0.1'in UserDefaults anahtar
+/// adları bilinmiyor (kaynak kayıp, ikili şifreli) ve telefon yedeğinden
+/// çıkarılmayacak. Yeni sürüm kendi anahtarlarıyla **sıfırdan** başlıyor.
 ///
-/// 2.0.1 kaynağı kayıp ve ikili FairPlay ile şifreli olduğu için anahtar
-/// adları okunamıyor. Aşağıdaki `Key` değerleri TAHMİN — doğrulanmadı.
+/// Kabul edilen sonuç: güncellemeyi alan mevcut oyuncuların bölüm ilerlemesi,
+/// Aura puanı ve tüketilebilir booster bakiyeleri sıfırlanır.
 ///
-/// Bu dosya, bir iPhone'un şifreli Finder yedeğinden `com.mahjongaura.app`
-/// kabının `Library/Preferences/com.mahjongaura.app.plist` dosyası
-/// çıkarılıp anahtarlar birebir okunmadan CANLIYA GÖNDERİLEMEZ.
+/// Etkilenmeyen: `removeAds` non-consumable olduğu için Apple sunucusunda
+/// tutuluyor; StoreKit `currentEntitlements` ile otomatik geri yüklenir.
 ///
-/// Yanlış anahtarla yayınlanırsa: güncellemeyi alan her oyuncunun bölüm
-/// ilerlemesi, Aura puanı ve satın aldığı booster bakiyesi sıfırlanır.
-///
-/// Doğrulandığında: `keysVerified` true yapılacak ve bu blok silinecek.
-/// ════════════════════════════════════════════════════════════════════
+/// Geri alınabilirlik: farklı anahtar adları kullandığımız için eski kayıtlar
+/// silinmiyor, cihazda duruyor. `legacySnapshot` ilk açılışta hepsinin bir
+/// kopyasını da alıyor. Anahtar adları ileride öğrenilirse bir güncellemeyle
+/// ilerleme geri getirilebilir.
 final class PlayerStore: ObservableObject {
 
-    /// Yedekten anahtarlar teyit edilene kadar false kalır.
-    static let keysVerified = false
-
     enum Key {
+        /// İlk açılışta alınan, önceki sürüme ait tüm kayıtların kopyası.
+        static let legacySnapshot = "v21.legacySnapshot"
         static let highestLevel   = "highestLevel"
         static let currentLevel   = "currentLevel"
         static let totalAura      = "totalAura"
@@ -54,23 +44,39 @@ final class PlayerStore: ObservableObject {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
 
-        // 2.0.1 hiç oynanmamışsa ilk bölümden başla.
+        Self.snapshotLegacyDefaultsIfNeeded(defaults)
+
+        // Yeni sürüm sıfırdan başlar; kayıt yoksa 1. bölüm.
         self.highestLevel = max(1, defaults.integer(forKey: Key.highestLevel))
         self.currentLevel = max(1, defaults.integer(forKey: Key.currentLevel))
         self.totalAura = defaults.double(forKey: Key.totalAura)
         self.zenModeEnabled = defaults.bool(forKey: Key.zenModeEnabled)
+    }
 
-        #if DEBUG
-        if !Self.keysVerified {
-            print("""
-            ⚠️  PlayerStore: UserDefaults anahtarları HENÜZ DOĞRULANMADI.
-                Geliştirme için sorun değil, ama yayına çıkmadan önce şifreli
-                iPhone yedeğinden com.mahjongaura.app.plist çıkarılıp Key
-                sabitleri birebir eşlenmeli — yoksa güncellemeyi alan her
-                oyuncunun ilerlemesi sıfırlanır.
-            """)
+    /// Önceki sürümden kalan tüm kayıtların bir kopyasını saklar.
+    ///
+    /// Yeni sürüm kendi anahtarlarını kullandığı için eski değerler zaten
+    /// silinmiyor, ama bu kopya onları tek bir yerde toplar: anahtar adları
+    /// ileride çözülürse ilerleme buradan geri getirilebilir. Bir kez çalışır.
+    private static func snapshotLegacyDefaultsIfNeeded(_ defaults: UserDefaults) {
+        guard defaults.object(forKey: Key.legacySnapshot) == nil else { return }
+
+        let systemPrefixes = ["Apple", "NS", "com.apple", "AK", "PK", "WebKit", "INNext"]
+        var legacy: [String: String] = [:]
+
+        for (key, value) in defaults.dictionaryRepresentation() {
+            if systemPrefixes.contains(where: { key.hasPrefix($0) }) { continue }
+            if key.hasPrefix("v21.") { continue }          // bu sürümün kendi kayıtları
+            legacy[key] = String(describing: value)
         }
-        #endif
+
+        // Hiç eski kayıt yoksa da boş bir kopya yazıyoruz ki bir daha taranmasın.
+        defaults.set(legacy, forKey: Key.legacySnapshot)
+    }
+
+    /// Önceki sürümden devralınan ham kayıtlar (varsa). Tanı amaçlı.
+    var legacySnapshot: [String: String] {
+        defaults.dictionary(forKey: Key.legacySnapshot) as? [String: String] ?? [:]
     }
 
     // MARK: - Booster bakiyeleri

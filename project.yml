@@ -7,11 +7,6 @@ options:
   groupSortPosition: top
 
 settings:
-  configs:
-    # Oyuncu kayıt anahtarları doğrulanana kadar Release DERLENMEZ.
-    # Doğrulandığında bu satır silinir (bkz. PlayerStore.swift).
-    Release:
-      SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) MAHJONG_KEYS_UNVERIFIED"
   base:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete

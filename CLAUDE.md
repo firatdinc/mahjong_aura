@@ -15,9 +15,13 @@ edilmemiş, tek kopyanın bulunduğu makineye erişim yok, ikili FairPlay şifre
    - Game Center: `…levels`, `…bestiq`
    - AdMob: `ca-app-pub-8571533711927103~6034352154`
 3. **Build numarası 14'ten devam eder.** Şu an 15.
-4. **`PlayerStore.keysVerified` false olduğu sürece yayına çıkılmaz.**
-   UserDefaults anahtarları şifreli iPhone yedeğinden doğrulanmadan gönderilen
-   sürüm, güncellemeyi alan herkesin ilerlemesini sıfırlar. En büyük risk bu.
+4. **Oyuncu ilerlemesi bilinçli olarak sıfırlanıyor.** 2.0.1'in UserDefaults
+   anahtar adları bilinmiyor ve telefon yedeğinden çıkarılmayacak (karar:
+   2026-09-12, indirme sayısı düşük ve satın alma yok). Güncellemeyi alan
+   mevcut oyuncular 1. bölümden başlar. `removeAds` etkilenmez — non-consumable
+   olduğu için StoreKit otomatik geri yükler. Eski kayıtlar silinmiyor;
+   `PlayerStore.legacySnapshot` ilk açılışta kopyasını alıyor, dolayısıyla
+   anahtarlar ileride çözülürse ilerleme geri getirilebilir.
 5. **Her yeni metin `Localizable.strings`'e girer**, koda gömülmez.
    Lokalizasyon ASO'nun 1 numaralı kaldıracı; 2.0 hiç yerelleştirilmemişti.
 6. **Yayına çıkmadan önce push.** Bu projenin var olma sebebi push edilmemiş
