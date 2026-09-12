@@ -4,6 +4,7 @@ import SwiftUI
 /// Ahşap zemin · logo · madalyon içinde taş · "Level N" hap butonu
 struct LobbyView: View {
     @EnvironmentObject private var player: PlayerStore
+    @EnvironmentObject private var store: StoreService
     @State private var showLevels = false
 
     var body: some View {
@@ -25,7 +26,9 @@ struct LobbyView: View {
             .padding(.horizontal, 32)
         }
         .fullScreenCover(isPresented: $showLevels) {
-            LevelsMapView().environmentObject(player)
+            LevelsMapView()
+                .environmentObject(player)
+                .environmentObject(store)
         }
     }
 

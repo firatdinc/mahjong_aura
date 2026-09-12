@@ -60,3 +60,11 @@
 "lose.useRevive" = "Devam Hakkı Kullan";
 "lose.watchAd" = "Reklam İzle ve Devam Et";
 "result.title.calm" = "Sakin!";
+
+/* --- Magaza mesajlari --- */
+"store.title" = "Mağaza";
+"store.unavailable" = "Bu ürün şu anda alınamıyor. Lütfen daha sonra tekrar deneyin.";
+"store.pending" = "Satın alman onay bekliyor.";
+"store.restored" = "Satın alımların geri yüklendi.";
+"store.nothingToRestore" = "Önceki bir satın alma bulunamadı.";
+"store.unverified" = "Satın alma doğrulanamadı. Lütfen tekrar dene.";

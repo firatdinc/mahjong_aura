@@ -42,6 +42,14 @@ final class PlayerStore: ObservableObject {
     @Published private(set) var totalAura: Double
     @Published var zenModeEnabled: Bool { didSet { defaults.set(zenModeEnabled, forKey: Key.zenModeEnabled) } }
 
+    /// Booster bakiyeleri. Yayımlanan durum olmalı, yoksa satın alma sonrası
+    /// arayüz kendini yenilemez.
+    @Published private(set) var balances: [Booster: Int] = [:]
+
+    /// `removeAds` satın alındıysa booster'lar sınırsız sayılır.
+    /// Doğruluk kaynağı StoreKit; bu yalnızca önbellek.
+    @Published private(set) var hasRemoveAds: Bool
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
 
@@ -52,6 +60,13 @@ final class PlayerStore: ObservableObject {
         self.currentLevel = max(1, defaults.integer(forKey: Key.currentLevel))
         self.totalAura = defaults.double(forKey: Key.totalAura)
         self.zenModeEnabled = defaults.bool(forKey: Key.zenModeEnabled)
+        self.hasRemoveAds = defaults.bool(forKey: Key.removeAds)
+
+        self.balances = [
+            .hint:   defaults.integer(forKey: Key.hintCount),
+            .undo:   defaults.integer(forKey: Key.undoCount),
+            .revive: defaults.integer(forKey: Key.reviveCount),
+        ]
     }
 
     /// Önceki sürümden kalan tüm kayıtların bir kopyasını saklar.
@@ -83,27 +98,33 @@ final class PlayerStore: ObservableObject {
     // MARK: - Booster bakiyeleri
 
     func balance(of booster: Booster) -> Int {
-        switch booster {
-        case .hint:   return defaults.integer(forKey: Key.hintCount)
-        case .undo:   return defaults.integer(forKey: Key.undoCount)
-        case .revive: return defaults.integer(forKey: Key.reviveCount)
-        case .shuffle: return 0 // shuffle sayaçla değil, bölüm kilidiyle yönetiliyor
-        }
+        // Shuffle sayaçla değil, bölüm kilidiyle yönetiliyor.
+        guard booster != .shuffle else { return 0 }
+        return balances[booster] ?? 0
     }
 
     func credit(_ booster: Booster, _ amount: Int) {
-        let key: String
-        switch booster {
-        case .hint:   key = Key.hintCount
-        case .undo:   key = Key.undoCount
-        case .revive: key = Key.reviveCount
-        case .shuffle: return
-        }
-        defaults.set(defaults.integer(forKey: key) + amount, forKey: key)
+        guard booster != .shuffle else { return }
+        let updated = max(0, (balances[booster] ?? 0) + amount)
+        balances[booster] = updated
+        defaults.set(updated, forKey: Self.defaultsKey(for: booster))
     }
 
-    /// removeAds satın alındıysa booster'lar sınırsız sayılır.
-    var hasRemoveAds: Bool { defaults.bool(forKey: Key.removeAds) }
+    private static func defaultsKey(for booster: Booster) -> String {
+        switch booster {
+        case .hint:    return Key.hintCount
+        case .undo:    return Key.undoCount
+        case .revive:  return Key.reviveCount
+        case .shuffle: return Key.hintCount // ulaşılmaz
+        }
+    }
+
+    /// StoreKit'ten gelen hak durumunu yansıtır.
+    func setRemoveAds(_ owned: Bool) {
+        guard hasRemoveAds != owned else { return }
+        hasRemoveAds = owned
+        defaults.set(owned, forKey: Key.removeAds)
+    }
 
     // MARK: - Puan istemi (App Store değerlendirmesi)
 

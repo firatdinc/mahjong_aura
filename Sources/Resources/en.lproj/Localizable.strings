@@ -62,3 +62,11 @@
 "lose.useRevive" = "Use a Revive";
 "lose.watchAd" = "Watch Ad to Continue";
 "result.title.calm" = "Calm!";
+
+/* --- Magaza mesajlari --- */
+"store.title" = "Shop";
+"store.unavailable" = "This item isn't available right now. Please try again later.";
+"store.pending" = "Your purchase is waiting for approval.";
+"store.restored" = "Your purchases have been restored.";
+"store.nothingToRestore" = "No previous purchases found.";
+"store.unverified" = "The purchase could not be verified. Please try again.";

@@ -5,6 +5,7 @@ import SwiftUI
 /// kilitli koyu + asma kilit. Üstte "LEVELS" ve "tamamlanan / 2.000".
 struct LevelsMapView: View {
     @EnvironmentObject private var player: PlayerStore
+    @EnvironmentObject private var store: StoreService
     @Environment(\.dismiss) private var dismiss
 
     @State private var showShop = false
@@ -38,9 +39,13 @@ struct LevelsMapView: View {
             get: { playingLevel.map(LevelBox.init) },
             set: { playingLevel = $0?.value }
         )) { box in
-            GameView(level: box.value, player: player).environmentObject(player)
+            GameView(level: box.value, player: player)
+                .environmentObject(player)
+                .environmentObject(store)
         }
-        .sheet(isPresented: $showShop) { ShopSheet() }
+        .sheet(isPresented: $showShop) {
+            ShopSheet().environmentObject(player).environmentObject(store)
+        }
     }
 
     private struct LevelBox: Identifiable { let value: Int; var id: Int { value } }

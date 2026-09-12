@@ -5,6 +5,7 @@ import SwiftUI
 /// kendi kalıbına uyacak şekilde bu panele eklendi (ayrı ekran açılmadı).
 struct MenuSheet: View {
     @EnvironmentObject private var player: PlayerStore
+    @EnvironmentObject private var store: StoreService
     @Environment(\.dismiss) private var dismiss
 
     let onShop: () -> Void
@@ -50,18 +51,25 @@ struct MenuSheet: View {
 
     private var removeAdsBlock: some View {
         VStack(spacing: 8) {
-            if !player.hasRemoveAds {
+            if !player.hasRemoveAds, let price = store.displayPrice(for: .removeAds) {
                 Button {
-                    // TODO: StoreKit satın alma akışı
+                    Task { await store.purchase(.removeAds) }
                 } label: {
-                    Text(String(format: NSLocalizedString("menu.removeAds", comment: ""), "₺249,99"))
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: Theme.Metric.actionButtonHeight)
-                        .background(Capsule().fill(Theme.actionGreen))
+                    Group {
+                        if store.pending == .removeAds {
+                            ProgressView().tint(.white)
+                        } else {
+                            Text(String(format: NSLocalizedString("menu.removeAds", comment: ""), price))
+                                .font(.system(size: 18, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: Theme.Metric.actionButtonHeight)
+                    .background(Capsule().fill(Theme.actionGreen))
                 }
                 .buttonStyle(.plain)
+                .disabled(store.pending != nil)
 
                 Text(NSLocalizedString("menu.removeAds.detail", comment: ""))
                     .font(.system(size: 12, design: .rounded))
@@ -70,7 +78,7 @@ struct MenuSheet: View {
             }
 
             Button {
-                // TODO: StoreKit geri yükleme
+                Task { await store.restore() }
             } label: {
                 Text(NSLocalizedString("menu.restore", comment: ""))
                     .font(.system(size: 13, weight: .medium, design: .rounded))
@@ -120,25 +128,25 @@ struct MenuSheet: View {
 /// Mağaza — şartname § 2.7. Ürün kimlikleri `StoreCatalog` ile birebir.
 struct ShopSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var store: StoreService
+    @EnvironmentObject private var player: PlayerStore
 
     private struct Row {
         let product: StoreCatalog.Product
         let titleKey: String
         let detailKey: String
         let icon: String
-        let price: String
     }
 
-    /// Fiyatlar canlıda StoreKit'ten gelecek; buradakiler ASC'deki TRY karşılıkları.
     private let boosters: [Row] = [
         Row(product: .boosterBundle, titleKey: "shop.bundle", detailKey: "shop.bundle.detail",
-            icon: "gift.fill", price: "₺199,99"),
+            icon: "gift.fill"),
         Row(product: .hints20, titleKey: "shop.hints", detailKey: "shop.hints.detail",
-            icon: "lightbulb.fill", price: "₺99,99"),
+            icon: "lightbulb.fill"),
         Row(product: .undos30, titleKey: "shop.undos", detailKey: "shop.undos.detail",
-            icon: "arrow.uturn.backward", price: "₺99,99"),
+            icon: "arrow.uturn.backward"),
         Row(product: .revives10, titleKey: "shop.revives", detailKey: "shop.revives.detail",
-            icon: "heart.fill", price: "₺149,99"),
+            icon: "heart.fill"),
     ]
 
     var body: some View {
@@ -152,9 +160,10 @@ struct ShopSheet: View {
                         .foregroundStyle(.white)
                         .padding(.top, 18)
 
-                    productRow(Row(product: .removeAds, titleKey: "shop.removeAds",
-                                   detailKey: "shop.removeAds.detail",
-                                   icon: "nosign", price: "₺249,99"))
+                    if !player.hasRemoveAds {
+                        productRow(Row(product: .removeAds, titleKey: "shop.removeAds",
+                                       detailKey: "shop.removeAds.detail", icon: "nosign"))
+                    }
 
                     Text(NSLocalizedString("shop.boosters", comment: ""))
                         .font(.system(size: 11, weight: .bold, design: .rounded))
@@ -165,7 +174,7 @@ struct ShopSheet: View {
                     ForEach(boosters, id: \.product) { productRow($0) }
 
                     Button {
-                        // TODO: StoreKit geri yükleme
+                        Task { await store.restore() }
                     } label: {
                         Text(NSLocalizedString("menu.restore", comment: ""))
                             .font(.system(size: 13, design: .rounded))
@@ -177,6 +186,13 @@ struct ShopSheet: View {
                 }
                 .padding(.horizontal, 20)
             }
+        }
+        .alert(NSLocalizedString("store.title", comment: ""),
+               isPresented: Binding(get: { store.alertMessage != nil },
+                                    set: { if !$0 { store.alertMessage = nil } })) {
+            Button("OK", role: .cancel) { store.alertMessage = nil }
+        } message: {
+            Text(store.alertMessage ?? "")
         }
     }
 
@@ -199,15 +215,23 @@ struct ShopSheet: View {
             Spacer()
 
             Button {
-                // TODO: StoreKit satın alma — row.product.rawValue
+                Task { await store.purchase(row.product) }
             } label: {
-                Text(row.price)
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 14).padding(.vertical, 7)
-                    .background(Capsule().fill(Theme.actionGreen))
+                Group {
+                    if store.pending == row.product {
+                        ProgressView().tint(.white)
+                    } else {
+                        Text(store.displayPrice(for: row.product) ?? "—")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                    }
+                }
+                .frame(minWidth: 64)
+                .padding(.horizontal, 14).padding(.vertical, 7)
+                .background(Capsule().fill(Theme.actionGreen))
             }
             .buttonStyle(.plain)
+            .disabled(store.pending != nil || store.displayPrice(for: row.product) == nil)
         }
         .padding(12)
         .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.06)))

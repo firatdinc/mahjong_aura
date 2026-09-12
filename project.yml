@@ -14,6 +14,21 @@ settings:
     CODE_SIGN_STYLE: Automatic
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 
+schemes:
+  MahjongAura:
+    build:
+      targets:
+        MahjongAura: all
+    run:
+      config: Debug
+      # Simülatörde satın alma testi için yerel ürün tanımları.
+      # Gerçek ürünler ASC'de; bu dosya yalnızca geliştirme içindir.
+      storeKitConfiguration: Products.storekit
+    archive:
+      config: Release
+    profile:
+      config: Release
+
 targets:
   MahjongAura:
     type: application

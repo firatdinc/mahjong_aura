@@ -52,3 +52,11 @@
 "lose.message" = "No queda ninguna pareja en la bandeja.\nRecupera dos fichas y sigue jugando.";
 "lose.useRevive" = "Usar un revivir";
 "lose.watchAd" = "Ver anuncio para continuar";
+
+/* --- Mensajes de la tienda --- */
+"store.title" = "Tienda";
+"store.unavailable" = "Este artículo no está disponible ahora. Inténtalo más tarde.";
+"store.pending" = "Tu compra está esperando aprobación.";
+"store.restored" = "Tus compras se han restaurado.";
+"store.nothingToRestore" = "No se encontraron compras anteriores.";
+"store.unverified" = "No se pudo verificar la compra. Inténtalo de nuevo.";

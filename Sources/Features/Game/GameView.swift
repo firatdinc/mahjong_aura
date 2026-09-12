@@ -4,6 +4,7 @@ import SwiftUI
 struct GameView: View {
     @StateObject private var model: GameViewModel
     @EnvironmentObject private var player: PlayerStore
+    @EnvironmentObject private var store: StoreService
     @Environment(\.dismiss) private var dismiss
 
     @State private var showMenu = false
@@ -42,8 +43,12 @@ struct GameView: View {
             MenuSheet(onShop: { showMenu = false; showShop = true },
                       onRestart: { showMenu = false },
                       onQuit: { showMenu = false; dismiss() })
+                .environmentObject(player)
+                .environmentObject(store)
         }
-        .sheet(isPresented: $showShop) { ShopSheet() }
+        .sheet(isPresented: $showShop) {
+            ShopSheet().environmentObject(player).environmentObject(store)
+        }
     }
 
     private var topBar: some View {

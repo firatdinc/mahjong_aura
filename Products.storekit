@@ -1,0 +1,116 @@
+{
+  "identifier": "AF8D27FD-58FF-5F34-9CCF-C18B5A83A953",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "8720685329",
+      "localizations": [
+        {
+          "description": "Removes all ads forever.",
+          "displayName": "Remove Ads",
+          "locale": "en_US"
+        },
+        {
+          "description": "T\u00fcm reklamlar\u0131 kal\u0131c\u0131 olarak kald\u0131r\u0131r.",
+          "displayName": "Remove Ads",
+          "locale": "tr"
+        }
+      ],
+      "productID": "com.mahjongaura.app.removeads",
+      "referenceName": "Remove Ads",
+      "type": "NonConsumable"
+    },
+    {
+      "displayPrice": "3.99",
+      "familyShareable": false,
+      "internalID": "2665765930",
+      "localizations": [
+        {
+          "description": "Bundle of hints, undos and revives.",
+          "displayName": "Booster Bundle",
+          "locale": "en_US"
+        },
+        {
+          "description": "\u0130pucu, geri alma ve devam paketi.",
+          "displayName": "Booster Bundle",
+          "locale": "tr"
+        }
+      ],
+      "productID": "com.mahjongaura.app.bundle",
+      "referenceName": "Booster Bundle",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "1.99",
+      "familyShareable": false,
+      "internalID": "2303467425",
+      "localizations": [
+        {
+          "description": "20 hints that reveal a matching pair.",
+          "displayName": "20 Hints",
+          "locale": "en_US"
+        },
+        {
+          "description": "E\u015fle\u015fen \u00e7ifti g\u00f6steren 20 ipucu.",
+          "displayName": "20 Hints",
+          "locale": "tr"
+        }
+      ],
+      "productID": "com.mahjongaura.app.hints20",
+      "referenceName": "20 Hints",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "1.99",
+      "familyShareable": false,
+      "internalID": "4792327708",
+      "localizations": [
+        {
+          "description": "30 undos to take back a move.",
+          "displayName": "30 Undos",
+          "locale": "en_US"
+        },
+        {
+          "description": "Hamleni geri almak i\u00e7in 30 hak.",
+          "displayName": "30 Undos",
+          "locale": "tr"
+        }
+      ],
+      "productID": "com.mahjongaura.app.undos30",
+      "referenceName": "30 Undos",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "4676713257",
+      "localizations": [
+        {
+          "description": "10 revives to keep a level going.",
+          "displayName": "10 Revives",
+          "locale": "en_US"
+        },
+        {
+          "description": "B\u00f6l\u00fcme devam etmek i\u00e7in 10 hak.",
+          "displayName": "10 Revives",
+          "locale": "tr"
+        }
+      ],
+      "productID": "com.mahjongaura.app.revives10",
+      "referenceName": "10 Revives",
+      "type": "Consumable"
+    }
+  ],
+  "settings": {
+    "_applicationInternalID": "6760037926",
+    "_developerTeamID": "",
+    "_lastSynchronizedDate": 0
+  },
+  "subscriptionGroups": [],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

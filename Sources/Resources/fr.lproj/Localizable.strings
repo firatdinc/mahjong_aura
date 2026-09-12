@@ -52,3 +52,11 @@
 "lose.message" = "Plus aucune paire dans le plateau.\nRécupérez deux tuiles et continuez.";
 "lose.useRevive" = "Utiliser une reprise";
 "lose.watchAd" = "Regarder une pub pour continuer";
+
+/* --- Messages de la boutique --- */
+"store.title" = "Boutique";
+"store.unavailable" = "Cet article n'est pas disponible pour le moment. Réessayez plus tard.";
+"store.pending" = "Votre achat est en attente d'approbation.";
+"store.restored" = "Vos achats ont été restaurés.";
+"store.nothingToRestore" = "Aucun achat précédent trouvé.";
+"store.unverified" = "L'achat n'a pas pu être vérifié. Veuillez réessayer.";

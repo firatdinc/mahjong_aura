@@ -2,7 +2,14 @@ import SwiftUI
 
 @main
 struct MahjongAuraApp: App {
-    @StateObject private var player = PlayerStore()
+    @StateObject private var player: PlayerStore
+    @StateObject private var store: StoreService
+
+    init() {
+        let player = PlayerStore()
+        _player = StateObject(wrappedValue: player)
+        _store = StateObject(wrappedValue: StoreService(player: player))
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -19,7 +26,9 @@ struct MahjongAuraApp: App {
                 #endif
             }
             .environmentObject(player)
+            .environmentObject(store)
             .preferredColorScheme(.dark)
+            .task { await store.loadProducts() }
         }
     }
 

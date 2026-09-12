@@ -52,3 +52,11 @@
 "lose.message" = "Kein passendes Paar mehr in der Ablage.\nHol zwei Steine zurück und spiel weiter.";
 "lose.useRevive" = "Wiederbeleben nutzen";
 "lose.watchAd" = "Video ansehen und weiterspielen";
+
+/* --- Shop-Meldungen --- */
+"store.title" = "Shop";
+"store.unavailable" = "Dieser Artikel ist gerade nicht verfügbar. Bitte später erneut versuchen.";
+"store.pending" = "Dein Kauf wartet auf Freigabe.";
+"store.restored" = "Deine Käufe wurden wiederhergestellt.";
+"store.nothingToRestore" = "Keine früheren Käufe gefunden.";
+"store.unverified" = "Der Kauf konnte nicht bestätigt werden. Bitte erneut versuchen.";

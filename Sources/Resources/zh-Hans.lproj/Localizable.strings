@@ -52,3 +52,11 @@
 "lose.message" = "托盘里没有可配对的牌了。\n取回两张牌，继续游戏。";
 "lose.useRevive" = "使用复活";
 "lose.watchAd" = "观看广告继续";
+
+/* --- 商店消息 --- */
+"store.title" = "商店";
+"store.unavailable" = "该商品暂时无法购买，请稍后再试。";
+"store.pending" = "你的购买正在等待批准。";
+"store.restored" = "已恢复你的购买。";
+"store.nothingToRestore" = "未找到以往的购买记录。";
+"store.unverified" = "购买无法验证，请重试。";
