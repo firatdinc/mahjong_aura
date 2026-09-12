@@ -239,8 +239,13 @@ final class AdService: NSObject, ObservableObject {
 
         if rewarded == nil { await prepareRewarded() }
 
-        guard let ad = rewarded, let root = Self.rootViewController else {
-            Self.log.info("odullu: hazir degil")
+        guard let ad = rewarded else {
+            lastRewardedError = lastRewardedError ?? "reklam yuklenemedi"
+            Self.log.info("odullu: reklam yok")
+            return false
+        }
+        guard let root = Self.rootViewController else {
+            lastRewardedError = "sunulacak ekran bulunamadi"
             return false
         }
 
@@ -299,8 +304,9 @@ final class AdService: NSObject, ObservableObject {
 
     /// Sunum akışının tek çıkış noktası. Reklam kapanınca, sunulamayınca ya da
     /// hata alınca buradan devam edilir; her durumda tam bir kez.
-    private static func logPresentFailure(_ error: Error) {
-        log.error("tam ekran reklam sunulamadi: \(error.localizedDescription, privacy: .public)")
+    private func recordPresentFailure(_ error: Error) {
+        lastRewardedError = "sunulamadı: " + error.localizedDescription
+        Self.log.error("tam ekran reklam sunulamadi: \(error.localizedDescription, privacy: .public)")
     }
 
     private func finishPresentation() {
@@ -322,12 +328,22 @@ final class AdService: NSObject, ObservableObject {
 
     // MARK: - Yardımcı
 
+    /// Reklamın sunulacağı view controller.
+    ///
+    /// Kök VC yeterli DEĞİL: oyun ekranı `fullScreenCover` ile açıldığı için
+    /// kök zaten bir ekran sunuyor ve üzerine ikinci bir sunum yapılamıyor.
+    /// Sunum zincirinin en üstüne çıkmak gerekiyor.
     private static var rootViewController: UIViewController? {
-        UIApplication.shared.connectedScenes
+        let keyWindow = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .flatMap(\.windows)
-            .first(where: \.isKeyWindow)?
-            .rootViewController
+            .first(where: \.isKeyWindow)
+
+        var top = keyWindow?.rootViewController
+        while let presented = top?.presentedViewController {
+            top = presented
+        }
+        return top
     }
 }
 
@@ -346,7 +362,7 @@ extension AdService: FullScreenContentDelegate {
     nonisolated func ad(_ ad: FullScreenPresentingAd,
                         didFailToPresentFullScreenContentWithError error: Error) {
         Task { @MainActor in
-            Self.logPresentFailure(error)
+            self.recordPresentFailure(error)
             self.finishPresentation()
         }
     }
