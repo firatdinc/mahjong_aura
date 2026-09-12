@@ -9,10 +9,21 @@ struct GameView: View {
     @EnvironmentObject private var gameCenter: GameCenterService
     @Environment(\.dismiss) private var dismiss
 
-    @State private var showMenu = false
-    @State private var showShop = false
-    @State private var showHintAdOffer = false
-    @State private var hintAdUnavailable = false
+    /// Sunumlar TEK bir kaynaktan yönetiliyor: aynı görünüme birden fazla
+    /// `.sheet` / `.alert` bağlamak SwiftUI'da kırılgan bir kalıp. Menü
+    /// iki ayrı sheet ile de çalışıyordu; bu sadece sağlamlaştırma.
+    private enum Sheet: Identifiable {
+        case menu, shop
+        var id: Int { hashValue }
+    }
+
+    private enum Alert: Identifiable {
+        case hintAdOffer, adUnavailable
+        var id: Int { hashValue }
+    }
+
+    @State private var sheet: Sheet?
+    @State private var alert: Alert?
 
     init(level: Int, player: PlayerStore) {
         _model = StateObject(wrappedValue: GameViewModel(level: level, player: player))
@@ -28,7 +39,7 @@ struct GameView: View {
                     .padding(.horizontal, 20)
                 boardArea
                 BoosterBar(model: model, player: player,
-                           onHintDepleted: { showHintAdOffer = true })
+                           onHintDepleted: { alert = .hintAdOffer })
                     .padding(.bottom, 8)
             }
 
@@ -39,36 +50,41 @@ struct GameView: View {
             case .won(let outcome):
                 ResultView(outcome: outcome, model: model) { dismiss() }
             case .lost:
-                LoseView(model: model, onShop: { showShop = true }, onQuit: { dismiss() })
+                LoseView(model: model, onShop: { sheet = .shop }, onQuit: { dismiss() })
             case .playing:
                 EmptyView()
             }
         }
-        .sheet(isPresented: $showMenu) {
-            MenuSheet(onShop: { showMenu = false; showShop = true },
-                      onRestart: { showMenu = false },
-                      onQuit: { showMenu = false; dismiss() })
-                .environmentObject(player)
-                .environmentObject(store)
-                .environmentObject(ads)
-        }
-        .sheet(isPresented: $showShop) {
-            ShopSheet().environmentObject(player).environmentObject(store)
-        }
-        // İpucu bitince ödüllü reklam teklifi. Birim AdMob'da zaten
-        // "İpucu Reklam" adıyla bu iş için tanımlı.
-        .alert(NSLocalizedString("hint.adOffer.title", comment: ""),
-               isPresented: $showHintAdOffer) {
-            Button(NSLocalizedString("hint.adOffer.watch", comment: "")) {
-                Task { await watchAdForHint() }
+        .sheet(item: $sheet) { which in
+            switch which {
+            case .menu:
+                MenuSheet(onShop: { sheet = .shop },
+                          onRestart: { sheet = nil },
+                          onQuit: { sheet = nil; dismiss() })
+                    .environmentObject(player)
+                    .environmentObject(store)
+                    .environmentObject(ads)
+            case .shop:
+                ShopSheet().environmentObject(player).environmentObject(store)
             }
-            Button(NSLocalizedString("common.cancel", comment: ""), role: .cancel) {}
-        } message: {
-            Text(NSLocalizedString("hint.adOffer.message", comment: ""))
         }
-        .alert(NSLocalizedString("ads.notReady", comment: ""),
-               isPresented: $hintAdUnavailable) {
-            Button("OK", role: .cancel) {}
+        .alert(alertTitle, isPresented: Binding(
+            get: { alert != nil },
+            set: { if !$0 { alert = nil } }
+        ), presenting: alert) { which in
+            switch which {
+            case .hintAdOffer:
+                Button(NSLocalizedString("hint.adOffer.watch", comment: "")) {
+                    Task { await watchAdForHint() }
+                }
+                Button(NSLocalizedString("common.cancel", comment: ""), role: .cancel) {}
+            case .adUnavailable:
+                Button("OK", role: .cancel) {}
+            }
+        } message: { which in
+            if which == .hintAdOffer {
+                Text(NSLocalizedString("hint.adOffer.message", comment: ""))
+            }
         }
         // Bakiye sıfırsa reklamı şimdiden hazırla — buton görünür durumda.
         .task {
@@ -78,13 +94,21 @@ struct GameView: View {
         }
     }
 
+    private var alertTitle: String {
+        switch alert {
+        case .hintAdOffer:   return NSLocalizedString("hint.adOffer.title", comment: "")
+        case .adUnavailable: return NSLocalizedString("ads.notReady", comment: "")
+        case nil:            return ""
+        }
+    }
+
     /// Reklam izlenip ödül kazanılırsa bir ipucu verilir ve hemen kullanılır.
     private func watchAdForHint() async {
         if await ads.showRewarded() {
             player.credit(.hint, 1)
             _ = model.useHint()
         } else {
-            hintAdUnavailable = true
+            alert = .adUnavailable
         }
     }
 
@@ -108,7 +132,7 @@ struct GameView: View {
             HStack {
                 CircleButton(system: "arrow.left") { dismiss() }
                 Spacer()
-                CircleButton(system: "line.3.horizontal") { showMenu = true }
+                CircleButton(system: "line.3.horizontal") { sheet = .menu }
             }
             .padding(.horizontal, 20)
         }
