@@ -24,15 +24,23 @@ struct LevelsMapView: View {
         ZStack {
             Rectangle().fill(Theme.feltBackground).ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 26) {
-                    ForEach(window, id: \.self) { level in
-                        node(level)
-                            .frame(maxWidth: .infinity, alignment: offset(for: level))
-                            .padding(.horizontal, 60)
+            // Harita mevcut bölüme kaydırılmış açılır. Aksi halde oyuncu
+            // en üstteki kilitli bölümleri görür ve ilerlemesi görünmez.
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 26) {
+                        ForEach(window, id: \.self) { level in
+                            node(level)
+                                .id(level)
+                                .frame(maxWidth: .infinity, alignment: offset(for: level))
+                                .padding(.horizontal, 60)
+                        }
                     }
+                    .padding(.vertical, 90)
                 }
-                .padding(.vertical, 90)
+                .onAppear {
+                    proxy.scrollTo(player.currentLevel, anchor: .center)
+                }
             }
 
             header
