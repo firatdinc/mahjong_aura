@@ -60,3 +60,5 @@
 "store.restored" = "Deine Käufe wurden wiederhergestellt.";
 "store.nothingToRestore" = "Keine früheren Käufe gefunden.";
 "store.unverified" = "Der Kauf konnte nicht bestätigt werden. Bitte erneut versuchen.";
+
+"ads.notReady" = "Gerade keine Werbung verfügbar. Bitte gleich noch einmal versuchen.";

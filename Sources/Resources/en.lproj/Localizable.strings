@@ -70,3 +70,5 @@
 "store.restored" = "Your purchases have been restored.";
 "store.nothingToRestore" = "No previous purchases found.";
 "store.unverified" = "The purchase could not be verified. Please try again.";
+
+"ads.notReady" = "Ad not available right now. Please try again in a moment.";

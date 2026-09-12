@@ -68,3 +68,5 @@
 "store.restored" = "Satın alımların geri yüklendi.";
 "store.nothingToRestore" = "Önceki bir satın alma bulunamadı.";
 "store.unverified" = "Satın alma doğrulanamadı. Lütfen tekrar dene.";
+
+"ads.notReady" = "Şu anda reklam yok. Lütfen biraz sonra tekrar dene.";

@@ -68,11 +68,20 @@ Game · Result · Lose/Revive · Menu · Shop ekranları · 6 dil (en, tr, de, e
 fr, zh-Hans) · puan istemi (3. veya 5. bölüm sonunda, ömürde bir kez) ·
 AdMob kimlikleri (`AdConfig.swift`).
 
+StoreKit 2 satın alma/geri yükleme · GoogleMobileAds + UMP (GDPR onayı, ATT,
+geçiş ve ödüllü reklam).
+
 Henüz yapılmadı:
-- **StoreKit satın alma/geri yükleme akışı** — ürün kimlikleri ve ekranlar hazır, arkası boş
-- **GoogleMobileAds + UserMessagingPlatform** entegrasyonu (kimlikler hazır)
-- **RevenueCat** — 2.0'da kullanılıyordu, devam edilecekse SDK eklenmeli
 - **Game Center** skor gönderimi (vendor ID'ler hazır)
+- **RevenueCat** — 2.0'da kullanılıyordu, devam edilecekse SDK eklenmeli.
+  Şu an satın almalar doğrudan StoreKit 2 ile yürüyor; RevenueCat'in müşteri
+  kayıtları bu sürümde güncellenmez.
 - İkon okunabilirliği + ilk iki ekran görüntüsüne büyük metin (ASO kaldıraç 3)
+- Ses ve titreşim
+
+Reklam notları:
+- Geçiş reklamı 3 bölümde bir, bölüm geçiş butonunda (kutlama ekranının üstünde değil)
+- `removeAds` sahibine hiç reklam yüklenmiyor
+- Debug'da UMP coğrafyası EEA'ya sabit → onay formu her açılışta çıkar, bu kasıtlı
 
 Doğrulanacak: AdMob birimleri v1.x'ten geliyor, 2.0'da yeni birim açılmış olabilir.

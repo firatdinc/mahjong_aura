@@ -8,6 +8,7 @@ struct ResultView: View {
     let onContinue: () -> Void
 
     @EnvironmentObject private var player: PlayerStore
+    @EnvironmentObject private var ads: AdService
     @Environment(\.requestReview) private var requestReview
 
     var body: some View {
@@ -44,7 +45,12 @@ struct ResultView: View {
 
                 giftTrack
 
-                Button(action: onContinue) {
+                Button {
+                    // Geçiş reklamı bölüm geçişinde — kutlama ekranının
+                    // üstünde değil. Sıklık kuralı AdService'te.
+                    ads.showInterstitialIfDue()
+                    onContinue()
+                } label: {
                     Text(String(format: NSLocalizedString("result.next", comment: ""),
                                 model.levelNumber + 1))
                         .font(.system(size: 22, weight: .bold, design: .rounded))
@@ -130,8 +136,12 @@ struct ResultView: View {
 struct LoseView: View {
     @ObservedObject var model: GameViewModel
     @EnvironmentObject private var player: PlayerStore
+    @EnvironmentObject private var ads: AdService
     let onShop: () -> Void
     let onQuit: () -> Void
+
+    @State private var showAdUnavailable = false
+    @State private var watchingAd = false
 
     var body: some View {
         ZStack {
@@ -161,9 +171,20 @@ struct LoseView: View {
                         }
                     }
                     primaryButton("lose.watchAd", fill: Theme.amber) {
-                        // TODO: ödüllü reklam entegrasyonu (AdMob) — şimdilik doğrudan veriyor
-                        model.reviveByAd()
+                        guard !watchingAd else { return }
+                        watchingAd = true
+                        Task {
+                            // Ödül gerçekten kazanıldıysa devam hakkı verilir.
+                            // removeAds sahibine reklam gösterilmeden verilir.
+                            if await ads.showRewarded() {
+                                model.reviveByAd()
+                            } else {
+                                showAdUnavailable = true
+                            }
+                            watchingAd = false
+                        }
                     }
+                    .disabled(watchingAd)
                     Button(action: onShop) {
                         Text(NSLocalizedString("menu.shop", comment: ""))
                             .font(.system(size: 16, weight: .semibold, design: .rounded))
@@ -180,6 +201,10 @@ struct LoseView: View {
                 Spacer()
             }
             .padding(.horizontal, 24)
+        }
+        .alert(NSLocalizedString("ads.notReady", comment: ""),
+               isPresented: $showAdUnavailable) {
+            Button("OK", role: .cancel) {}
         }
     }
 

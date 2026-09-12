@@ -60,3 +60,5 @@
 "store.restored" = "Tus compras se han restaurado.";
 "store.nothingToRestore" = "No se encontraron compras anteriores.";
 "store.unverified" = "No se pudo verificar la compra. Inténtalo de nuevo.";
+
+"ads.notReady" = "No hay anuncios disponibles ahora. Inténtalo en un momento.";

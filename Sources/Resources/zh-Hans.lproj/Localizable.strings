@@ -60,3 +60,5 @@
 "store.restored" = "已恢复你的购买。";
 "store.nothingToRestore" = "未找到以往的购买记录。";
 "store.unverified" = "购买无法验证，请重试。";
+
+"ads.notReady" = "暂时没有可用广告，请稍后再试。";

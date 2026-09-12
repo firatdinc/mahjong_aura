@@ -4,11 +4,13 @@ import SwiftUI
 struct MahjongAuraApp: App {
     @StateObject private var player: PlayerStore
     @StateObject private var store: StoreService
+    @StateObject private var ads: AdService
 
     init() {
         let player = PlayerStore()
         _player = StateObject(wrappedValue: player)
         _store = StateObject(wrappedValue: StoreService(player: player))
+        _ads = StateObject(wrappedValue: AdService(player: player))
     }
 
     var body: some Scene {
@@ -27,8 +29,15 @@ struct MahjongAuraApp: App {
             }
             .environmentObject(player)
             .environmentObject(store)
+            .environmentObject(ads)
             .preferredColorScheme(.dark)
-            .task { await store.loadProducts() }
+            .task {
+                await store.loadProducts()
+                // Onay → ATT → SDK sırası AdService içinde; satın alma
+                // durumu bilindikten sonra başlatılıyor ki removeAds
+                // sahibine hiç reklam yüklenmesin.
+                await ads.start()
+            }
         }
     }
 

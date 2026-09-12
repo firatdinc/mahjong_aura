@@ -5,6 +5,7 @@ import SwiftUI
 struct LobbyView: View {
     @EnvironmentObject private var player: PlayerStore
     @EnvironmentObject private var store: StoreService
+    @EnvironmentObject private var ads: AdService
     @State private var showLevels = false
 
     var body: some View {
@@ -29,6 +30,7 @@ struct LobbyView: View {
             LevelsMapView()
                 .environmentObject(player)
                 .environmentObject(store)
+                .environmentObject(ads)
         }
     }
 

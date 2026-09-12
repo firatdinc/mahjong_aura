@@ -6,6 +6,7 @@ import SwiftUI
 struct LevelsMapView: View {
     @EnvironmentObject private var player: PlayerStore
     @EnvironmentObject private var store: StoreService
+    @EnvironmentObject private var ads: AdService
     @Environment(\.dismiss) private var dismiss
 
     @State private var showShop = false
@@ -42,6 +43,7 @@ struct LevelsMapView: View {
             GameView(level: box.value, player: player)
                 .environmentObject(player)
                 .environmentObject(store)
+                .environmentObject(ads)
         }
         .sheet(isPresented: $showShop) {
             ShopSheet().environmentObject(player).environmentObject(store)
