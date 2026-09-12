@@ -49,8 +49,12 @@ struct ResultView: View {
                 Button {
                     // Geçiş reklamı bölüm geçişinde — kutlama ekranının
                     // üstünde değil. Sıklık kuralı AdService'te.
-                    ads.showInterstitialIfDue()
-                    onContinue()
+                    // Reklam KAPANDIKTAN sonra devam ediliyor; aksi halde
+                    // ekran kapanınca reklam da birlikte yok oluyor.
+                    Task {
+                        await ads.showInterstitialIfDue()
+                        onContinue()
+                    }
                 } label: {
                     Text(String(format: NSLocalizedString("result.next", comment: ""),
                                 model.levelNumber + 1))

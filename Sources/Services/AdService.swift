@@ -185,7 +185,11 @@ final class AdService: NSObject, ObservableObject {
     // MARK: - Gösterim
 
     /// Bölüm geçişinde çağrılır. Hem bölüm sayısı hem süre koşulu sağlanmalı.
-    func showInterstitialIfDue() {
+    ///
+    /// **Kapanmayı bekler.** Çağıran taraf ekranı hemen kapatırsa reklam da
+    /// onunla birlikte yok oluyordu (reklam, kapanan ekranın üstünde sunuluyor).
+    /// Bu yüzden `async` ve sunum bitene kadar dönmüyor.
+    func showInterstitialIfDue() async {
         guard !adsSuppressed, isReady else { return }
         levelsSinceInterstitial += 1
 
@@ -197,9 +201,13 @@ final class AdService: NSObject, ObservableObject {
             return
         }
 
-        guard let ad = interstitial, let root = Self.rootViewController else {
+        guard let ad = interstitial else {
             Self.log.info("gecis: hazir degil")
-            Task { await loadInterstitial() }
+            await loadInterstitial()
+            return
+        }
+        guard let root = Self.rootViewController else {
+            lastInterstitialError = "sunulacak ekran bulunamadi"
             return
         }
 
@@ -209,14 +217,17 @@ final class AdService: NSObject, ObservableObject {
 
         Self.log.info("gecis: gosterim")
         ad.fullScreenContentDelegate = self
-        ad.present(from: root)
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            presentContinuation = continuation
+            ad.present(from: root)
+        }
+        Self.log.info("gecis: kapandi")
     }
 
     /// SDK açılış akışını (onay → ATT → start) bitirene kadar bekler.
     ///
     /// Oyuncu hızlı oynayıp ATT istemi yanıtlanmadan kaybederse SDK henüz
-    /// hazır olmuyordu ve "reklam yok" deyip geçiyorduk. Beklemek, o dar
-    /// zaman aralığındaki yanlış olumsuzu ortadan kaldırıyor.
+    /// hazır olmuyordu ve "reklam yok" deyip geçiyorduk.
     private func waitUntilReady(timeout: TimeInterval = 8) async -> Bool {
         if isReady { return true }
         let deadline = Date().addingTimeInterval(timeout)
