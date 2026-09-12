@@ -68,3 +68,5 @@
 "hint.adOffer.message" = "Assista a um anúncio curto e ganhe uma dica grátis.";
 "hint.adOffer.watch" = "Assistir Anúncio";
 "common.cancel" = "Cancelar";
+
+"lose.continue" = "Continuar";

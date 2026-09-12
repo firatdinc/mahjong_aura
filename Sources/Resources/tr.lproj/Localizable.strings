@@ -76,3 +76,5 @@
 "hint.adOffer.message" = "Kısa bir reklam izle, bedava ipucu kazan.";
 "hint.adOffer.watch" = "Reklam İzle";
 "common.cancel" = "Vazgeç";
+
+"lose.continue" = "Devam Et";

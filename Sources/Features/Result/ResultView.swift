@@ -173,26 +173,32 @@ struct LoseView: View {
                     .multilineTextAlignment(.center)
 
                 VStack(spacing: 12) {
-                    if player.hasRemoveAds || player.balance(of: .revive) > 0 {
-                        primaryButton("lose.useRevive", fill: Theme.actionGreen) {
+                    if player.hasRemoveAds {
+                        // Reklamsız satın alındıysa reklam vaat eden bir buton
+                        // göstermek yanıltıcı olur — doğrudan devam ettiriyoruz.
+                        primaryButton("lose.continue", fill: Theme.actionGreen) {
                             _ = model.revive()
                         }
-                    }
-                    primaryButton("lose.watchAd", fill: Theme.amber) {
-                        guard !watchingAd else { return }
-                        watchingAd = true
-                        Task {
-                            // Ödül gerçekten kazanıldıysa devam hakkı verilir.
-                            // removeAds sahibine reklam gösterilmeden verilir.
-                            if await ads.showRewarded() {
-                                model.reviveByAd()
-                            } else {
-                                showAdUnavailable = true
+                    } else {
+                        if player.balance(of: .revive) > 0 {
+                            primaryButton("lose.useRevive", fill: Theme.actionGreen) {
+                                _ = model.revive()
                             }
-                            watchingAd = false
                         }
+                        primaryButton("lose.watchAd", fill: Theme.amber) {
+                            guard !watchingAd else { return }
+                            watchingAd = true
+                            Task {
+                                if await ads.showRewarded() {
+                                    model.reviveByAd()
+                                } else {
+                                    showAdUnavailable = true
+                                }
+                                watchingAd = false
+                            }
+                        }
+                        .disabled(watchingAd)
                     }
-                    .disabled(watchingAd)
                     Button(action: onShop) {
                         Text(NSLocalizedString("menu.shop", comment: ""))
                             .font(.system(size: 16, weight: .semibold, design: .rounded))

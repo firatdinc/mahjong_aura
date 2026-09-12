@@ -78,3 +78,5 @@
 "hint.adOffer.message" = "Watch a short ad to get a free hint.";
 "hint.adOffer.watch" = "Watch Ad";
 "common.cancel" = "Cancel";
+
+"lose.continue" = "Continue";

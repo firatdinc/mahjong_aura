@@ -68,3 +68,5 @@
 "hint.adOffer.message" = "Mira un anuncio corto y consigue una pista gratis.";
 "hint.adOffer.watch" = "Ver Anuncio";
 "common.cancel" = "Cancelar";
+
+"lose.continue" = "Continuar";

@@ -68,3 +68,5 @@
 "hint.adOffer.message" = "观看一段短广告，免费获得一次提示。";
 "hint.adOffer.watch" = "观看广告";
 "common.cancel" = "取消";
+
+"lose.continue" = "继续游戏";

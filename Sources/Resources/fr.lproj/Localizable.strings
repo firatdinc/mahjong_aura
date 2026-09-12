@@ -68,3 +68,5 @@
 "hint.adOffer.message" = "Regardez une courte pub pour un indice gratuit.";
 "hint.adOffer.watch" = "Voir la Pub";
 "common.cancel" = "Annuler";
+
+"lose.continue" = "Continuer";
