@@ -114,4 +114,71 @@ struct BoardEngine: Sendable {
     }
 
     var isCleared: Bool { tiles.isEmpty && tray.isEmpty }
+
+    /// Bölüm kaybedildi mi: tepsi dolu ve içinde eşleşme yok.
+    var isLost: Bool {
+        remainingTraySlots == 0 && !trayHasPair
+    }
+
+    private var trayHasPair: Bool {
+        for i in tray.indices {
+            for j in (i + 1)..<tray.count where tray[i].kind.matches(tray[j].kind) {
+                return true
+            }
+        }
+        return false
+    }
+
+    // MARK: - Boosterlar
+
+    /// **Undo** — tepsiye en son giren taşı tahtadaki yerine geri koyar.
+    /// Taşlar özgün konumlarını taşıdığı için yerleştirme kayıpsız.
+    @discardableResult
+    mutating func undo() -> Bool {
+        guard let last = tray.popLast() else { return false }
+        tiles.append(last)
+        return true
+    }
+
+    /// **Revive** — "Full tray? No problem". Tepsideki en eski `count` taşı
+    /// tahtadaki özgün yerlerine iade eder, böylece oyun sürebilir.
+    @discardableResult
+    mutating func revive(returning count: Int = 2) -> Int {
+        let moving = min(count, tray.count)
+        guard moving > 0 else { return 0 }
+        let returned = tray.prefix(moving)
+        tray.removeFirst(moving)
+        tiles.append(contentsOf: returned)
+        return moving
+    }
+
+    /// **Shuffle** — kalan taşların türlerini kendi aralarında karıştırır.
+    /// Çift sayıları korunur; taş sayısı ve yerleşim değişmez.
+    mutating func shuffle(using rng: inout SplitMix64) {
+        var kinds = tiles.map(\.kind)
+        for i in stride(from: kinds.count - 1, to: 0, by: -1) {
+            let j = Int(rng.next(upperBound: UInt64(i + 1)))
+            kinds.swapAt(i, j)
+        }
+        for i in tiles.indices {
+            tiles[i] = Tile(id: tiles[i].id, kind: kinds[i], position: tiles[i].position)
+        }
+    }
+
+    /// **Hint** — tahtada şu an eşleştirilebilecek bir çift döndürür.
+    func hintPair() -> (Tile, Tile)? {
+        let free = freeTiles
+        // Önce tepsidekiyle eşleşen serbest taş (tek dokunuşla temizlenir).
+        for tile in free {
+            if let inTray = tray.first(where: { $0.kind.matches(tile.kind) }) {
+                return (tile, inTray)
+            }
+        }
+        for i in free.indices {
+            for j in (i + 1)..<free.count where free[i].kind.matches(free[j].kind) {
+                return (free[i], free[j])
+            }
+        }
+        return nil
+    }
 }

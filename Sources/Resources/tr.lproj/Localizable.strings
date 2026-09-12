@@ -53,3 +53,10 @@
 "shop.undos.detail" = "Geri al, reklam yok";
 "shop.revives" = "10 Devam Hakkı";
 "shop.revives.detail" = "Tepsi mi doldu? Sorun değil";
+
+/* --- Kaybetme --- */
+"lose.title" = "Tepsi Doldu!";
+"lose.message" = "Tepside eşleşecek çift kalmadı.\nİki taşı geri al ve devam et.";
+"lose.useRevive" = "Devam Hakkı Kullan";
+"lose.watchAd" = "Reklam İzle ve Devam Et";
+"result.title.calm" = "Sakin!";

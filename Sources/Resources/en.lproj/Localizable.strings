@@ -55,3 +55,10 @@
 "shop.undos.detail" = "Take it back, no ads";
 "shop.revives" = "10 Revives";
 "shop.revives.detail" = "Full tray? No problem";
+
+/* --- Kaybetme (kayitta yoktu, ekonomiden turetildi) --- */
+"lose.title" = "Tray Full!";
+"lose.message" = "No matching pair left in the tray.\nBring two tiles back and keep going.";
+"lose.useRevive" = "Use a Revive";
+"lose.watchAd" = "Watch Ad to Continue";
+"result.title.calm" = "Calm!";

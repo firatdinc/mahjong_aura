@@ -1,5 +1,13 @@
 import Foundation
 
+// Release derlemesi, oyuncu kayıt anahtarları doğrulanmadan DERLENMEZ.
+// Bayrak yalnızca Release yapılandırmasında tanımlı (project.yml).
+// Kaldırma koşulu: şifreli iPhone yedeğinden com.mahjongaura.app.plist
+// çıkarılıp aşağıdaki `Key` sabitleri birebir eşlendiğinde.
+#if MAHJONG_KEYS_UNVERIFIED
+#error("Oyuncu kayıt anahtarları doğrulanmadı — yayına çıkılamaz. Detay: PlayerStore.swift başlığı ve CLAUDE.md kural 4.")
+#endif
+
 /// Oyuncu ilerlemesinin kalıcı kaydı.
 ///
 /// ════════════════════════════════════════════════════════════════════
@@ -20,7 +28,6 @@ import Foundation
 final class PlayerStore: ObservableObject {
 
     /// Yedekten anahtarlar teyit edilene kadar false kalır.
-    /// Release derlemesi bu bayrak false iken hata verir (aşağıdaki assert).
     static let keysVerified = false
 
     enum Key {
@@ -53,14 +60,17 @@ final class PlayerStore: ObservableObject {
         self.totalAura = defaults.double(forKey: Key.totalAura)
         self.zenModeEnabled = defaults.bool(forKey: Key.zenModeEnabled)
 
-        assert(
-            Self.keysVerified,
-            """
-            PlayerStore anahtarları henüz doğrulanmadı. Şifreli iPhone yedeğinden \
-            com.mahjongaura.app.plist çıkarılıp Key sabitleri birebir eşlenmeden \
-            yayına çıkılamaz — yoksa tüm oyuncu ilerlemesi sıfırlanır.
-            """
-        )
+        #if DEBUG
+        if !Self.keysVerified {
+            print("""
+            ⚠️  PlayerStore: UserDefaults anahtarları HENÜZ DOĞRULANMADI.
+                Geliştirme için sorun değil, ama yayına çıkmadan önce şifreli
+                iPhone yedeğinden com.mahjongaura.app.plist çıkarılıp Key
+                sabitleri birebir eşlenmeli — yoksa güncellemeyi alan her
+                oyuncunun ilerlemesi sıfırlanır.
+            """)
+        }
+        #endif
     }
 
     // MARK: - Booster bakiyeleri

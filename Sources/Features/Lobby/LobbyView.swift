@@ -4,6 +4,7 @@ import SwiftUI
 /// Ahşap zemin · logo · madalyon içinde taş · "Level N" hap butonu
 struct LobbyView: View {
     @EnvironmentObject private var player: PlayerStore
+    @State private var showLevels = false
 
     var body: some View {
         ZStack {
@@ -22,6 +23,9 @@ struct LobbyView: View {
                 Spacer(minLength: 48)
             }
             .padding(.horizontal, 32)
+        }
+        .fullScreenCover(isPresented: $showLevels) {
+            LevelsMapView().environmentObject(player)
         }
     }
 
@@ -51,7 +55,7 @@ struct LobbyView: View {
 
     private var continueButton: some View {
         Button {
-            // TODO: bölüm haritasına geç
+            showLevels = true
         } label: {
             Text(String(format: NSLocalizedString("lobby.continue", comment: "Continue at level N"),
                         player.currentLevel))
