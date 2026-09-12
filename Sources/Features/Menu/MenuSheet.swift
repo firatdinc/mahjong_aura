@@ -13,6 +13,10 @@ struct MenuSheet: View {
     let onRestart: () -> Void
     let onQuit: () -> Void
 
+    /// Gizli tanılama paneli: "Menü" başlığına uzun basınca açılır.
+    /// Normal oyuncu göremez; TestFlight'ta reklam sorununu teşhis için var.
+    @State private var showDiagnostics = false
+
     var body: some View {
         ZStack {
             Rectangle().fill(Theme.feltBackground).ignoresSafeArea()
@@ -22,6 +26,11 @@ struct MenuSheet: View {
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .padding(.top, 18)
+                    .onLongPressGesture(minimumDuration: 1.2) {
+                        showDiagnostics.toggle()
+                    }
+
+                if showDiagnostics { diagnosticsPanel }
 
                 toggleRow(icon: "figure.mind.and.body",
                           title: "menu.zenMode",
@@ -43,25 +52,41 @@ struct MenuSheet: View {
                 }
                 .buttonStyle(.plain)
 
-                #if DEBUG
-                // Gizli hata ayıklama girişi: AdMob Ad Inspector.
-                // Yalnızca Debug derlemesinde var, yayında görünmez.
-                Button {
-                    ads.presentAdInspector()
-                } label: {
-                    Label("Ad Inspector", systemImage: "ladybug.fill")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.4))
-                }
-                .buttonStyle(.plain)
-                .padding(.top, 4)
-                #endif
-
                 Spacer()
             }
             .padding(.horizontal, 20)
         }
         .presentationDetents([.medium])
+    }
+
+    /// Reklam tanılaması — neden reklam gelmediğini tahmin etmek yerine gösterir.
+    private var diagnosticsPanel: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(ads.diagnostics, id: \.0) { label, value in
+                HStack {
+                    Text(label)
+                        .foregroundStyle(.white.opacity(0.55))
+                    Spacer()
+                    Text(value)
+                        .foregroundStyle(value.contains("REDDEDİLDİ") || value.contains("ENGELLİ")
+                                         || value.contains("SIFIR") || value == "eşleşmedi"
+                                         ? Theme.symbolRed : .white)
+                        .multilineTextAlignment(.trailing)
+                }
+                .font(.system(size: 11, design: .monospaced))
+            }
+            Button {
+                ads.presentAdInspector()
+            } label: {
+                Label("Ad Inspector", systemImage: "ladybug.fill")
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Theme.amberBright)
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 4)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(.black.opacity(0.35)))
     }
 
     private var removeAdsBlock: some View {

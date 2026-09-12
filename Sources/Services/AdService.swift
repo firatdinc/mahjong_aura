@@ -24,6 +24,10 @@ final class AdService: NSObject, ObservableObject {
     @Published private(set) var isReady = false
     @Published private(set) var isRewardedReady = false
 
+    /// TestFlight'ta reklam gelmediğinde sebebi tahmin etmek yerine görmek için.
+    @Published private(set) var lastRewardedError: String?
+    @Published private(set) var lastInterstitialError: String?
+
     private let player: PlayerStore
     private var interstitial: InterstitialAd?
     private var rewarded: RewardedAd?
@@ -141,6 +145,7 @@ final class AdService: NSObject, ObservableObject {
             )
             Self.log.info("gecis: dolum ✓")
         } catch {
+            lastInterstitialError = error.localizedDescription
             Self.log.error("gecis: dolum ✗ \(error.localizedDescription, privacy: .public)")
         }
     }
@@ -159,6 +164,7 @@ final class AdService: NSObject, ObservableObject {
             Self.log.info("odullu: dolum ✓")
         } catch {
             isRewardedReady = false
+            lastRewardedError = error.localizedDescription
             Self.log.error("odullu: dolum ✗ \(error.localizedDescription, privacy: .public)")
         }
     }
@@ -229,6 +235,33 @@ final class AdService: NSObject, ObservableObject {
         return earned
     }
 
+    // MARK: - Tanılama
+
+    /// Menüdeki tanılama satırı. Reklam gelmediğinde sebebi burada görüyoruz.
+    var diagnostics: [(String, String)] {
+        let att: String
+        switch ATTrackingManager.trackingAuthorizationStatus {
+        case .authorized:    att = "izin verildi"
+        case .denied:        att = "REDDEDİLDİ"
+        case .restricted:    att = "kısıtlı"
+        case .notDetermined: att = "sorulmadı"
+        @unknown default:    att = "?"
+        }
+
+        let idfa = AdConfig.currentAdvertisingIdentifier
+        let idfaShort = idfa.hasPrefix("00000000") ? "SIFIR (ATT yok)" : String(idfa.prefix(13)) + "…"
+
+        return [
+            ("SDK", isReady ? "hazır" : "hazır değil"),
+            ("Onay", ConsentInformation.shared.canRequestAds ? "reklam istenebilir" : "ENGELLİ"),
+            ("ATT", att),
+            ("IDFA", idfaShort),
+            ("Test cihazı", AdConfig.testDeviceIdentifiers.contains(idfa) ? "EŞLEŞTİ" : "eşleşmedi"),
+            ("Ödüllü hata", lastRewardedError ?? "—"),
+            ("Geçiş hata", lastInterstitialError ?? "—"),
+        ]
+    }
+
     // MARK: - Tam ekran reklam yaşam döngüsü
 
     /// Sunum akışının tek çıkış noktası. Reklam kapanınca, sunulamayınca ya da
@@ -245,15 +278,14 @@ final class AdService: NSObject, ObservableObject {
 
     // MARK: - Hata ayıklama
 
-    #if DEBUG
     /// AdMob Ad Inspector — dolum, aracı ve istek akışını canlı gösterir.
+    /// TestFlight'ta da gerekli olduğu için Release'te de derleniyor.
     func presentAdInspector() {
         guard let root = Self.rootViewController else { return }
         MobileAds.shared.presentAdInspector(from: root) { error in
             if let error { Self.log.error("Ad Inspector: \(error.localizedDescription, privacy: .public)") }
         }
     }
-    #endif
 
     // MARK: - Yardımcı
 

@@ -1,4 +1,5 @@
 import Foundation
+import AdSupport
 
 /// AdMob yapılandırması.
 ///
@@ -87,4 +88,10 @@ enum AdConfig {
         "26078A84-52D0-40B5-86C7-BB2E0BE1585F",  // ergn
         "2362EB31-0BFE-4FC3-AF96-EFD7FCD7C93A",  // Fırat
     ]
+
+    /// Cihazın güncel reklam kimliği. ATT reddedilmişse sıfırlardan oluşur —
+    /// o durumda AdMob konsolundaki test cihazı kaydı eşleşmez.
+    static var currentAdvertisingIdentifier: String {
+        ASIdentifierManager.shared().advertisingIdentifier.uuidString
+    }
 }
