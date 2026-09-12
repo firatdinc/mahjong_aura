@@ -28,6 +28,18 @@ final class AdService: NSObject, ObservableObject {
     @Published private(set) var lastRewardedError: String?
     @Published private(set) var lastInterstitialError: String?
 
+    /// TEST: reklamsız hakkı olsa bile reklamları göster.
+    /// Gizli tanılama panelinden açılır, cihazda kalıcıdır. Normal oyuncu
+    /// bu anahtara ulaşamaz. Cihaz test cihazı olarak kayıtlıysa gelen
+    /// reklamlar "Test Ad" rozetlidir ve gelir üretmez.
+    @Published var forceAdsForTesting: Bool {
+        didSet { UserDefaults.standard.set(forceAdsForTesting, forKey: Self.forceAdsKey) }
+    }
+    private static let forceAdsKey = "v21.forceAdsForTesting"
+
+    /// Reklamlar bastırılmış mı? Test anahtarı açıkken bastırma devre dışı.
+    var adsSuppressed: Bool { player.hasRemoveAds && !forceAdsForTesting }
+
     private let player: PlayerStore
     private var interstitial: InterstitialAd?
     private var rewarded: RewardedAd?
@@ -46,6 +58,7 @@ final class AdService: NSObject, ObservableObject {
 
     init(player: PlayerStore) {
         self.player = player
+        self.forceAdsForTesting = UserDefaults.standard.bool(forKey: Self.forceAdsKey)
         super.init()
     }
 
@@ -137,7 +150,7 @@ final class AdService: NSObject, ObservableObject {
     // MARK: - Yükleme
 
     private func loadInterstitial() async {
-        guard isReady, !player.hasRemoveAds, interstitial == nil else { return }
+        guard isReady, !adsSuppressed, interstitial == nil else { return }
         Self.log.info("gecis: istek")
         do {
             interstitial = try await InterstitialAd.load(
@@ -154,7 +167,7 @@ final class AdService: NSObject, ObservableObject {
     /// Açılışta yüklenmiyor: kullanıcıların çoğu hiç ödüllü reklam görmüyor,
     /// erken yükleme hem boşa istek hem de dolum oranını bozuyor.
     func prepareRewarded() async {
-        guard isReady, !player.hasRemoveAds, rewarded == nil else { return }
+        guard isReady, !adsSuppressed, rewarded == nil else { return }
         Self.log.info("odullu: istek")
         do {
             rewarded = try await RewardedAd.load(
@@ -173,7 +186,7 @@ final class AdService: NSObject, ObservableObject {
 
     /// Bölüm geçişinde çağrılır. Hem bölüm sayısı hem süre koşulu sağlanmalı.
     func showInterstitialIfDue() {
-        guard !player.hasRemoveAds, isReady else { return }
+        guard !adsSuppressed, isReady else { return }
         levelsSinceInterstitial += 1
 
         guard levelsSinceInterstitial >= Self.interstitialEveryNLevels else { return }
@@ -217,7 +230,7 @@ final class AdService: NSObject, ObservableObject {
     /// `removeAds` sahibine reklam göstermeden doğrudan ödül verilir.
     @discardableResult
     func showRewarded() async -> Bool {
-        if player.hasRemoveAds { return true }
+        if adsSuppressed { return true }
 
         guard await waitUntilReady() else {
             Self.log.info("odullu: SDK hazir olmadi (zaman asimi)")
@@ -271,7 +284,7 @@ final class AdService: NSObject, ObservableObject {
         let idfaShort = idfa.hasPrefix("00000000") ? "SIFIR (ATT yok)" : String(idfa.prefix(13)) + "…"
 
         return [
-            ("Reklamsız", player.hasRemoveAds ? "AKTİF (reklam yok)" : "hayır"),
+            ("Reklamsız", player.hasRemoveAds ? (forceAdsForTesting ? "aktif ama TEST zorlamada" : "AKTİF (reklam yok)") : "hayır"),
             ("SDK", isReady ? "hazır" : "hazır değil"),
             ("Onay", ConsentInformation.shared.canRequestAds ? "reklam istenebilir" : "ENGELLİ"),
             ("ATT", att),

@@ -88,7 +88,7 @@ struct GameView: View {
         }
         // Bakiye sıfırsa reklamı şimdiden hazırla — buton görünür durumda.
         .task {
-            if !player.hasRemoveAds, player.balance(of: .hint) == 0 {
+            if !ads.adsSuppressed, player.balance(of: .hint) == 0 {
                 await ads.prepareRewarded()
             }
         }

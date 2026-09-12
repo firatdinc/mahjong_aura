@@ -173,7 +173,7 @@ struct LoseView: View {
                     .multilineTextAlignment(.center)
 
                 VStack(spacing: 12) {
-                    if player.hasRemoveAds {
+                    if ads.adsSuppressed {
                         // Reklamsız satın alındıysa reklam vaat eden bir buton
                         // göstermek yanıltıcı olur — doğrudan devam ettiriyoruz.
                         primaryButton("lose.continue", fill: Theme.actionGreen) {

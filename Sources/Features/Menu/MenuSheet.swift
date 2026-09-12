@@ -75,6 +75,15 @@ struct MenuSheet: View {
                 }
                 .font(.system(size: 11, design: .monospaced))
             }
+            Toggle(isOn: Binding(get: { ads.forceAdsForTesting },
+                                 set: { ads.forceAdsForTesting = $0 })) {
+                Text("Reklamları zorla (test)")
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.8))
+            }
+            .tint(Theme.actionGreen)
+            .padding(.top, 2)
+
             Button {
                 ads.presentAdInspector()
             } label: {
