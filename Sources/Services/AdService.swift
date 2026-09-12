@@ -37,8 +37,15 @@ final class AdService: NSObject, ObservableObject {
     }
     private static let forceAdsKey = "v21.forceAdsForTesting"
 
-    /// Reklamlar bastırılmış mı? Test anahtarı açıkken bastırma devre dışı.
-    var adsSuppressed: Bool { player.hasRemoveAds && !forceAdsForTesting }
+    /// Reklamlar bastırılmış mı?
+    ///
+    /// Test anahtarı YALNIZCA iç derlemelerde (Debug/TestFlight) dikkate
+    /// alınır. App Store sürümünde reklamsız hakkı her koşulda geçerlidir —
+    /// ödeme yapmış oyuncuya reklam gösterilmesi mümkün olmamalı.
+    var adsSuppressed: Bool {
+        guard player.hasRemoveAds else { return false }
+        return !(forceAdsForTesting && AppEnvironment.isInternalBuild)
+    }
 
     private let player: PlayerStore
     private var interstitial: InterstitialAd?

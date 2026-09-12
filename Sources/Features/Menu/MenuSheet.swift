@@ -27,10 +27,14 @@ struct MenuSheet: View {
                     .foregroundStyle(.white)
                     .padding(.top, 18)
                     .onLongPressGesture(minimumDuration: 1.2) {
+                        // App Store sürümünde tanılama arayüzü hiç yok.
+                        guard AppEnvironment.isInternalBuild else { return }
                         showDiagnostics.toggle()
                     }
 
-                if showDiagnostics { diagnosticsPanel }
+                if showDiagnostics && AppEnvironment.isInternalBuild {
+                    diagnosticsPanel
+                }
 
                 toggleRow(icon: "figure.mind.and.body",
                           title: "menu.zenMode",
