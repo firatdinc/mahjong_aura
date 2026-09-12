@@ -199,11 +199,30 @@ final class AdService: NSObject, ObservableObject {
         ad.present(from: root)
     }
 
+    /// SDK açılış akışını (onay → ATT → start) bitirene kadar bekler.
+    ///
+    /// Oyuncu hızlı oynayıp ATT istemi yanıtlanmadan kaybederse SDK henüz
+    /// hazır olmuyordu ve "reklam yok" deyip geçiyorduk. Beklemek, o dar
+    /// zaman aralığındaki yanlış olumsuzu ortadan kaldırıyor.
+    private func waitUntilReady(timeout: TimeInterval = 8) async -> Bool {
+        if isReady { return true }
+        let deadline = Date().addingTimeInterval(timeout)
+        while !isReady, Date() < deadline {
+            try? await Task.sleep(nanoseconds: 250_000_000)
+        }
+        return isReady
+    }
+
     /// Ödüllü reklam. Ödül kazanıldıysa `true` döner.
     /// `removeAds` sahibine reklam göstermeden doğrudan ödül verilir.
     @discardableResult
     func showRewarded() async -> Bool {
         if player.hasRemoveAds { return true }
+
+        guard await waitUntilReady() else {
+            Self.log.info("odullu: SDK hazir olmadi (zaman asimi)")
+            return false
+        }
 
         if rewarded == nil { await prepareRewarded() }
 
@@ -252,6 +271,7 @@ final class AdService: NSObject, ObservableObject {
         let idfaShort = idfa.hasPrefix("00000000") ? "SIFIR (ATT yok)" : String(idfa.prefix(13)) + "…"
 
         return [
+            ("Reklamsız", player.hasRemoveAds ? "AKTİF (reklam yok)" : "hayır"),
             ("SDK", isReady ? "hazır" : "hazır değil"),
             ("Onay", ConsentInformation.shared.canRequestAds ? "reklam istenebilir" : "ENGELLİ"),
             ("ATT", att),
