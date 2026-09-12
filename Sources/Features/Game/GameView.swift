@@ -46,6 +46,7 @@ struct GameView: View {
                       onQuit: { showMenu = false; dismiss() })
                 .environmentObject(player)
                 .environmentObject(store)
+                .environmentObject(ads)
         }
         .sheet(isPresented: $showShop) {
             ShopSheet().environmentObject(player).environmentObject(store)

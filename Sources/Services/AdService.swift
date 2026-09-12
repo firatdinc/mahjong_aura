@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import OSLog
 import GoogleMobileAds
 import UserMessagingPlatform
 import AppTrackingTransparency
@@ -15,6 +16,11 @@ import AppTrackingTransparency
 @MainActor
 final class AdService: ObservableObject {
 
+    /// İstek / dolum / gösterim adımları loglanıyor ki yayın sonrası AdMob'daki
+    /// gösterim oranı (şu an %21) uygulama tarafıyla karşılaştırılabilsin.
+    /// Konsolda süzmek için: subsystem `com.mahjongaura.app`, kategori `ads`.
+    private static let log = Logger(subsystem: "com.mahjongaura.app", category: "ads")
+
     @Published private(set) var isReady = false
     @Published private(set) var isRewardedReady = false
 
@@ -22,10 +28,13 @@ final class AdService: ObservableObject {
     private var interstitial: InterstitialAd?
     private var rewarded: RewardedAd?
 
-    /// Geçiş reklamı sıklığı. v1.x'te her 2 oyunda birdi; rahatlatıcı bir
-    /// oyunda bu agresif, 3 bölümde bire çekildi.
+    /// Sıklık kuralı: hem bölüm sayısı hem de süre koşulu sağlanmalı.
+    /// Rahatlatıcı bir oyunda arka arkaya reklam terk ettirir.
     private static let interstitialEveryNLevels = 3
+    private static let interstitialMinInterval: TimeInterval = 60
+
     private var levelsSinceInterstitial = 0
+    private var lastInterstitialAt: Date?
 
     init(player: PlayerStore) {
         self.player = player
@@ -40,12 +49,30 @@ final class AdService: ObservableObject {
 
         // ATT istemi, onay akışından sonra ve bir gecikmeyle.
         try? await Task.sleep(nanoseconds: UInt64(AdConfig.attPromptDelay * 1_000_000_000))
-        _ = await ATTrackingManager.requestTrackingAuthorization()
+        let status = await ATTrackingManager.requestTrackingAuthorization()
+        Self.log.info("ATT durumu: \(status.rawValue, privacy: .public)")
 
         await MobileAds.shared.start()
         isReady = true
+        logAdapterStatuses()
 
-        await preload()
+        // Geçiş reklamı önden yüklenir (bölüm sonunda anında lazım).
+        // Ödüllü reklam YÜKLENMEZ — ancak gerektiğinde yüklenir.
+        await loadInterstitial()
+    }
+
+    /// Aracı (mediation) adaptörlerinin hazır olup olmadığını yazar.
+    /// Unity gibi bir adaptör eklenirse "ready" görünmesi gerekir.
+    private func logAdapterStatuses() {
+        let statuses = MobileAds.shared.initializationStatus.adapterStatusesByClassName
+        guard !statuses.isEmpty else {
+            Self.log.info("adapter yok (yalnizca AdMob)")
+            return
+        }
+        for (name, status) in statuses {
+            let state = status.state == .ready ? "ready" : "notReady"
+            Self.log.info("adapter \(name, privacy: .public): \(state, privacy: .public) — \(status.description, privacy: .public)")
+        }
     }
 
     /// UMP: gerekiyorsa onay formunu gösterir.
@@ -58,56 +85,84 @@ final class AdService: ObservableObject {
         #endif
 
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { _ in
+            ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { error in
+                if let error { Self.log.error("onay guncellemesi hatasi: \(error.localizedDescription, privacy: .public)") }
                 continuation.resume()
             }
         }
 
         guard let root = Self.rootViewController else { return }
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            ConsentForm.loadAndPresentIfRequired(from: root) { _ in
+            ConsentForm.loadAndPresentIfRequired(from: root) { error in
+                if let error { Self.log.error("onay formu hatasi: \(error.localizedDescription, privacy: .public)") }
                 continuation.resume()
             }
         }
+        Self.log.info("onay tamam, reklam istenebilir: \(ConsentInformation.shared.canRequestAds, privacy: .public)")
     }
 
     // MARK: - Yükleme
 
-    func preload() async {
-        guard isReady, !player.hasRemoveAds else { return }
-        async let i: Void = loadInterstitial()
-        async let r: Void = loadRewarded()
-        _ = await (i, r)
-    }
-
     private func loadInterstitial() async {
-        guard interstitial == nil else { return }
-        interstitial = try? await InterstitialAd.load(
-            with: AdConfig.interstitialUnit, request: Request()
-        )
+        guard isReady, !player.hasRemoveAds, interstitial == nil else { return }
+        Self.log.info("gecis: istek")
+        do {
+            interstitial = try await InterstitialAd.load(
+                with: AdConfig.interstitialUnit, request: Request()
+            )
+            Self.log.info("gecis: dolum ✓")
+        } catch {
+            Self.log.error("gecis: dolum ✗ \(error.localizedDescription, privacy: .public)")
+        }
     }
 
-    private func loadRewarded() async {
-        guard rewarded == nil else { return }
-        rewarded = try? await RewardedAd.load(
-            with: AdConfig.rewardedUnit, request: Request()
-        )
-        isRewardedReady = rewarded != nil
+    /// Ödüllü reklamı **ihtiyaç anında** yükler (ör. kayıp ekranı açılırken).
+    /// Açılışta yüklenmiyor: kullanıcıların çoğu hiç ödüllü reklam görmüyor,
+    /// erken yükleme hem boşa istek hem de dolum oranını bozuyor.
+    func prepareRewarded() async {
+        guard isReady, !player.hasRemoveAds, rewarded == nil else { return }
+        Self.log.info("odullu: istek")
+        do {
+            rewarded = try await RewardedAd.load(
+                with: AdConfig.rewardedUnit, request: Request()
+            )
+            isRewardedReady = true
+            Self.log.info("odullu: dolum ✓")
+        } catch {
+            isRewardedReady = false
+            Self.log.error("odullu: dolum ✗ \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     // MARK: - Gösterim
 
-    /// Bölüm tamamlandığında çağrılır. Sıklık kuralına uymuyorsa hiçbir şey yapmaz.
+    /// Bölüm geçişinde çağrılır. Hem bölüm sayısı hem süre koşulu sağlanmalı.
     func showInterstitialIfDue() {
         guard !player.hasRemoveAds, isReady else { return }
         levelsSinceInterstitial += 1
-        guard levelsSinceInterstitial >= Self.interstitialEveryNLevels,
-              let ad = interstitial,
-              let root = Self.rootViewController else { return }
+
+        guard levelsSinceInterstitial >= Self.interstitialEveryNLevels else { return }
+
+        if let last = lastInterstitialAt,
+           Date().timeIntervalSince(last) < Self.interstitialMinInterval {
+            Self.log.info("gecis: atlandi (60 sn kurali)")
+            return
+        }
+
+        guard let ad = interstitial, let root = Self.rootViewController else {
+            Self.log.info("gecis: hazir degil")
+            Task { await loadInterstitial() }
+            return
+        }
 
         levelsSinceInterstitial = 0
+        lastInterstitialAt = Date()
         interstitial = nil
+
+        Self.log.info("gecis: gosterim")
         ad.present(from: root)
+
+        // Kapanmayı beklemeden yenisini yükle — bir sonraki bölüme hazır olsun.
         Task { await loadInterstitial() }
     }
 
@@ -117,7 +172,10 @@ final class AdService: ObservableObject {
     func showRewarded() async -> Bool {
         if player.hasRemoveAds { return true }
 
+        if rewarded == nil { await prepareRewarded() }
+
         guard let ad = rewarded, let root = Self.rootViewController else {
+            Self.log.info("odullu: hazir degil")
             return false
         }
 
@@ -125,16 +183,28 @@ final class AdService: ObservableObject {
         isRewardedReady = false
 
         var earned = false
+        Self.log.info("odullu: gosterim")
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             ad.present(from: root) {
                 earned = true
                 continuation.resume()
             }
         }
-
-        await loadRewarded()
+        Self.log.info("odullu: odul \(earned ? "kazanildi" : "kazanilmadi", privacy: .public)")
         return earned
     }
+
+    // MARK: - Hata ayıklama
+
+    #if DEBUG
+    /// AdMob Ad Inspector — dolum, aracı ve istek akışını canlı gösterir.
+    func presentAdInspector() {
+        guard let root = Self.rootViewController else { return }
+        MobileAds.shared.presentAdInspector(from: root) { error in
+            if let error { Self.log.error("Ad Inspector: \(error.localizedDescription, privacy: .public)") }
+        }
+    }
+    #endif
 
     // MARK: - Yardımcı
 

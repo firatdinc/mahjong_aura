@@ -6,6 +6,7 @@ import SwiftUI
 struct MenuSheet: View {
     @EnvironmentObject private var player: PlayerStore
     @EnvironmentObject private var store: StoreService
+    @EnvironmentObject private var ads: AdService
     @Environment(\.dismiss) private var dismiss
 
     let onShop: () -> Void
@@ -41,6 +42,20 @@ struct MenuSheet: View {
                         .background(RoundedRectangle(cornerRadius: 12).fill(.white.opacity(0.05)))
                 }
                 .buttonStyle(.plain)
+
+                #if DEBUG
+                // Gizli hata ayıklama girişi: AdMob Ad Inspector.
+                // Yalnızca Debug derlemesinde var, yayında görünmez.
+                Button {
+                    ads.presentAdInspector()
+                } label: {
+                    Label("Ad Inspector", systemImage: "ladybug.fill")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.4))
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
+                #endif
 
                 Spacer()
             }

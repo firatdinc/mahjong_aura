@@ -73,6 +73,7 @@ targets:
           - de
           - es
           - fr
+          - pt-BR
           - zh-Hans
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}

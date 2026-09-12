@@ -202,6 +202,9 @@ struct LoseView: View {
             }
             .padding(.horizontal, 24)
         }
+        // Ödüllü reklam tam da butonun göründüğü anda yüklenir —
+        // açılışta değil. Boşa istek gitmez, dolum oranı bozulmaz.
+        .task { await ads.prepareRewarded() }
         .alert(NSLocalizedString("ads.notReady", comment: ""),
                isPresented: $showAdUnavailable) {
             Button("OK", role: .cancel) {}

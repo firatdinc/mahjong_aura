@@ -1,0 +1,64 @@
+/* Mahjong Aura — Português (Brasil) */
+
+"splash.quote.1" = "Pequenas vitórias, uma peça de cada vez.";
+"splash.attribution" = "Mahjong Aura";
+
+"lobby.continue" = "Nível %d";
+
+"levels.title" = "NÍVEIS";
+"levels.progress" = "%1$d / %2$d";
+
+"game.aura" = "Aura: %@";
+"game.blocked" = "Bloqueada dos dois lados";
+"game.trayAlmostFull" = "Atenção — a bandeja está quase cheia!";
+"game.combo" = "Combo x%d";
+"game.praise.good" = "Boa!";
+"booster.lockedUntil" = "Nív. %d";
+
+"result.title.focused" = "Concentrado!";
+"result.title.brilliant" = "Brilhante!";
+"result.title.calm" = "Tranquilo!";
+"result.stat.time" = "Tempo";
+"result.stat.aura" = "Aura";
+"result.stat.combo" = "Combo";
+"result.message" = "Boa partida —\nmente calma, mãos rápidas.";
+"result.nextGift" = "Próximo presente no nível %d";
+"result.next" = "Nível %d";
+
+"menu.title" = "Menu";
+"menu.zenMode" = "Modo Zen";
+"menu.zenMode.detail" = "5º espaço na bandeja — jogo tranquilo, sem pressão";
+"menu.removeAds" = "Remover anúncios — %@";
+"menu.removeAds.detail" = "Sem anúncios. Dicas, desfazer e reviver são recarregados de graça, para sempre.";
+"menu.restore" = "Restaurar compras";
+"menu.shop" = "Loja";
+"menu.restart" = "Reiniciar nível";
+"menu.quit" = "Voltar ao início";
+
+"shop.title" = "Loja";
+"shop.boosters" = "IMPULSOS";
+"shop.removeAds" = "Remover anúncios";
+"shop.removeAds.detail" = "Sem anúncios. Recargas grátis para sempre.";
+"shop.bundle" = "Pacote de impulsos";
+"shop.bundle.detail" = "20 dicas + 30 desfazer + 10 reviver";
+"shop.hints" = "20 dicas";
+"shop.hints.detail" = "Nunca fique travado";
+"shop.undos" = "30 desfazer";
+"shop.undos.detail" = "Volte atrás, sem anúncios";
+"shop.revives" = "10 reviver";
+"shop.revives.detail" = "Bandeja cheia? Sem problema";
+
+"lose.title" = "Bandeja cheia!";
+"lose.message" = "Não há mais pares na bandeja.\nTraga duas peças de volta e continue.";
+"lose.useRevive" = "Usar um reviver";
+"lose.watchAd" = "Assistir anúncio para continuar";
+
+/* --- Mensagens da loja --- */
+"store.title" = "Loja";
+"store.unavailable" = "Este item não está disponível agora. Tente novamente mais tarde.";
+"store.pending" = "Sua compra está aguardando aprovação.";
+"store.restored" = "Suas compras foram restauradas.";
+"store.nothingToRestore" = "Nenhuma compra anterior encontrada.";
+"store.unverified" = "Não foi possível verificar a compra. Tente novamente.";
+
+"ads.notReady" = "Nenhum anúncio disponível agora. Tente novamente em instantes.";
