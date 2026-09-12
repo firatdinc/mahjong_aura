@@ -6,6 +6,7 @@ struct GameView: View {
     @EnvironmentObject private var player: PlayerStore
     @EnvironmentObject private var store: StoreService
     @EnvironmentObject private var ads: AdService
+    @EnvironmentObject private var gameCenter: GameCenterService
     @Environment(\.dismiss) private var dismiss
 
     @State private var showMenu = false

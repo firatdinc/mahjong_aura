@@ -6,7 +6,9 @@ struct LobbyView: View {
     @EnvironmentObject private var player: PlayerStore
     @EnvironmentObject private var store: StoreService
     @EnvironmentObject private var ads: AdService
+    @EnvironmentObject private var gameCenter: GameCenterService
     @State private var showLevels = false
+    @State private var showGameCenter = false
 
     var body: some View {
         ZStack {
@@ -25,12 +27,40 @@ struct LobbyView: View {
                 Spacer(minLength: 48)
             }
             .padding(.horizontal, 32)
+
+            // Game Center girişi — 2.0.1'de lobinin sol üstündeki roket butonu.
+            VStack {
+                HStack {
+                    Button { showGameCenter = true } label: {
+                        Image(systemName: "trophy.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(gameCenter.isAuthenticated
+                                             ? Theme.amberBright : .white.opacity(0.3))
+                            .padding(10)
+                            .background(Circle().fill(.black.opacity(0.25)))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!gameCenter.isAuthenticated)
+                    Spacer()
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+        }
+        .sheet(isPresented: $showGameCenter) { GameCenterDashboard() }
+        .sheet(item: Binding(
+            get: { gameCenter.authenticationViewController.map(AuthBox.init) },
+            set: { if $0 == nil { gameCenter.authenticationViewController = nil } }
+        )) { box in
+            GameCenterAuthPresenter(controller: box.controller)
         }
         .fullScreenCover(isPresented: $showLevels) {
             LevelsMapView()
                 .environmentObject(player)
                 .environmentObject(store)
                 .environmentObject(ads)
+                .environmentObject(gameCenter)
         }
     }
 
@@ -96,4 +126,10 @@ private struct PlankTexture: View {
         }
         .allowsHitTesting(false)
     }
+}
+
+/// `sheet(item:)` için sarmalayıcı — UIViewController Identifiable değil.
+private struct AuthBox: Identifiable {
+    let controller: UIViewController
+    var id: ObjectIdentifier { ObjectIdentifier(controller) }
 }

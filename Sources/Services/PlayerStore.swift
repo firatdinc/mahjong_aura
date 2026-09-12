@@ -32,7 +32,8 @@ final class PlayerStore: ObservableObject {
         static let undoCount      = "undoCount"
         static let reviveCount    = "reviveCount"
         static let schemaVersion  = "schemaVersion"
-        static let reviewRequested = "v21.reviewRequested"
+        static let reviewMilestones = "v21.reviewMilestones"
+        static let bestAura = "v21.bestAura"
     }
 
     private let defaults: UserDefaults
@@ -40,6 +41,8 @@ final class PlayerStore: ObservableObject {
     @Published private(set) var highestLevel: Int
     @Published private(set) var currentLevel: Int
     @Published private(set) var totalAura: Double
+    /// Tek bölümde elde edilen en yüksek Aura — Game Center `bestiq` tablosuna gider.
+    @Published private(set) var bestAura: Double
     @Published var zenModeEnabled: Bool { didSet { defaults.set(zenModeEnabled, forKey: Key.zenModeEnabled) } }
 
     /// Booster bakiyeleri. Yayımlanan durum olmalı, yoksa satın alma sonrası
@@ -59,6 +62,7 @@ final class PlayerStore: ObservableObject {
         self.highestLevel = max(1, defaults.integer(forKey: Key.highestLevel))
         self.currentLevel = max(1, defaults.integer(forKey: Key.currentLevel))
         self.totalAura = defaults.double(forKey: Key.totalAura)
+        self.bestAura = defaults.double(forKey: Key.bestAura)
         self.zenModeEnabled = defaults.bool(forKey: Key.zenModeEnabled)
         self.hasRemoveAds = defaults.bool(forKey: Key.removeAds)
 
@@ -128,20 +132,29 @@ final class PlayerStore: ObservableObject {
 
     // MARK: - Puan istemi (App Store değerlendirmesi)
 
-    /// ASO analizi: rakiplerin 55–62 bin puanı var, bizde puan ortalaması
-    /// gösterilemeyecek kadar az. Puan sayısı hem sıralamayı hem dönüşümü
-    /// belirliyor — metin optimizasyonundan daha belirleyici.
+    /// ASO: rakiplerin 55–62 bin puanı var, bizde ortalama gösterilemiyor.
+    /// Puan sayısı sıralamayı ve dönüşümü metin optimizasyonundan çok belirliyor.
     ///
-    /// İstem yalnızca olumlu bir anda (bölüm kazanıldıktan hemen sonra) ve
-    /// oyuncu oyunu tanıdıktan sonra gösterilir. Apple zaten yılda 3 istemle
-    /// sınırlıyor; biz bir kez soruyoruz ki rahatsız etmesin.
+    /// Eşikler: 3., 10. ve 25. bölüm — her biri bir kez.
+    /// Ömür boyu tek sefer sınırı kaldırıldı; Apple zaten yılda 3 gösterimle
+    /// sınırlıyor ve asıl sorun puan azlığı. İstem yalnızca bölüm kazanıldıktan
+    /// sonra tetiklenir; kaybedilen bölümden veya reklamdan sonra asla.
+    static let reviewMilestones = [3, 10, 25]
+
     func shouldRequestReview(afterLevel level: Int) -> Bool {
-        guard !defaults.bool(forKey: Key.reviewRequested) else { return false }
-        return level == 3 || level == 5
+        guard Self.reviewMilestones.contains(level) else { return false }
+        return !requestedMilestones.contains(level)
     }
 
-    func markReviewRequested() {
-        defaults.set(true, forKey: Key.reviewRequested)
+    private var requestedMilestones: [Int] {
+        defaults.array(forKey: Key.reviewMilestones) as? [Int] ?? []
+    }
+
+    func markReviewRequested(atLevel level: Int) {
+        var done = requestedMilestones
+        guard !done.contains(level) else { return }
+        done.append(level)
+        defaults.set(done, forKey: Key.reviewMilestones)
     }
 
     // MARK: - İlerleme
@@ -150,6 +163,10 @@ final class PlayerStore: ObservableObject {
         currentLevel = level + 1
         highestLevel = max(highestLevel, currentLevel)
         totalAura += aura
+        if aura > bestAura {
+            bestAura = aura
+            defaults.set(bestAura, forKey: Key.bestAura)
+        }
         defaults.set(currentLevel, forKey: Key.currentLevel)
         defaults.set(highestLevel, forKey: Key.highestLevel)
         defaults.set(totalAura, forKey: Key.totalAura)

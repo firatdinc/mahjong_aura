@@ -5,6 +5,7 @@ struct MahjongAuraApp: App {
     @StateObject private var player: PlayerStore
     @StateObject private var store: StoreService
     @StateObject private var ads: AdService
+    @StateObject private var gameCenter = GameCenterService()
 
     init() {
         let player = PlayerStore()
@@ -30,6 +31,7 @@ struct MahjongAuraApp: App {
             .environmentObject(player)
             .environmentObject(store)
             .environmentObject(ads)
+            .environmentObject(gameCenter)
             .preferredColorScheme(.dark)
             .task {
                 await store.loadProducts()
@@ -38,6 +40,7 @@ struct MahjongAuraApp: App {
                 // sahibine hiç reklam yüklenmesin.
                 await ads.start()
             }
+            .onAppear { gameCenter.authenticate() }
         }
     }
 

@@ -9,6 +9,7 @@ struct ResultView: View {
 
     @EnvironmentObject private var player: PlayerStore
     @EnvironmentObject private var ads: AdService
+    @EnvironmentObject private var gameCenter: GameCenterService
     @Environment(\.requestReview) private var requestReview
 
     var body: some View {
@@ -66,6 +67,7 @@ struct ResultView: View {
             }
             .padding(.horizontal, 24)
         }
+        .task { await submitScores() }
         .task { await promptForReviewIfEarned() }
     }
 
@@ -74,7 +76,13 @@ struct ResultView: View {
         guard player.shouldRequestReview(afterLevel: model.levelNumber) else { return }
         try? await Task.sleep(nanoseconds: 1_200_000_000)
         requestReview()
-        player.markReviewRequested()
+        player.markReviewRequested(atLevel: model.levelNumber)
+    }
+
+    /// İki lider tablosuna da yazar. Kimlik doğrulanmadıysa sessizce geçer.
+    private func submitScores() async {
+        await gameCenter.submit(highestLevel: player.highestLevel,
+                                bestAura: player.bestAura)
     }
 
     private var timeText: String {

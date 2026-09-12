@@ -7,6 +7,7 @@ struct LevelsMapView: View {
     @EnvironmentObject private var player: PlayerStore
     @EnvironmentObject private var store: StoreService
     @EnvironmentObject private var ads: AdService
+    @EnvironmentObject private var gameCenter: GameCenterService
     @Environment(\.dismiss) private var dismiss
 
     @State private var showShop = false
@@ -44,6 +45,7 @@ struct LevelsMapView: View {
                 .environmentObject(player)
                 .environmentObject(store)
                 .environmentObject(ads)
+                .environmentObject(gameCenter)
         }
         .sheet(isPresented: $showShop) {
             ShopSheet().environmentObject(player).environmentObject(store)
