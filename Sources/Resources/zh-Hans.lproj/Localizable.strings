@@ -1,0 +1,54 @@
+/* Mahjong Aura — 简体中文 */
+
+"splash.quote.1" = "小小的胜利，一张牌一张牌累积。";
+"splash.attribution" = "Mahjong Aura";
+
+"lobby.continue" = "第 %d 关";
+
+"levels.title" = "关卡";
+"levels.progress" = "%1$d / %2$d";
+
+"game.aura" = "Aura：%@";
+"game.blocked" = "两侧都被挡住了";
+"game.trayAlmostFull" = "注意——托盘快满了！";
+"game.combo" = "连击 x%d";
+"game.praise.good" = "很好！";
+"booster.lockedUntil" = "第 %d 关";
+
+"result.title.focused" = "专注！";
+"result.title.brilliant" = "精彩！";
+"result.title.calm" = "从容！";
+"result.stat.time" = "用时";
+"result.stat.aura" = "Aura";
+"result.stat.combo" = "连击";
+"result.message" = "表现不错——\n心静手快。";
+"result.nextGift" = "第 %d 关可领取礼物";
+"result.next" = "第 %d 关";
+
+"menu.title" = "菜单";
+"menu.zenMode" = "禅模式";
+"menu.zenMode.detail" = "第 5 个托盘位——轻松游玩，没有压力";
+"menu.removeAds" = "移除广告 — %@";
+"menu.removeAds.detail" = "没有插屏广告。提示、撤销与复活永久免费补充。";
+"menu.restore" = "恢复购买";
+"menu.shop" = "商店";
+"menu.restart" = "重新开始本关";
+"menu.quit" = "返回大厅";
+
+"shop.title" = "商店";
+"shop.boosters" = "道具";
+"shop.removeAds" = "移除广告";
+"shop.removeAds.detail" = "没有广告。永久免费补充。";
+"shop.bundle" = "道具礼包";
+"shop.bundle.detail" = "20 次提示 + 30 次撤销 + 10 次复活";
+"shop.hints" = "20 次提示";
+"shop.hints.detail" = "再也不会卡关";
+"shop.undos" = "30 次撤销";
+"shop.undos.detail" = "随时反悔，无需看广告";
+"shop.revives" = "10 次复活";
+"shop.revives.detail" = "托盘满了？没问题";
+
+"lose.title" = "托盘已满！";
+"lose.message" = "托盘里没有可配对的牌了。\n取回两张牌，继续游戏。";
+"lose.useRevive" = "使用复活";
+"lose.watchAd" = "观看广告继续";

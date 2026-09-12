@@ -1,0 +1,54 @@
+/* Mahjong Aura — Français */
+
+"splash.quote.1" = "De petites victoires, tuile après tuile.";
+"splash.attribution" = "Mahjong Aura";
+
+"lobby.continue" = "Niveau %d";
+
+"levels.title" = "NIVEAUX";
+"levels.progress" = "%1$d / %2$d";
+
+"game.aura" = "Aura : %@";
+"game.blocked" = "Bloquée des deux côtés";
+"game.trayAlmostFull" = "Attention — plateau presque plein !";
+"game.combo" = "Combo x%d";
+"game.praise.good" = "Bien !";
+"booster.lockedUntil" = "Niv. %d";
+
+"result.title.focused" = "Concentré !";
+"result.title.brilliant" = "Brillant !";
+"result.title.calm" = "Serein !";
+"result.stat.time" = "Temps";
+"result.stat.aura" = "Aura";
+"result.stat.combo" = "Combo";
+"result.message" = "Belle partie —\nesprit calme, mains agiles.";
+"result.nextGift" = "Prochain cadeau au niveau %d";
+"result.next" = "Niveau %d";
+
+"menu.title" = "Menu";
+"menu.zenMode" = "Mode Zen";
+"menu.zenMode.detail" = "5e emplacement — jeu détendu, sans pression";
+"menu.removeAds" = "Supprimer les pubs — %@";
+"menu.removeAds.detail" = "Aucune pub. Indices, annulations et reprises se rechargent gratuitement, pour toujours.";
+"menu.restore" = "Restaurer les achats";
+"menu.shop" = "Boutique";
+"menu.restart" = "Recommencer le niveau";
+"menu.quit" = "Retour au menu";
+
+"shop.title" = "Boutique";
+"shop.boosters" = "BONUS";
+"shop.removeAds" = "Supprimer les pubs";
+"shop.removeAds.detail" = "Aucune pub. Recharges gratuites à vie.";
+"shop.bundle" = "Pack de bonus";
+"shop.bundle.detail" = "20 indices + 30 annulations + 10 reprises";
+"shop.hints" = "20 indices";
+"shop.hints.detail" = "Ne restez jamais bloqué";
+"shop.undos" = "30 annulations";
+"shop.undos.detail" = "Revenez en arrière, sans pub";
+"shop.revives" = "10 reprises";
+"shop.revives.detail" = "Plateau plein ? Aucun souci";
+
+"lose.title" = "Plateau plein !";
+"lose.message" = "Plus aucune paire dans le plateau.\nRécupérez deux tuiles et continuez.";
+"lose.useRevive" = "Utiliser une reprise";
+"lose.watchAd" = "Regarder une pub pour continuer";

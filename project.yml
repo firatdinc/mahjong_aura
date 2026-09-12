@@ -42,6 +42,10 @@ targets:
         CFBundleLocalizations:
           - en
           - tr
+          - de
+          - es
+          - fr
+          - zh-Hans
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:

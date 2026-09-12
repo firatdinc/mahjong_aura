@@ -1,0 +1,54 @@
+/* Mahjong Aura — Deutsch */
+
+"splash.quote.1" = "Kleine Siege, Stein für Stein.";
+"splash.attribution" = "Mahjong Aura";
+
+"lobby.continue" = "Level %d";
+
+"levels.title" = "LEVEL";
+"levels.progress" = "%1$d / %2$d";
+
+"game.aura" = "Aura: %@";
+"game.blocked" = "Beidseitig blockiert";
+"game.trayAlmostFull" = "Achtung — Ablage fast voll!";
+"game.combo" = "Kombo x%d";
+"game.praise.good" = "Gut!";
+"booster.lockedUntil" = "Lv. %d";
+
+"result.title.focused" = "Konzentriert!";
+"result.title.brilliant" = "Brillant!";
+"result.title.calm" = "Gelassen!";
+"result.stat.time" = "Zeit";
+"result.stat.aura" = "Aura";
+"result.stat.combo" = "Kombo";
+"result.message" = "Schöner Lauf —\nruhiger Kopf, flinke Hände.";
+"result.nextGift" = "Nächstes Geschenk in Level %d";
+"result.next" = "Level %d";
+
+"menu.title" = "Menü";
+"menu.zenMode" = "Zen-Modus";
+"menu.zenMode.detail" = "5. Ablagefach — entspannt, ohne Druck";
+"menu.removeAds" = "Werbung entfernen — %@";
+"menu.removeAds.detail" = "Keine Werbung. Hinweise, Rückgängig und Wiederbeleben füllen sich für immer kostenlos auf.";
+"menu.restore" = "Käufe wiederherstellen";
+"menu.shop" = "Shop";
+"menu.restart" = "Level neu starten";
+"menu.quit" = "Zurück zur Lobby";
+
+"shop.title" = "Shop";
+"shop.boosters" = "BOOSTER";
+"shop.removeAds" = "Werbung entfernen";
+"shop.removeAds.detail" = "Keine Werbung. Für immer gratis auffüllen.";
+"shop.bundle" = "Booster-Paket";
+"shop.bundle.detail" = "20 Hinweise + 30 Rückgängig + 10 Wiederbeleben";
+"shop.hints" = "20 Hinweise";
+"shop.hints.detail" = "Nie wieder feststecken";
+"shop.undos" = "30 Rückgängig";
+"shop.undos.detail" = "Zurücknehmen, ohne Werbung";
+"shop.revives" = "10 Wiederbeleben";
+"shop.revives.detail" = "Ablage voll? Kein Problem";
+
+"lose.title" = "Ablage voll!";
+"lose.message" = "Kein passendes Paar mehr in der Ablage.\nHol zwei Steine zurück und spiel weiter.";
+"lose.useRevive" = "Wiederbeleben nutzen";
+"lose.watchAd" = "Video ansehen und weiterspielen";

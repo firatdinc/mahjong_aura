@@ -32,6 +32,7 @@ final class PlayerStore: ObservableObject {
         static let undoCount      = "undoCount"
         static let reviveCount    = "reviveCount"
         static let schemaVersion  = "schemaVersion"
+        static let reviewRequested = "v21.reviewRequested"
     }
 
     private let defaults: UserDefaults
@@ -103,6 +104,24 @@ final class PlayerStore: ObservableObject {
 
     /// removeAds satın alındıysa booster'lar sınırsız sayılır.
     var hasRemoveAds: Bool { defaults.bool(forKey: Key.removeAds) }
+
+    // MARK: - Puan istemi (App Store değerlendirmesi)
+
+    /// ASO analizi: rakiplerin 55–62 bin puanı var, bizde puan ortalaması
+    /// gösterilemeyecek kadar az. Puan sayısı hem sıralamayı hem dönüşümü
+    /// belirliyor — metin optimizasyonundan daha belirleyici.
+    ///
+    /// İstem yalnızca olumlu bir anda (bölüm kazanıldıktan hemen sonra) ve
+    /// oyuncu oyunu tanıdıktan sonra gösterilir. Apple zaten yılda 3 istemle
+    /// sınırlıyor; biz bir kez soruyoruz ki rahatsız etmesin.
+    func shouldRequestReview(afterLevel level: Int) -> Bool {
+        guard !defaults.bool(forKey: Key.reviewRequested) else { return false }
+        return level == 3 || level == 5
+    }
+
+    func markReviewRequested() {
+        defaults.set(true, forKey: Key.reviewRequested)
+    }
 
     // MARK: - İlerleme
 

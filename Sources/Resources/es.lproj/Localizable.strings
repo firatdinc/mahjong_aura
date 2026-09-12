@@ -1,0 +1,54 @@
+/* Mahjong Aura — Español */
+
+"splash.quote.1" = "Pequeñas victorias, ficha a ficha.";
+"splash.attribution" = "Mahjong Aura";
+
+"lobby.continue" = "Nivel %d";
+
+"levels.title" = "NIVELES";
+"levels.progress" = "%1$d / %2$d";
+
+"game.aura" = "Aura: %@";
+"game.blocked" = "Bloqueada por ambos lados";
+"game.trayAlmostFull" = "¡Cuidado! La bandeja casi está llena";
+"game.combo" = "Combo x%d";
+"game.praise.good" = "¡Bien!";
+"booster.lockedUntil" = "Niv. %d";
+
+"result.title.focused" = "¡Concentrado!";
+"result.title.brilliant" = "¡Brillante!";
+"result.title.calm" = "¡Sereno!";
+"result.stat.time" = "Tiempo";
+"result.stat.aura" = "Aura";
+"result.stat.combo" = "Combo";
+"result.message" = "Buena partida —\nmente serena, manos rápidas.";
+"result.nextGift" = "Próximo regalo en el nivel %d";
+"result.next" = "Nivel %d";
+
+"menu.title" = "Menú";
+"menu.zenMode" = "Modo Zen";
+"menu.zenMode.detail" = "5.ª ranura — juego relajado, sin presión";
+"menu.removeAds" = "Quitar anuncios — %@";
+"menu.removeAds.detail" = "Sin anuncios. Pistas, deshacer y revivir se recargan gratis para siempre.";
+"menu.restore" = "Restaurar compras";
+"menu.shop" = "Tienda";
+"menu.restart" = "Reiniciar nivel";
+"menu.quit" = "Volver al inicio";
+
+"shop.title" = "Tienda";
+"shop.boosters" = "POTENCIADORES";
+"shop.removeAds" = "Quitar anuncios";
+"shop.removeAds.detail" = "Sin anuncios. Recargas gratis para siempre.";
+"shop.bundle" = "Pack de potenciadores";
+"shop.bundle.detail" = "20 pistas + 30 deshacer + 10 revivir";
+"shop.hints" = "20 pistas";
+"shop.hints.detail" = "No te quedes atascado";
+"shop.undos" = "30 deshacer";
+"shop.undos.detail" = "Rectifica, sin anuncios";
+"shop.revives" = "10 revivir";
+"shop.revives.detail" = "¿Bandeja llena? Sin problema";
+
+"lose.title" = "¡Bandeja llena!";
+"lose.message" = "No queda ninguna pareja en la bandeja.\nRecupera dos fichas y sigue jugando.";
+"lose.useRevive" = "Usar un revivir";
+"lose.watchAd" = "Ver anuncio para continuar";

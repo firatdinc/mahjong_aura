@@ -61,11 +61,18 @@ xcodebuild -project MahjongAura.xcodeproj -scheme MahjongAura \
 Hedef: iOS 16.0 (2.0.1'de 17.0 idi; erişilebilir cihaz sayısını artırmak için
 indirildi — bu yüzden `@Observable` değil `ObservableObject` kullanılıyor).
 
-## Henüz yapılmadı
+## Durum
 
-- RevenueCat / GoogleMobileAds / UserMessagingPlatform bağımlılıkları
-- Bölüm üretimi (2000 bölüm) ve zorluk eğrisi
-- Levels · Game · Result · Menu · Shop ekranları
-- `SKStoreReviewController` (3. veya 5. bölüm sonunda — ASO notu)
-- Kaybetme ekranı, Revive akışı, ödüllü reklamlar, ayarlar ekranı
-  (bunlar ekran kaydında görünmüyordu, ikinci kayıt gerekiyor)
+Bitti: bölüm üretimi (2000, çözülebilirliği doğrulanmış) · Lobby · Levels ·
+Game · Result · Lose/Revive · Menu · Shop ekranları · 6 dil (en, tr, de, es,
+fr, zh-Hans) · puan istemi (3. veya 5. bölüm sonunda, ömürde bir kez) ·
+AdMob kimlikleri (`AdConfig.swift`).
+
+Henüz yapılmadı:
+- **StoreKit satın alma/geri yükleme akışı** — ürün kimlikleri ve ekranlar hazır, arkası boş
+- **GoogleMobileAds + UserMessagingPlatform** entegrasyonu (kimlikler hazır)
+- **RevenueCat** — 2.0'da kullanılıyordu, devam edilecekse SDK eklenmeli
+- **Game Center** skor gönderimi (vendor ID'ler hazır)
+- İkon okunabilirliği + ilk iki ekran görüntüsüne büyük metin (ASO kaldıraç 3)
+
+Doğrulanacak: AdMob birimleri v1.x'ten geliyor, 2.0'da yeni birim açılmış olabilir.

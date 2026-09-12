@@ -1,10 +1,14 @@
 import SwiftUI
+import StoreKit
 
 /// Bölüm tamamlandı — şartname § 2.5
 struct ResultView: View {
     let outcome: GameViewModel.Outcome
     @ObservedObject var model: GameViewModel
     let onContinue: () -> Void
+
+    @EnvironmentObject private var player: PlayerStore
+    @Environment(\.requestReview) private var requestReview
 
     var body: some View {
         ZStack {
@@ -56,6 +60,15 @@ struct ResultView: View {
             }
             .padding(.horizontal, 24)
         }
+        .task { await promptForReviewIfEarned() }
+    }
+
+    /// Kutlama ekranı oturduktan sonra sor — kazanma anının üstüne binmesin.
+    private func promptForReviewIfEarned() async {
+        guard player.shouldRequestReview(afterLevel: model.levelNumber) else { return }
+        try? await Task.sleep(nanoseconds: 1_200_000_000)
+        requestReview()
+        player.markReviewRequested()
     }
 
     private var timeText: String {
