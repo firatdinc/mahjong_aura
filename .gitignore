@@ -1,0 +1,16 @@
+# Xcode
+build/
+DerivedData/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+*.xcuserstate
+
+# xcodegen ciktisi — project.yml kaynak, .xcodeproj uretilir
+MahjongAura.xcodeproj/
+
+# macOS
+.DS_Store
+
+# SPM
+.swiftpm/
+.build/

@@ -1,0 +1,57 @@
+/* Mahjong Aura — English (kaynak dil)
+   Metinler 2.0.1 ekran kaydından birebir alındı.
+   KURTARMA-KITI/V2-SARTNAME.md § 2 */
+
+/* --- Açılış --- */
+"splash.quote.1" = "Small wins, one tile at a time.";
+"splash.attribution" = "Mahjong Aura";
+
+/* --- Lobi --- */
+"lobby.continue" = "Level %d";
+
+/* --- Bölüm haritası --- */
+"levels.title" = "LEVELS";
+"levels.progress" = "%1$d / %2$d";
+
+/* --- Oyun --- */
+"game.aura" = "Aura: %@";
+"game.blocked" = "Blocked on both sides";
+"game.trayAlmostFull" = "Careful — tray almost full!";
+"game.combo" = "Combo x%d";
+"game.praise.good" = "Good!";
+"booster.lockedUntil" = "Lv. %d";
+
+/* --- Bölüm sonu --- */
+"result.title.focused" = "Focused!";
+"result.title.brilliant" = "Brilliant!";
+"result.stat.time" = "Time";
+"result.stat.aura" = "Aura";
+"result.stat.combo" = "Combo";
+"result.message" = "Beautiful run —\ncalm mind, quick hands.";
+"result.nextGift" = "Next gift at Level %d";
+"result.next" = "Level %d";
+
+/* --- Menü --- */
+"menu.title" = "Menu";
+"menu.zenMode" = "Zen Mode";
+"menu.zenMode.detail" = "5th holder slot — relaxed play, no pressure";
+"menu.removeAds" = "Remove Ads — %@";
+"menu.removeAds.detail" = "No interstitials. Hints, undos and revives refill free — forever.";
+"menu.restore" = "Restore Purchases";
+"menu.shop" = "Shop";
+"menu.restart" = "Restart Level";
+"menu.quit" = "Quit to Lobby";
+
+/* --- Mağaza --- */
+"shop.title" = "Shop";
+"shop.boosters" = "BOOSTERS";
+"shop.removeAds" = "Remove Ads";
+"shop.removeAds.detail" = "No interstitials. Free refills forever.";
+"shop.bundle" = "Booster Bundle";
+"shop.bundle.detail" = "20 hints + 30 undos + 10 revives";
+"shop.hints" = "20 Hints";
+"shop.hints.detail" = "Never get stuck";
+"shop.undos" = "30 Undos";
+"shop.undos.detail" = "Take it back, no ads";
+"shop.revives" = "10 Revives";
+"shop.revives.detail" = "Full tray? No problem";

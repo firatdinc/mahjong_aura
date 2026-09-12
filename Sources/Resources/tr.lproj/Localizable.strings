@@ -1,0 +1,55 @@
+/* Mahjong Aura — Türkçe */
+
+/* --- Açılış --- */
+"splash.quote.1" = "Küçük zaferler, taş taş.";
+"splash.attribution" = "Mahjong Aura";
+
+/* --- Lobi --- */
+"lobby.continue" = "Bölüm %d";
+
+/* --- Bölüm haritası --- */
+"levels.title" = "BÖLÜMLER";
+"levels.progress" = "%1$d / %2$d";
+
+/* --- Oyun --- */
+"game.aura" = "Aura: %@";
+"game.blocked" = "İki yanı da kapalı";
+"game.trayAlmostFull" = "Dikkat — tepsi dolmak üzere!";
+"game.combo" = "Kombo x%d";
+"game.praise.good" = "Güzel!";
+"booster.lockedUntil" = "Böl. %d";
+
+/* --- Bölüm sonu --- */
+"result.title.focused" = "Odaklandın!";
+"result.title.brilliant" = "Muhteşem!";
+"result.stat.time" = "Süre";
+"result.stat.aura" = "Aura";
+"result.stat.combo" = "Kombo";
+"result.message" = "Güzel bir tur —\nsakin zihin, hızlı eller.";
+"result.nextGift" = "Sonraki hediye: Bölüm %d";
+"result.next" = "Bölüm %d";
+
+/* --- Menü --- */
+"menu.title" = "Menü";
+"menu.zenMode" = "Zen Modu";
+"menu.zenMode.detail" = "5. tepsi yuvası — rahat oyun, baskı yok";
+"menu.removeAds" = "Reklamları Kaldır — %@";
+"menu.removeAds.detail" = "Reklam yok. İpucu, geri alma ve devam hakları sonsuza dek ücretsiz yenilenir.";
+"menu.restore" = "Satın Alımları Geri Yükle";
+"menu.shop" = "Mağaza";
+"menu.restart" = "Bölümü Yeniden Başlat";
+"menu.quit" = "Lobiye Dön";
+
+/* --- Mağaza --- */
+"shop.title" = "Mağaza";
+"shop.boosters" = "GÜÇLENDİRİCİLER";
+"shop.removeAds" = "Reklamları Kaldır";
+"shop.removeAds.detail" = "Reklam yok. Sonsuz ücretsiz yenileme.";
+"shop.bundle" = "Güçlendirme Paketi";
+"shop.bundle.detail" = "20 ipucu + 30 geri alma + 10 devam";
+"shop.hints" = "20 İpucu";
+"shop.hints.detail" = "Asla takılma";
+"shop.undos" = "30 Geri Alma";
+"shop.undos.detail" = "Geri al, reklam yok";
+"shop.revives" = "10 Devam Hakkı";
+"shop.revives.detail" = "Tepsi mi doldu? Sorun değil";
